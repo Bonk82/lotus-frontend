@@ -1,7 +1,7 @@
 import GoogleLoginButton from "./GoogleLoginButton"
 import '../login.css'
 
-const Login = () => {
+const Login2 = () => {
 
   const toggleForm = (e) => {
     e.preventDefault();
@@ -42,4 +42,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Login2
