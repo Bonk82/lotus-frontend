@@ -20,7 +20,7 @@ apiClient.interceptors.request.use((config) => {
 
 // Interceptor para manejar errores globales
 apiClient.interceptors.response.use(
-  (response) => response.data,
+  (response) =>response.data, 
   (error) => {
     if (error.response?.status === 401 && window.location.pathname !== '/login') {
       // Redirigir a login si el token expira

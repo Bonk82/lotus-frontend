@@ -3,7 +3,8 @@ import { useContext } from 'react';
 import { createContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../servicios/apiClient';
-
+import {jwtDecode} from "jwt-decode";
+import { useEffect } from 'react';
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
@@ -12,14 +13,37 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+   console.log('en el efect authcontet',user);
+   if(!user){
+    const storedUser = localStorage.getItem('token');
+    if (storedUser) {
+      try {
+        const decoded = jwtDecode(storedUser);
+        console.log('revisando en auth',decoded.exp * 1000 < Date.now(),decoded,user);
+      
+        decoded.exp * 1000 > Date.now() ? setUser(decoded) : logout(); // Verifica si el token no ha expirado
+      } catch (error) {
+        console.error('Error al verificar el token:', error);
+        logout(); // Token inválido
+      }
+    }
+   }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  
+
   const login = async (userData) => {
     console.log({userData});
     const { user, pass } = userData;
     try {
       const resp = await apiClient.get('/login',{params:{operacion:'V', user, pass }});
-      console.log({resp});
-      setUser(userData);
-      localStorage.setItem('token', JSON.stringify(resp));
+      // const deco = decodificar_token(resp);
+      const deco = jwtDecode(resp);
+      // console.log('Token decodificado:', deco);
+      // const usuario = {rol:deco.rol,usuario:deco.usuario,sucursal:deco.sucursal,cuenta:deco.cuenta}
+      setUser(deco);
+      localStorage.setItem('token', resp);
       navigate('/'); // Redirige a la página principal después del login
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
@@ -28,12 +52,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // const decodificar_token = (token) => {
+  //   try {
+  //     const base64Url = token.split('.')[1];
+  //     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  //     const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) =>
+  //       '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+  //     ).join(''));
+  //     return JSON.parse(jsonPayload);
+  //   } catch (error) {
+  //     console.error('Error al decodificar el token:', error);
+  //     return null;
+  //   }
+  // };
+
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     console.log('saliendo');
-    // return redirect('/login');
-    // navigate('/login'); // Redirige a la página de login después del logout
+    navigate('/login'); // Redirige a la página de login después del logout
   };
 
   return (
