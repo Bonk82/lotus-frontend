@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import '@mantine/core/styles.css';
 import './App.css'
 import { AuthProvider } from './context/AuthContext'
-import { Burger, createTheme, Group, MantineProvider, Skeleton } from '@mantine/core';
+import { Burger, Button, createTheme, Group, MantineProvider, Skeleton } from '@mantine/core';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoutes'
 import Dashboard from './pages/Dashboard';
@@ -16,7 +16,10 @@ import Parametrica from './pages/Parametrica';
 
 import { AppShell } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import Header from './components/Header';
 import Navbar from './components/Navbar';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 // import { MantineLogo } from '@mantinex/mantine-logo';
 
 const myTheme =createTheme({
@@ -29,9 +32,21 @@ const myTheme =createTheme({
 function App() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false);
+  const location = useLocation();
   let inicio = false;
-  console.log('appshell',window.location.pathname);
-  if(window.location.pathname == '/login') inicio = true;
+  
+  if(location.pathname == '/login'){
+    inicio = true;
+    if(mobileOpened) toggleMobile();
+    if(desktopOpened) toggleDesktop();
+  } else{
+    inicio = false;
+  }
+
+  // useEffect(() => {
+  //   console.log('cargando efect appjs',location.pathname);
+  // }, [location.pathname]);
+  
   
   return (
     <AuthProvider>
@@ -54,16 +69,11 @@ function App() {
                 <Burger color="violet.4" opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" disabled={inicio} />
                 LOTUS CLUB
               </Group>
-              <Navbar/>
+              <Header/>
             </Group>
           </AppShell.Header>
           <AppShell.Navbar p="md">
-            Navbar
-            {Array(15)
-              .fill(0)
-              .map((_, index) => (
-                <Skeleton key={index} h={28} mt="sm" animate={false} />
-              ))}
+            <Navbar/>
           </AppShell.Navbar>
           <AppShell.Main>
             <Routes>

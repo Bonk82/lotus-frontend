@@ -1,7 +1,12 @@
+import { UserAuth } from "../context/AuthContext";
 
 const Parametrica = () => {
+  const { user } = UserAuth();
   return (
-    <h1>Parametrica</h1>
+    <div>
+      <p>{JSON.stringify(user)}</p>
+      <h1>Parametrica</h1>
+    </div>
   )
 }
 
