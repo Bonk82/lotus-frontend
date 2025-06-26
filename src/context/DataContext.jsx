@@ -23,10 +23,10 @@ export const DataProvider = ({ children }) => {
 
   const toast = (title,message,type) =>{
     let color = type
-    if(type == 'success') color = 'lime.8';
-    if(type == 'info') color = 'cyan.8';
-    if(type == 'warning') color = 'yellow.8';
-    if(type == 'error') color = 'red.8';
+    if(type == 'success') color = 'teal.9';
+    if(type == 'info') color = 'cyan.9';
+    if(type == 'warning') color = 'yellow.9';
+    if(type == 'error') color = 'red.9';
     notifications.show({
       title,
       message,
@@ -50,7 +50,7 @@ export const DataProvider = ({ children }) => {
       if(ruta === '/listarPedidos') setPedidos(resp);
       if(ruta === '/listarPromociones') setPromociones(resp);
       if(ruta.startsWith('/crud')) {
-        toast(`Control ${ruta.replace('/crud','')}`, resp, 'success');
+        toast(`Control ${ruta.replace('/crud','')}`, resp[0].message, 'success');
       }
       return resp;
     } catch (error) {
@@ -63,7 +63,7 @@ export const DataProvider = ({ children }) => {
 
 
   return (
-    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI }}>
+    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI,toast }}>
       {children}
     </DataContext.Provider>
   );

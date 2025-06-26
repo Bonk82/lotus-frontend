@@ -1,4 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Michroma&display=swap');
+:root{
+  /* --mantine-primary-color: #646cff; */
+  --mantine-secondary-color: #9775fa;
+  --mantine-color-white: gainsboro;
+  --mantine-color-black: #242424;
+  --mrt-base-background-color: #251f29;
+  /* --mrt-row-hover-background-color: #400f50; */
+
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

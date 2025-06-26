@@ -25,7 +25,6 @@ import Header from './components/Header';
 import Navbar from './components/Navbar';
 import { useLocation } from 'react-router-dom';
 import { DataProvider } from './context/DataContext';
-// import { MantineLogo } from '@mantinex/mantine-logo';
 
 const myTheme =createTheme({
   primaryColor:'violet',
@@ -52,7 +51,7 @@ function App() {
     <AuthProvider>
     <DataProvider>
       <MantineProvider defaultColorScheme="dark" forceColorScheme="dark" theme={myTheme}>
-        <Notifications/>
+        <Notifications position="top-right" zIndex={400}/>
         <ModalsProvider>
           <AppShell
             header={{ height: 60 }}

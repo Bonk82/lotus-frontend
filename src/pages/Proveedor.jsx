@@ -3,15 +3,16 @@ import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NumberInput, TextInput } from '@mantine/core';
+import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NumberInput, Text, TextInput } from '@mantine/core';
 import { IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconGps, IconPhone, IconRefresh, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
 
 const Proveedor = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,proveedores } = DataApp();
+  const { loading,consumirAPI,proveedores,toast } = DataApp();
 
   const [opened, { open, close }] = useDisclosure(false);
   // const [id, setId] = useState(null)
@@ -39,13 +40,14 @@ const Proveedor = () => {
     // },
   });
 
-  const crudproveedor = async (data) => {
+  const crudproveedor = async (data,eliminar) => {
     let newProveedor = { ...data };
-    if (!data.id_proveedor) {
-      newProveedor = { ...data, operacion: 'I', usuario_registro: user.usuario }; // Insertar
+    if (data.id_proveedor) {
+      newProveedor = { ...data, operacion: 'U', usuario_registro: user.usuario };
     } else {
-      newProveedor.operacion = 'U'; // Actualizar
+      newProveedor = { ...data, operacion: 'I', usuario_registro: user.usuario };
     }
+    if (eliminar) newProveedor.operacion = 'D';
     await consumirAPI('/crudProveedor', newProveedor);
     close();
     form.reset();
@@ -73,8 +75,21 @@ const Proveedor = () => {
       form.setValues(data);
     }
   }
-  const confirmar = (data) => {
-    console.log('Confirmar eliminación:', data);
+
+  const confirmar = (e)=>{
+    modals.openConfirmModal({
+      title: 'Confirmar Eliminación',
+      centered: true,
+      children: (
+        <Text size="sm">
+        Está seguro de ELIMINAR el proveedor: <strong>{e.nombre.toUpperCase()}</strong>
+        </Text>
+      ),
+      labels: { confirm: 'Eliminar Proveedor', cancel: "Cancelar" },
+      confirmProps: { color: 'red' },
+      onCancel: () => console.log('Cancel'),
+      onConfirm: () => crudproveedor(e, true),
+    });
   }
 
   const table = useMantineReactTable({
@@ -88,15 +103,15 @@ const Proveedor = () => {
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
         <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
-          <IconEdit color='orange' />
+          <IconEdit color="orange" />
         </ActionIcon>
         <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
-          <IconTrash color='red' />
+          <IconTrash color="crimson" />
         </ActionIcon>
       </Box>
     ),
     mantineTableHeadCellProps:{
-      color:'cyan'
+      style: { fontWeight: 'bold', fontSize: '1.1rem'},
     },
     mantineTableProps:{
       striped: true,
@@ -115,11 +130,7 @@ const Proveedor = () => {
           overlayProps={{ radius: 'lg', blur: 4 }}
           loaderProps={{ color: 'cyan', type: 'dots',size:'xl' }}
         />
-        <Modal opened={opened} onClose={close} title={form.getValues().id_proveedor?'Actualizar Proveedor: '+ form.getValues().id_proveedor:'Registrar Proveedor'}
-          size='lg' zIndex={20} overlayProps={{
-            backgroundOpacity: 0.55,
-            blur: 3,
-          }}>
+        <Modal opened={opened} onClose={close} title={form.getValues().id_proveedor?'Actualizar Proveedor: '+ form.getValues().id_proveedor:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
           <form onSubmit={form.onSubmit((values) => crudproveedor(values))}>
             <TextInput
               label="Nombre:"

@@ -47,6 +47,8 @@ export const AuthProvider = ({ children }) => {
       navigate('/'); // Redirige a la página principal después del login
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
+      throw new Error(error.error || 'Error al iniciar sesión'); // Lanza un error para que pueda ser manejado en el componente que llama a login
+      
       // Aquí podrías manejar el error, por ejemplo, mostrar un mensaje al usuario
       // throw error; // Re-lanza el error para que pueda ser manejado en el componente que llama a login
     }

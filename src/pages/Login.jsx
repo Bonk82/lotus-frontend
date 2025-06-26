@@ -1,10 +1,12 @@
 import { Button, TextInput } from '@mantine/core';
 import { hasLength, useForm } from '@mantine/form';
 import { UserAuth } from '../context/AuthContext';
+import { DataApp } from '../context/DataContext';
 
 
 const Login = () => {
-  const { login,logout } = UserAuth();
+  const { login } = UserAuth();
+  const { toast } = DataApp();
   const form = useForm({
     mode: 'controlled',
     initialValues: { user: '', pass: '' },
@@ -21,7 +23,8 @@ const Login = () => {
       const res = await login(form.values)
       console.log('Respuesta del login:', res);
     } catch (error) {
-      console.error('Error al iniciar sesión:', error);
+      console.log('Error al iniciar sesión:', error.message);
+      toast('Control de Acceso', error.message, 'error');
       // Aquí podrías manejar el error, por ejemplo, mostrar un mensaje al usuario
     }
   }
