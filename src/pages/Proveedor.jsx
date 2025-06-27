@@ -12,10 +12,9 @@ import { modals } from '@mantine/modals';
 
 const Proveedor = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,proveedores,toast } = DataApp();
-
+  const { loading,consumirAPI,proveedores } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
-  // const [id, setId] = useState(null)
+
   useEffect(() => {
     cargarData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,7 +39,7 @@ const Proveedor = () => {
     // },
   });
 
-  const crudproveedor = async (data,eliminar) => {
+  const crudProveedor = async (data,eliminar) => {
     let newProveedor = { ...data };
     if (data.id_proveedor) {
       newProveedor = { ...data, operacion: 'U', usuario_registro: user.usuario };
@@ -54,7 +53,6 @@ const Proveedor = () => {
     await cargarData();
   }
 
-  // id_proveedor,nombre,direccion,referencia,telefonos,cuenta
   const columns = useMemo(
     () => [
       { accessorKey: 'nombre',header: 'Nombre',},
@@ -70,10 +68,7 @@ const Proveedor = () => {
     console.log('Mostrar registro:', data);
     open();
     form.reset();
-    if (data) {
-      // setId(data.id_proveedor);
-      form.setValues(data);
-    }
+    if (data) form.setValues(data);
   }
 
   const confirmar = (e)=>{
@@ -88,7 +83,7 @@ const Proveedor = () => {
       labels: { confirm: 'Eliminar Proveedor', cancel: "Cancelar" },
       confirmProps: { color: 'red' },
       onCancel: () => console.log('Cancel'),
-      onConfirm: () => crudproveedor(e, true),
+      onConfirm: () => crudProveedor(e, true),
     });
   }
 
@@ -96,9 +91,7 @@ const Proveedor = () => {
     columns,
     data: proveedores,
     defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
-    initialState: {
-      density: 'xs',
-    },
+    initialState: {density: 'xs',},
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
@@ -110,19 +103,15 @@ const Proveedor = () => {
         </ActionIcon>
       </Box>
     ),
-    mantineTableHeadCellProps:{
-      style: { fontWeight: 'bold', fontSize: '1.1rem'},
-    },
-    mantineTableProps:{
-      striped: true,
-    },
+    mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
+    mantineTableProps:{striped: true,},
     localization:MRT_Localization_ES
   });
 
   return (
     <div>
       <p>{JSON.stringify(user)}</p>
-      <h1>Proveedor</h1>
+      <h1>Gestión de Proveedores</h1>
       <Box pos='relative'>
         <LoadingOverlay
           visible={loading}
@@ -131,7 +120,7 @@ const Proveedor = () => {
           loaderProps={{ color: 'cyan', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={form.getValues().id_proveedor?'Actualizar Proveedor: '+ form.getValues().id_proveedor:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudproveedor(values))}>
+          <form onSubmit={form.onSubmit((values) => crudProveedor(values))}>
             <TextInput
               label="Nombre:"
               placeholder="Nombre del proveedor o empresa"
