@@ -28,6 +28,10 @@ import { DataProvider } from './context/DataContext';
 
 const myTheme =createTheme({
   primaryColor:'violet',
+  primaryShade: 7,
+  // colors: {
+  //   grape: ['#f8f0ff', '#e9d5ff', '#d8b4fe', '#c084fc', '#a855f7', '#9333ea', '#7e22ce', '#6b21a8', '#581c87', '#4c1d95'],
+  // },
   secondaryColor:'grape',
   fontFamily:'Michroma, sans-serif',
 })
@@ -56,7 +60,7 @@ function App() {
           <AppShell
             header={{ height: 60 }}
             navbar={{
-              width: 300,
+              width: { base: 500, sm: 300 },
               breakpoint: 'sm',
               collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
             }}
@@ -74,7 +78,7 @@ function App() {
                 <Header/>
               </Group>
             </AppShell.Header>
-            <AppShell.Navbar p="md">
+            <AppShell.Navbar p="sm" style={{overflow:'hidden'}} bg={{base:'#180c26',md:'transparent'}}>
               <Navbar/>
             </AppShell.Navbar>
             <AppShell.Main>

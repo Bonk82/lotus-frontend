@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Text, TextInput } from "@mantine/core";
+import { ActionIcon, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Table, Text, TextInput } from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -12,7 +12,7 @@ import { MRT_Localization_ES } from "mantine-react-table/locales/es/index.esm.mj
 
 const Inventario = () => {
   const { user } = UserAuth();
-    const { loading,consumirAPI,proveedores,parametricas } = DataApp();
+    const { loading,consumirAPI,productos,parametricas } = DataApp();
     const [opened, { open, close }] = useDisclosure(false);
   
     useEffect(() => {
@@ -81,11 +81,13 @@ const Inventario = () => {
         centered: true,
         children: (
           <Text size="sm">
-          Está seguro de ELIMINAR el producto: <strong>{e.descripcion.toUpperCase()}</strong>
+          Está seguro de ELIMINAR el producto:<br /><strong>{e.descripcion.toUpperCase()}</strong>
           </Text>
         ),
         labels: { confirm: 'Eliminar Producto', cancel: "Cancelar" },
-        confirmProps: { color: 'red' },
+        confirmProps: { color: 'violet' },
+        cancelProps:{ style: { backgroundColor: '#240846' } },
+        overlayProps:{backgroundOpacity: 0.55, blur: 3,},
         onCancel: () => console.log('Cancel'),
         onConfirm: () => crudProducto(e, true),
       });
@@ -93,7 +95,7 @@ const Inventario = () => {
   
     const table = useMantineReactTable({
       columns,
-      data: proveedores,
+      data: productos,
       defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
       initialState: {density: 'xs',columnPinning: {
         left: ['mrt-row-expand'],
@@ -109,41 +111,63 @@ const Inventario = () => {
           </ActionIcon>
         </Box>
       ),
-      mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
+      // mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
       mantineTableProps:{striped: true,},
       localization:MRT_Localization_ES,
       renderDetailPanel:({row}) => (
-      <Box
-        sx={{
-          alignItems: 'center',
-          display: 'flex',
-          justifyContent: 'space-around',
-          width: '100%',
-        }}
-      >
+      <Box style={{width:'clamp(350px,40%,600px)'}} p='md'>
         {/* <h2>{row.original.nombre}</h2>
         <p>{row.original.direccion} {row.original.referencia}</p>
         <strong>{row.original.telefonos}</strong><br /> */}
-        {console.log('lo q llega sub',row)}
-      
+        {console.log('lo q llega sub',row.original?.componentes)}
+        {row.original?.componentes && componenetes(row.original?.componentes)}
         <Kbd color='orange'>MOSTRANDO EL DETALLE</Kbd>
       </Box>
     )
     });
 
 
+    const componenetes = (c)=>{
+      const rows = c.map((element) => (
+        <Table.Tr key={element.id_componente}>
+          <Table.Td>{element.item}</Table.Td>
+          <Table.Td>{element.cantidad}</Table.Td>
+          <Table.Td>{element.unidad}</Table.Td>
+        </Table.Tr>
+      ));
+
+      const ths = (
+        <Table.Tr>
+          <Table.Th>Item</Table.Th>
+          <Table.Th>Cantidad</Table.Th>
+          <Table.Th>unidad</Table.Th>
+        </Table.Tr>
+      );
+
+      return (
+        <Table captionSide="top" width={50} striped highlightOnHover>
+          <Table.Caption>Composición del Producto</Table.Caption>
+          <Table.Thead>{ths}</Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      );
+    }
+
+
   return (
     <div>
       <p>{JSON.stringify(user)}</p>
-      <h1>Gestión de Prodcutos</h1>
+      <Text size='2rem' fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        Gestión de Productos
+      </Text>
       <Box pos='relative'>
         <LoadingOverlay
           visible={loading}
           zIndex={39}
           overlayProps={{ radius: 'lg', blur: 4 }}
-          loaderProps={{ color: 'cyan', type: 'dots',size:'xl' }}
+          loaderProps={{ color: 'MediumOrchid', type: 'dots',size:'xl' }}
         />
-        <Modal opened={opened} onClose={close} title={form.getValues().id_producto?'Actualizar Proveedor: '+ form.getValues().id_producto:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+        <Modal opened={opened} onClose={close} title={form.getValues().id_producto?'Actualizar Producto: '+ form.getValues().id_producto:'Registrar Producto'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
           <form onSubmit={form.onSubmit((values) => crudProducto(values))}>
             <TextInput
               label="Código:"

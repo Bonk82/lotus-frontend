@@ -5,11 +5,13 @@ import apiClient from '../servicios/apiClient';
 import { notifications } from '@mantine/notifications';
 import classes from '../toast.module.css';
 import { useEffect } from 'react';
+import { UserAuth } from './AuthContext';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const DataContext = createContext();
 // eslint-disable-next-line react/prop-types
 export const DataProvider = ({ children }) => {
+  const { user } = UserAuth();
   const [loading, setLoading] = useState(false);
   const [productos, setProductos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
@@ -24,7 +26,7 @@ export const DataProvider = ({ children }) => {
   const [parametricas, setParametricas] = useState([]);
 
   useEffect(() => {
-    consumirAPI('/listarClasificador', { opcion: 'T' });
+    if(user) consumirAPI('/listarClasificador', { opcion: 'T' });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   

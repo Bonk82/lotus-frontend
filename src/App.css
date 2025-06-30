@@ -4,9 +4,11 @@
   --mantine-secondary-color: #9775fa;
   --mantine-color-white: gainsboro;
   --mantine-color-black: #242424;
-  --mrt-base-background-color: #251f29;
+  --mrt-base-background-color: transparent; 
   /* --mrt-row-hover-background-color: #400f50; */
 
+  --primary-backgrounbd-color: #10061c;
+  /* --button-bg: #240846; */
 }
 
 #root {
@@ -14,6 +16,14 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+}
+
+body{
+  background: var(--primary-backgrounbd-color);
+  background: linear-gradient(0deg, #10061c 57%, #3b2550 93%, #3f2954 100%);
+
+  scrollbar-width:thin;          /* "auto" or "thin" */
+  scrollbar-color: #9775fa #291958;   /* scroll thumb and track */
 }
 
 .logo {
@@ -50,4 +60,35 @@
 
 .read-the-docs {
   color: #888;
+}
+
+
+
+.MRT_TopToolbar-module_root__r4-V9, .MRT_TablePaper-module_root__q0v5L{
+  background-color: transparent !important;
+}
+th{
+  background-color: var(--mantine-primary-color-filled) !important;
+}
+tr{
+  background-color: transparent !important;
+}
+.mantine-Modal-header{
+  background-color: var(--mantine-primary-color-filled);
+  height: 2rem !important;
+  min-height: 2rem;
+}
+.mantine-Modal-body{
+  background: linear-gradient(0deg, #0a0213 0%, #280230 100%); 
+  /* background-color: var(--primary-backgrounbd-color) */
+}
+.mantine-Input-wrapper{
+  background-color: var(--primary-backgrounbd-color) !important;
+}
+
+.mantine-TextInput-input{
+  background-color: var(--primary-backgrounbd-color) !important;
+}
+.mantine-Input-input,.mantine-Select-input{
+  background-color: var(--primary-backgrounbd-color) !important;
 }
