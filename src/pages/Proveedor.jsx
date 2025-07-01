@@ -3,8 +3,8 @@ import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NumberInput, Text, TextInput } from '@mantine/core';
-import { IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconGps, IconPhone, IconRefresh, IconTrash, IconUser } from '@tabler/icons-react';
+import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NumberInput, Text, TextInput, Tooltip } from '@mantine/core';
+import { IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconGps, IconPhone, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -77,11 +77,13 @@ const Proveedor = () => {
       centered: true,
       children: (
         <Text size="sm">
-        Está seguro de ELIMINAR el proveedor: <strong>{e.nombre.toUpperCase()}</strong>
+        Está seguro de ELIMINAR el proveedor:<br /> <strong>{e.nombre.toUpperCase()}</strong>
         </Text>
       ),
       labels: { confirm: 'Eliminar Proveedor', cancel: "Cancelar" },
-      confirmProps: { color: 'red' },
+      confirmProps: { color: 'violet' },
+      cancelProps:{ style: { backgroundColor: '#240846' } },
+      overlayProps:{backgroundOpacity: 0.55, blur: 3,},
       onCancel: () => console.log('Cancel'),
       onConfirm: () => crudProveedor(e, true),
     });
@@ -103,6 +105,16 @@ const Proveedor = () => {
         </ActionIcon>
       </Box>
     ),
+    renderTopToolbarCustomActions: () => (
+      <Tooltip label="Registrar Nuevo Producto" position="bottom" withArrow>
+        <Box>
+          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nuevo Proveedor</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
+            <IconSquarePlus />
+          </ActionIcon>
+        </Box>
+      </Tooltip>
+    ),
     mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
     mantineTableProps:{striped: true,},
     localization:MRT_Localization_ES
@@ -111,21 +123,24 @@ const Proveedor = () => {
   return (
     <div>
       <p>{JSON.stringify(user)}</p>
-      <h1>Gestión de Proveedores</h1>
+      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        Gestión de Proveedores
+      </Text>
       <Box pos='relative'>
         <LoadingOverlay
           visible={loading}
           zIndex={39}
           overlayProps={{ radius: 'lg', blur: 4 }}
-          loaderProps={{ color: 'cyan', type: 'dots',size:'xl' }}
+          loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={form.getValues().id_proveedor?'Actualizar Proveedor: '+ form.getValues().id_proveedor:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudProveedor(values))}>
+          <form onSubmit={form.onSubmit((values) => crudProveedor(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <TextInput
               label="Nombre:"
               placeholder="Nombre del proveedor o empresa"
               type='text'
               maxLength={100}
+              requiered
               leftSection={<IconUser size={16} />}
               key={form.key('nombre')}
               {...form.getInputProps('nombre')}
@@ -153,6 +168,8 @@ const Proveedor = () => {
               placeholder="70611111"
               allowDecimal={false}
               maxLength={30}
+              min={100000}
+              required
               leftSection={<IconPhone size={16} />}
               key={form.key('telefonos')}
               {...form.getInputProps('telefonos')}
@@ -162,17 +179,16 @@ const Proveedor = () => {
               placeholder="El numero de cuenta bancaria"
               allowDecimal={false}
               maxLength={15}
+              min={100000}
               leftSection={<IconCashBanknote size={16} />}
               key={form.key('cuenta')}
               {...form.getInputProps('cuenta')}
             />
             <Group justify="flex-end" mt="md">
-              {!form.getValues().id_proveedor && <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>Registrar Proveedor</Button>}
-              {form.getValues().id_proveedor && <Button fullWidth leftSection={<IconRefresh/>} type='submit'>Actualizar Proveedor</Button>}
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_proveedor ? 'Registrar':'Actualizar'} Proveedor</Button>
             </Group>
           </form>
         </Modal>
-        <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm'>Nuevo Proveedor</Button>
         <MantineReactTable table={table} />
       </Box>
     </div>
