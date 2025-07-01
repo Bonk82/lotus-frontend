@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Table, Text, TextInput } from "@mantine/core";
+import { ActionIcon, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Table, Text, TextInput, Tooltip } from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -7,7 +7,7 @@ import { useForm } from "@mantine/form";
 import { useMemo } from "react";
 import { modals } from "@mantine/modals";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
-import { IconBottle, IconCategoryPlus, IconDatabase, IconDeviceFloppy, IconEdit, IconFileBarcode, IconGlassGin, IconNumber10, IconRefresh, IconTicket, IconTrash } from "@tabler/icons-react";
+import { IconBottle, IconCategoryPlus, IconDatabase, IconDeviceFloppy, IconEdit, IconFileBarcode, IconGlassGin, IconNumber10, IconSquarePlus, IconTicket, IconTrash } from "@tabler/icons-react";
 import { MRT_Localization_ES } from "mantine-react-table/locales/es/index.esm.mjs";
 
 const Inventario = () => {
@@ -21,6 +21,7 @@ const Inventario = () => {
     }, [])
   
     const cargarData = async () =>{
+      if(parametricas.length === 0) consumirAPI('/listarClasificador', { opcion: 'T' });
       await consumirAPI('/listarProductos', { opcion: 'T' });
     }
   
@@ -69,7 +70,7 @@ const Inventario = () => {
     );
   
     const mostrarRegistro = (data) => {
-      console.log('Mostrar registro:', data);
+      console.log('Mostrar registro:', data,parametricas);
       open();
       form.reset();
       if (data) form.setValues(data);
@@ -110,6 +111,16 @@ const Inventario = () => {
             <IconTrash color="crimson" />
           </ActionIcon>
         </Box>
+      ),
+      renderTopToolbarCustomActions: () => (
+        <Tooltip label="Registrar Nuevo Producto" position="bottom" withArrow>
+          <Box>
+            <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nuevo Producto</Button>
+            <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
+              <IconSquarePlus />
+            </ActionIcon>
+          </Box>
+        </Tooltip>
       ),
       // mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
       mantineTableProps:{striped: true,},
@@ -157,7 +168,7 @@ const Inventario = () => {
   return (
     <div>
       <p>{JSON.stringify(user)}</p>
-      <Text size='2rem' fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Productos
       </Text>
       <Box pos='relative'>
@@ -168,7 +179,7 @@ const Inventario = () => {
           loaderProps={{ color: 'MediumOrchid', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={form.getValues().id_producto?'Actualizar Producto: '+ form.getValues().id_producto:'Registrar Producto'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudProducto(values))}>
+          <form onSubmit={form.onSubmit((values) => crudProducto(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <TextInput
               label="Código:"
               placeholder="NC001-750"
@@ -176,6 +187,7 @@ const Inventario = () => {
               maxLength={20}
               leftSection={<IconFileBarcode size={16} />}
               key={form.key('codigo')}
+              required
               {...form.getInputProps('codigo')}
             />
             <TextInput
@@ -185,6 +197,7 @@ const Inventario = () => {
               maxLength={100}
               leftSection={<IconTicket size={16} />}
               key={form.key('descripcion')}
+              required
               {...form.getInputProps('descripcion')}
             />
             <NativeSelect
@@ -201,6 +214,7 @@ const Inventario = () => {
               leftSection={<IconDatabase size={16} />}
               type='text'
               maxLength={100}
+              required
               key={form.key('capacidad')}
               {...form.getInputProps('capacidad')}
             />
@@ -210,6 +224,7 @@ const Inventario = () => {
               allowDecimal={false}
               max={1000}
               min={1}
+              required
               leftSection={<IconNumber10 size={16} />}
               key={form.key('pedido_minimo')}
               {...form.getInputProps('pedido_minimo')}
@@ -231,12 +246,11 @@ const Inventario = () => {
               {...form.getInputProps('tipo_producto')}
             />
             <Group justify="flex-end" mt="md">
-              {!form.getValues().id_producto && <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>Registrar Producto</Button>}
-              {form.getValues().id_producto && <Button fullWidth leftSection={<IconRefresh/>} type='submit'>Actualizar Producto</Button>}
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_producto ? 'Registrar':'Actualizar'} Producto</Button>
+              {/* {form.getValues().id_producto && <Button fullWidth leftSection={<IconRefresh/>} type='submit'>Actualizar Producto</Button>} */}
             </Group>
           </form>
         </Modal>
-        <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm'>Nuevo Producto</Button>
         <MantineReactTable table={table} />
       </Box>
     </div>

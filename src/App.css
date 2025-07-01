@@ -12,16 +12,18 @@
 }
 
 #root {
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: clamp(0.5rem, 4vw, 2rem);
   text-align: center;
 }
 
 body{
+  margin: 0;
+  padding: 0;
   background: var(--primary-backgrounbd-color);
   background: linear-gradient(0deg, #10061c 57%, #3b2550 93%, #3f2954 100%);
-
+  height: 100%;
   scrollbar-width:thin;          /* "auto" or "thin" */
   scrollbar-color: #9775fa #291958;   /* scroll thumb and track */
 }
@@ -72,6 +74,9 @@ th{
 }
 tr{
   background-color: transparent !important;
+}
+.mantine-Paper-root{
+  border: 1px solid var(--mantine-primary-color-filled) !important;
 }
 .mantine-Modal-header{
   background-color: var(--mantine-primary-color-filled);

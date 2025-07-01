@@ -41,7 +41,7 @@ const Navbar = () => {
       <Text size="lg" style={{marginBottom: '1rem'}}>Menú</Text>
       {menu.map((item, index) => (
         <Button key={index} leftSection={icons[item.nivel -1]} justify='flex-start' variant="light" color="violet.4" fullWidth onClick={() => navigate(item.ruta)}
-        style={{ marginBottom: '0.8rem',letterSpacing: '0.4rem',fontWeight: 'bolder',fontSize: '1.2rem' }}>
+        style={{ marginBottom: '0.8rem',letterSpacing: '0.1rem',fontWeight: 'bolder',fontSize: '1.2rem' }}>
           {item.descripcion}
         </Button>
       ))}

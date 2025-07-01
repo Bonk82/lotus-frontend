@@ -5,7 +5,7 @@ import '@mantine/dates/styles.css';
 import 'mantine-react-table/styles.css';
 import './App.css'
 import { AuthProvider } from './context/AuthContext'
-import { Burger, createTheme, Group, MantineProvider } from '@mantine/core';
+import { Burger, createTheme, em, Group, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from "@mantine/modals";
 import Login from './pages/Login';
@@ -20,7 +20,7 @@ import Control from './pages/Control';
 import Parametrica from './pages/Parametrica';
 
 import { AppShell } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import Header from './components/Header';
 import Navbar from './components/Navbar';
 import { useLocation } from 'react-router-dom';
@@ -40,6 +40,7 @@ const myTheme =createTheme({
 function App() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false);
+  const isMobile = useMediaQuery(`(max-width: ${em(750)})`);
   const location = useLocation();
   let inicio = false;
   
@@ -58,15 +59,15 @@ function App() {
         <Notifications position="top-right" zIndex={400}/>
         <ModalsProvider>
           <AppShell
-            header={{ height: 60 }}
+            header={{ height: 60}}
             navbar={{
-              width: { base: 500, sm: 300 },
+              width: 300 ,
               breakpoint: 'sm',
               collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
             }}
-            padding="md"
-            transitionDuration={700}
+            transitionDuration={600}
             transitionTimingFunction='ease'
+            style={{maxWidth: '100vw', overflow: 'hidden'}}
           >
             <AppShell.Header style={{ backgroundColor: 'black', color: '#9775fa' , borderBottom: '1px solid #9775fa'}}>
               <Group h="100%" px="md" style={{ justifyContent: 'space-between'}} color='primary'>
@@ -78,7 +79,7 @@ function App() {
                 <Header/>
               </Group>
             </AppShell.Header>
-            <AppShell.Navbar p="sm" style={{overflow:'hidden'}} bg={{base:'#180c26',md:'transparent'}}>
+            <AppShell.Navbar w={isMobile ? '100vw' : 300} p="sm" style={{overflow:'hidden',borderRight:'1px solid #9775fa'}} bg={{base:'#180c26',md:'transparent'}} onClick={toggleMobile}>
               <Navbar/>
             </AppShell.Navbar>
             <AppShell.Main>
