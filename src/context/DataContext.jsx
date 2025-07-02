@@ -24,13 +24,13 @@ export const DataProvider = ({ children }) => {
   const [pedidos, setPedidos] = useState([]);
   const [promociones, setPromociones] = useState([]);
   const [parametricas, setParametricas] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
 
   useEffect(() => {
     if(user) consumirAPI('/listarClasificador', { opcion: 'T' });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
-
   const toast = (title,message,type) =>{
     let color = type
     if(type == 'success') color = 'teal.9';
@@ -60,6 +60,7 @@ export const DataProvider = ({ children }) => {
       if(ruta === '/listarPedidos') setPedidos(resp);
       if(ruta === '/listarPromociones') setPromociones(resp);
       if(ruta === '/listarClasificador') setParametricas(resp);
+      if(ruta === '/listarUsuarios') setUsuarios(resp);
       if(ruta.startsWith('/crud')) {
         toast(`Control ${ruta.replace('/crud','')}`, resp[0].message, 'success');
       }
@@ -72,9 +73,8 @@ export const DataProvider = ({ children }) => {
     }
   }
 
-
   return (
-    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI,toast,parametricas }}>
+    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI,toast,parametricas,usuarios }}>
       {children}
     </DataContext.Provider>
   );

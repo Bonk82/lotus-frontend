@@ -58,8 +58,6 @@ const Parametrica = () => {
       { accessorKey: 'orden',header: 'Orden',},
       { accessorKey: 'nombre',header: 'Nombre',},
       { accessorKey: 'sub_grupo',header: 'Sub Grupo',},
-      { accessorKey: 'fecha_creado',header: 'Fecha Creado',},
-      { accessorKey: 'fecha_modificado',header: 'Fecha Modificado',},
     ],
     [],
   );
@@ -80,7 +78,7 @@ const Parametrica = () => {
         Está seguro de ELIMINAR la paramétrica:<br /> <strong>{e.nombre.toUpperCase()}</strong>
         </Text>
       ),
-      labels: { confirm: 'Eliminar Proveedor', cancel: "Cancelar" },
+      labels: { confirm: 'Eliminar Paramétrica', cancel: "Cancelar" },
       confirmProps: { color: 'violet' },
       cancelProps:{ style: { backgroundColor: '#240846' } },
       overlayProps:{backgroundOpacity: 0.55, blur: 3,},
@@ -133,7 +131,7 @@ const Parametrica = () => {
           overlayProps={{ radius: 'lg', blur: 4 }}
           loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
-        <Modal opened={opened} onClose={close} title={form.getValues().id_clasificador?'Actualizar Proveedor: '+ form.getValues().id_clasificador:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+        <Modal opened={opened} onClose={close} title={form.getValues().id_clasificador?'Actualizar Paramétrica: '+ form.getValues().id_clasificador:'Registrar Paramétrica'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
           <form onSubmit={form.onSubmit((values) => crudParametrica(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <TextInput
               label="Grupo:"
@@ -175,7 +173,7 @@ const Parametrica = () => {
               {...form.getInputProps('sub_grupo')}
             />
             <Group justify="flex-end" mt="md">
-              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_clasificador ? 'Registrar':'Actualizar'} Clasificador</Button>
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_clasificador ? 'Registrar':'Actualizar'} Paramétrica</Button>
             </Group>
           </form>
         </Modal>
