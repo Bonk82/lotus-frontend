@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { ActionIcon, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Table, Text, TextInput, Tooltip,} from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { useEffect } from "react";
@@ -9,11 +10,13 @@ import { modals } from "@mantine/modals";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { IconBottle, IconBuilding, IconCategoryPlus, IconDatabase, IconDeviceFloppy, IconEdit, IconFileBarcode, IconGlassGin, IconNumber10, IconSquarePlus, IconTicket, IconTrash,} from "@tabler/icons-react";
 import { MRT_Localization_ES } from "mantine-react-table/locales/es/index.esm.mjs";
+import dayjs from "dayjs";
 
 const Inventario = () => {
   const { user } = UserAuth();
   const { loading, consumirAPI, productos, parametricas,ingresos,proveedores,sucursales } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
+  const [openedIngreso, { open:openIngreso, close:closeIngreso }] = useDisclosure(false);
 
   useEffect(() => {
     cargarData("T");
@@ -29,6 +32,10 @@ const Inventario = () => {
       await consumirAPI("/listarIngresos", { opcion: "T" });
     if (["T", "ID"].includes(opcion))
       await consumirAPI("/listarIngresoDetalles", { opcion: "T" });
+    if (["T", "PR"].includes(opcion))
+      await consumirAPI("/listarProveedores", { opcion: "T" });
+    if (["T", "ID"].includes(opcion))
+      await consumirAPI("/listarSucursales", { opcion: "T" });
   };
 
   const formProducto = useForm({
@@ -40,7 +47,7 @@ const Inventario = () => {
       unidad: "",
       capacidad: "",
       pedido_minimo: 10,
-      tipo_pruducto: "",
+      tipo_producto: "",
       grupo: "",
     },
     // validate: {
@@ -66,11 +73,11 @@ const Inventario = () => {
     () => [
       { accessorKey: "codigo", header: "Código" },
       { accessorKey: "descripcion", header: "Descripción" },
+      { accessorKey: "grupo", header: "Grupo" },
       { accessorKey: "unidad", header: "Unidad Presentación" },
       { accessorKey: "capacidad", header: "Capacidad" },
       { accessorKey: "pedido_minimo", header: "Pedido Mínimo" },
-      { accessorKey: "tipo_pruducto", header: "Tipo Producto" },
-      { accessorKey: "grupo", header: "Grupo" },
+      { accessorKey: "tipo_producto", header: "Tipo Producto" },
     ],
     []
   );
@@ -167,7 +174,9 @@ const Inventario = () => {
     initialValues: {
       id_ingreso: 0,
       fid_proveedor: 0,
+      proveedor:'',
       fid_sucursal: 0,
+      sucursal:'',
       motivo: "",
       fecha_ingreso: "",
     },
@@ -185,26 +194,29 @@ const Inventario = () => {
     }
     if (eliminar) newIngreso.operacion = "D";
     await consumirAPI("/crudIngreso", newIngreso);
-    close();
+    closeIngreso();
     formProducto.reset();
     await cargarData("I");
   };
 
   const columnsIngreso = useMemo(
     () => [
-      { accessorKey: "fid_proveedor", header: "fid_proveedor" },
-      { accessorKey: "fid_sucursal", header: "fid_sucursal" },
+      { accessorKey: "proveedor", header: "proveedor" },
+      { accessorKey: "sucursal", header: "sucursal" },
       { accessorKey: "motivo", header: "motivo" },
-      { accessorKey: "fecha_ingreso", header: "fecha_ingreso" },
+      { accessorKey: "fecha_ingreso", header: "fecha_ingreso",Cell:({cell})=>(
+          <span>{dayjs(cell.getValue()).format('DD/MM/YYYY')}</span>
+        ) },
     ],
     []
   );
 
   const mostrarIngreso = (data) => {
     console.log("Mostrar registro:", data);
-    open();
+    openIngreso();
     formIngreso.reset();
     if (data) formIngreso.setValues(data);
+    formIngreso.setValues({fecha_ingreso:dayjs(data?.fecha_ingreso).format('YYYY-MM-DD')})
   };
 
   const confirmarIngreso = (e) => {
@@ -296,17 +308,17 @@ const Inventario = () => {
   return (
     <div>
       <p>{JSON.stringify(user)}</p>
-      <Text size="2rem" mb={"lg"} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
+      <Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
         Gestión de Ingresos
       </Text>
       <Box pos="relative">
         <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: "lg", blur: 4 }} loaderProps={{ color: "violet", type: "dots", size: "xl" }}/>
-        <Modal opened={opened} onClose={close} title={formIngreso.getValues().id_ingreso ? "Actualizar Ingreso: " + formIngreso.getValues().id_ingreso : "Registrar Ingreso"} size="lg" zIndex={20} overlayProps={{ backgroundOpacity: 0.55, blur: 3 }} yOffset="10dvh">
+        <Modal opened={openedIngreso} onClose={closeIngreso} title={formIngreso.getValues().id_ingreso ? "Actualizar Ingreso: " + formIngreso.getValues().id_ingreso : "Registrar Ingreso"} size="lg" zIndex={20} overlayProps={{ backgroundOpacity: 0.55, blur: 3 }} yOffset="10dvh">
           <form onSubmit={formIngreso.onSubmit((values) => crudIngreso(values))}
             style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             <NativeSelect
               label="Proveedor:"
-              data={["SELECCIONE...",...proveedores.map((e) => e.nombre),]}
+              data={["SELECCIONE...",...proveedores.map((e) => {return{label:e.nombre,value:e.id_proveedor}}),]}
               required
               leftSection={<IconBottle size={16} />}
               key={formIngreso.key("fid_proveedor")}
@@ -314,7 +326,7 @@ const Inventario = () => {
             />
             <NativeSelect
               label="Sucursal:"
-              data={["SELECCIONE...",...sucursales.map((e) => e.nombre),]}
+              data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               required
               leftSection={<IconBuilding size={16} />}
               key={formIngreso.key("fid_sucursal")}
@@ -352,7 +364,7 @@ const Inventario = () => {
 
       <Text
         size="2rem"
-        mb={"lg"}
+        py={5} my={10}
         fw={900}
         variant="gradient"
         gradient={{ from: "gainsboro", to: "violet", deg: 90 }}
@@ -404,11 +416,11 @@ const Inventario = () => {
               {...formProducto.getInputProps("descripcion")}
             />
             <NativeSelect
-              label="Tipo de Presentación:"
+              label="Unidad de Presentación:"
               data={[
                 "SELECCIONE...",
                 ...parametricas
-                  .filter((f) => f.grupo === "UNIDAD_MEDIDA")
+                  .filter((f) => f.grupo === "UNIDAD_PRESENTACION")
                   .map((e) => e.nombre),
               ]}
               required

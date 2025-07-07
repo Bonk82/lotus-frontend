@@ -2,6 +2,7 @@ import { Button, TextInput } from '@mantine/core';
 import { hasLength, useForm } from '@mantine/form';
 import { UserAuth } from '../context/AuthContext';
 import { DataApp } from '../context/DataContext';
+import { IconPassword, IconUser } from '@tabler/icons-react';
 
 
 const Login = () => {
@@ -9,7 +10,7 @@ const Login = () => {
   const { toast } = DataApp();
   const form = useForm({
     mode: 'controlled',
-    initialValues: { user: '', pass: '' },
+    initialValues: { user: '', pass: ''},
     validate: {
       user: hasLength({ min: 6 }, 'Debe tener al menos 6 caracteres'),
       pass: hasLength({ min: 6 }, 'Debe tener al menos 6 caracteres')
@@ -31,10 +32,10 @@ const Login = () => {
     
   return (
     <div>
-      <h1>Login</h1>
+      <h1>Login Lotus Pub</h1>
       <form onSubmit={iniciarSesion}>
-      <TextInput {...form.getInputProps('user')} label="Usuario" placeholder="Usuario" />
-      <TextInput {...form.getInputProps('pass')} mt="md" label="Contraseña" placeholder="Contraseña" />
+      <TextInput leftSection={<IconUser size={16} />} required {...form.getInputProps('user')} label="Usuario" placeholder="Usuario" />
+      <TextInput leftSection={<IconPassword size={16} />} required type="password" {...form.getInputProps('pass')} mt="md" label="Contraseña" placeholder="Contraseña" />
       <Button type="submit" mt="md">
         Ingresar
       </Button>

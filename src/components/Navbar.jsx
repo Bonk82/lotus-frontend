@@ -13,7 +13,7 @@ const Navbar = () => {
 
   useEffect(() => {
     console.log('Usuario autenticado:', user);
-    if (user) cargarMenu(user.rol);
+    if (user) cargarMenu(user.id_rol);
     else setMenu([]);      
   }, [user])
 
