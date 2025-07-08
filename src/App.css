@@ -64,7 +64,10 @@ body{
   color: #888;
 }
 
-
+.main-login{
+  width: clamp(350px,50%,800px);
+  margin: 0 auto;
+}
 
 .MRT_TopToolbar-module_root__r4-V9, .MRT_TablePaper-module_root__q0v5L{
   background-color: transparent !important;
@@ -113,6 +116,7 @@ tr{
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.5s ease;
+  margin: 0 auto;
 }
 
 .card-prod::before {
@@ -146,6 +150,7 @@ tr{
   font-weight: 700;
   z-index: 10;
   transition: all 0.5s ease-in-out;
+  text-shadow: 0 0 20px #fff;
   /* -webkit-text-stroke: 1px #fff; */
 }
 
@@ -198,67 +203,14 @@ tr{
 }
 
 /* lista especifica pedido */
-.card-list {
-  width: 210px;
-  height: 254px;
+.btn-list {
+  width: 100%;
   border-radius: 8px;
-  background: linear-gradient(145deg, #333, #000);
+  background: linear-gradient(145deg, #414040, #000);
   display: flex;
   flex-direction: column;
   gap: 5px;
-  padding: 0.4em;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
   overflow: hidden;
-}
-
-.card-list p {
-  flex: 1;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: flex 0.5s;
-  background: linear-gradient(145deg, #212121, #000);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.card-list p:hover {
-  flex: 4;
-}
-
-.card-list p span {
-  padding: 0.2em;
-  text-align: center;
-  transform: rotate(-0deg);
-  transition: transform 0.5s;
-  text-transform: uppercase;
-  color: #00ffeb;
-  font-weight: "bold";
-  letter-spacing: 0.1em;
-  position: relative;
-  z-index: 1;
-}
-
-.card-list p:hover span {
-  transform: rotate(0);
-}
-
-.card-list p::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
-  z-index: 0;
-  transition: opacity 0.5s;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.card-list p:hover::before {
-  opacity: 1;
 }
 

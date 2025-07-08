@@ -31,15 +31,15 @@ const Login = () => {
   }
     
   return (
-    <div>
+    <div className='main-login'>
       <h1>Login Lotus Pub</h1>
       <form onSubmit={iniciarSesion}>
-      <TextInput leftSection={<IconUser size={16} />} required {...form.getInputProps('user')} label="Usuario" placeholder="Usuario" />
-      <TextInput leftSection={<IconPassword size={16} />} required type="password" {...form.getInputProps('pass')} mt="md" label="Contraseña" placeholder="Contraseña" />
-      <Button type="submit" mt="md">
-        Ingresar
-      </Button>
-    </form>
+        <TextInput leftSection={<IconUser size={16} />} required {...form.getInputProps('user')} label="Usuario" placeholder="Usuario" />
+        <TextInput leftSection={<IconPassword size={16} />} required type="password" {...form.getInputProps('pass')} mt="md" label="Contraseña" placeholder="Contraseña" />
+        <Button type="submit" mt="md">
+          Ingresar
+        </Button>
+      </form>
     </div>
   )
 }

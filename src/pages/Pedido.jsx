@@ -12,23 +12,24 @@ import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mj
 
 const Pedido = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos } = DataApp();
+  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [grupo, setGrupo] = useState('')
+  const [idPedido, setIdPedido] = useState(0)
+  const [idCaja, setIdCaja] = useState(0)
 
   useEffect(() => {
     if(user?.sucursal) cargarData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [user])
 
   const cargarData = async () =>{
     await consumirAPI('/listarProductos', { opcion: 'PEDIDO',id:user.sucursal });
     await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
-    if(sucursales.lenght == 0) await consumirAPI('/listarSucursales', { opcion: 'T',id:0 })
-    if(parametricas.lenght == 0) await consumirAPI('/listarClasificador', { opcion: 'T',id:0 })
-    //todo: 'PEDIDOS' seria select * from pedido where (control_caja where fid_sucucarsal = id and APERTURA) solo una caja puede estar disponible por sucursal por nocche
-  console.log('las parametricas',parametricas);
-  
+    await consumirAPI('/listarSucursales', { opcion: 'T',id:0 })
+    await consumirAPI('/listarClasificador', { opcion: 'T',id:0 })
+    const id = await consumirAPI('/listarControlCajas', { opcion: 'ACTIVA',id:user.sucursal });
+    setIdCaja(id[0]?.id_control_caja);
   }
 //id_pedido,fid_usuario,fid_control_caja,mesa,metodo_pago,codigo_sync,estado
   const form = useForm({
@@ -59,10 +60,14 @@ const Pedido = () => {
   );
 
   const mostrarRegistro = (data) => {
-    console.log('Mostrar registro:', data);
+    console.log('Mostrar registro:', data,idCaja);
+    if(!idCaja){
+      return toast(`Control Pedidos`, `Sucursal ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre} sin CAJA aperturada`, 'warning');
+    }
     open();
     form.reset();
     if (data) form.setValues(data);
+    if (!data) form.setValues({'estado':'PENDIENTE','metodo_pago':'EFECTIVO'})
   }
 
   const table = useMantineReactTable({
@@ -79,10 +84,10 @@ const Pedido = () => {
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
-      <Tooltip label="Registrar Nuevo Producto" position="bottom" withArrow>
+      <Tooltip label="Realizar Pedido" position="bottom" withArrow>
         <Box>
-          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nuevo Proveedor</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
+          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} >Nuevo Pedido</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
             <IconSquarePlus />
           </ActionIcon>
         </Box>
@@ -98,10 +103,11 @@ const Pedido = () => {
     if (data.id_pedido) {
       newPedido = { ...data, operacion: 'U', usuario_registro: user.usuario };
     } else {
-      newPedido = { ...data, operacion: 'I', usuario_registro: user.usuario };
+      newPedido = { ...data, operacion: 'I', usuario_registro: user.usuario, fid_usuario:user.usuario,fid_control_caja:idCaja};
     }
     if (eliminar) newPedido.operacion = 'D';
-    await consumirAPI('/crudProveedor', newPedido);
+    const id = await consumirAPI('/crudPedido', newPedido);
+    setIdPedido(id[0]?.id_pedido);
     close();
     // form.reset(); resetear el carrito
     await cargarData();
@@ -116,14 +122,16 @@ const Pedido = () => {
         {user?.sucursal && `Pedidos Sucursal - ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre}`}
         {!user?.sucursal && `No cuenta con sucursal vinculada. Por favor coordinar con el administrador`} 
       </Text>
-      <div className="grid-pedido">
-        {parametricas.filter(f=>f.grupo == 'GRUPO_PRODUCTO').map(e => (
-          <Box my={10} className="card-prod" key={e.id_clasificador} onClick={()=>setGrupo(e.grupo)}>
-            <img className="card-bg" src={`../assets/${e.nombre}.png`} alt=""/>
-            <p className="heading">{e.nombre}</p>
-          </Box>
-        ))}
-      </div>
+      {idPedido>0 && <Box pos={"relative"} mb={10}>
+        <Box className="grid-pedido">
+          {parametricas.filter(f=>f.grupo == 'GRUPO_PRODUCTO').map(e => (
+            <Box my={10} className="card-prod" key={e.id_clasificador} onClick={()=>setGrupo(e.nombre)}>
+              <img className="card-bg" src={`../assets/${e.nombre}.png`} alt=""/>
+              <p className="heading">{e.nombre}</p>
+            </Box>
+          ))}
+        </Box>
+      </Box>}
       <Box pos='relative'>
         <LoadingOverlay
           visible={loading}
@@ -131,7 +139,7 @@ const Pedido = () => {
           overlayProps={{ radius: 'lg', blur: 4 }}
           loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
-        <Modal opened={opened} onClose={close} title={form.getValues().id_proveedor?'Actualizar Proveedor: '+ form.getValues().id_proveedor:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+        <Modal opened={opened} onClose={close} title={form.getValues().id_pedido?'Actualizar Pedido: '+ form.getValues().id_pedido:'Registrar Pedido'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
           <form onSubmit={form.onSubmit((values) => crudPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <TextInput
               label="Mesa:"
@@ -167,15 +175,12 @@ const Pedido = () => {
         <MantineReactTable table={table} />
       </Box>
       <Modal opened={grupo} onClose={()=>setGrupo('')} title={`Listado de ${grupo}`} size={"xl"} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-        <div className="card-list">
+        <Box className="btn-list">
           {productos.filter(f=>f.grupo == grupo).map(p=>(
-            <p key={p.id_producto}><span>{p.nombre}</span></p>
+            <Button key={p.id_producto} variant="outline" color="cyan">{p.descripcion} - {p.precio}</Button>
           )) }
-        </div>
+        </Box>
       </Modal>
-      {<Box>
-
-      </Box>}
     </div>
   )
 }
