@@ -70,6 +70,9 @@ const Pedido = () => {
     if (!data) form.setValues({'estado':'PENDIENTE','metodo_pago':'EFECTIVO'})
   }
 
+  //?:cuando se haga un nueov pedido, ocultar el gridtable de pedidos y mostrar un grid de los pedidos que haga, 🧴🧴🧴🚬 y elimianr del listado con doble clic, y un boton de confirmar para ajustar las cantidades si hay repetidos y mandar en loop el crud detalle
+
+  //? igual hay que definir la logica de promociones, cuando haya algunas promociones que el precio del producto cambie dinamicamnete
   const table = useMantineReactTable({
     columns,
     data: pedidos,
@@ -177,7 +180,7 @@ const Pedido = () => {
       <Modal opened={grupo} onClose={()=>setGrupo('')} title={`Listado de ${grupo}`} size={"xl"} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <Box className="btn-list">
           {productos.filter(f=>f.grupo == grupo).map(p=>(
-            <Button key={p.id_producto} variant="outline" color="cyan">{p.descripcion} - {p.precio}</Button>
+            <Button key={p.id_producto} variant="outline" color="#00dbde">{p.descripcion} - {p.precio}</Button>
           )) }
         </Box>
       </Modal>
