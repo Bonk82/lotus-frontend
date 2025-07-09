@@ -23,6 +23,7 @@ export const DataProvider = ({ children }) => {
   const [ingresoDetalles, setIngresoDetalles] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [promociones, setPromociones] = useState([]);
+  const [precios, setPrecios] = useState([]);
   const [parametricas, setParametricas] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
 
@@ -59,6 +60,7 @@ export const DataProvider = ({ children }) => {
       if(ruta === '/listarIngresoDetalles') setIngresoDetalles(resp);
       if(ruta === '/listarPedidos') setPedidos(resp);
       if(ruta === '/listarPromociones') setPromociones(resp);
+      if(ruta === '/listarSucursalProductos') setPrecios(resp);
       if(ruta === '/listarClasificador') setParametricas(resp);
       if(ruta === '/listarUsuarios') setUsuarios(resp);
       if(ruta.startsWith('/crud')) {

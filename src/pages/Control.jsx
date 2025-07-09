@@ -12,7 +12,7 @@ import { modals } from '@mantine/modals';
 
 const Control = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,promociones,sucursales,productos,parametricas } = DataApp();
+  const { loading,consumirAPI,promociones,sucursales,productos,parametricas, } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
 
   useEffect(() => {
@@ -22,6 +22,7 @@ const Control = () => {
 
   const cargarData = async () =>{
     await consumirAPI('/listarPromociones', { opcion: 'T' });
+    await consumirAPI('/listarSucursalProductos', { opcion: 'T' });
     if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T' });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T' });
   }
@@ -36,7 +37,7 @@ const Control = () => {
   { value: '7', label: 'Domingo' },
 ];
 
-  const form = useForm({
+  const formPromo = useForm({
     mode: 'uncontrolled',
     initialValues: {
       id_promocion:0,
@@ -64,11 +65,10 @@ const Control = () => {
     if (eliminar) newPromocion.operacion = 'D';
     await consumirAPI('/crudPromocion', newPromocion);
     close();
-    form.reset();
+    formPromo.reset();
     await cargarData();
   }
 
-  //id_promocion,fid_sucursal,nombre,dias,hora_inicio,hora_fin,grupo_producto,fid_producto,descuento
   const columns = useMemo(
     () => [
       { accessorKey: 'sucursal',header: 'Sucursal',},
@@ -86,8 +86,8 @@ const Control = () => {
   const mostrarRegistro = (data) => {
     console.log('Mostrar registro:', data);
     open();
-    form.reset();
-    if (data) form.setValues(data);
+    formPromo.reset();
+    if (data) formPromo.setValues(data);
   }
 
   const confirmar = (e)=>{
@@ -139,6 +139,52 @@ const Control = () => {
     localization:MRT_Localization_ES
   });
 
+//id_sucursal_producto,fid_sucursal,fid_producto,existencia,precio,promocion,producto,sucursal
+  const formSucProd = useForm({
+    mode: 'uncontrolled',
+    initialValues: {
+      id_sucursal_producto:0,
+      fid_sucursal:0,
+      fid_producto:0,
+      existencia:0,//tipo 1,5,6 y en el form hacer un select multi chips
+      precio:0,
+      promocion:0,
+      producto:'',
+      sucursal:'',
+    },
+    // validate: {
+    //   tipo_cliente: (value) => (/^\S+@\S+$/.test(value) ? null : 'Correo Inválido'),
+    // },
+  });
+
+  const crudSucProd = async (data,eliminar) => {
+    let newSucProd = { ...data };
+    if (data.od_promocion) {
+      newSucProd = { ...data, operacion: 'U',};
+    } else {
+      newSucProd = { ...data, operacion: 'I',};
+    }
+    if (eliminar) newSucProd.operacion = 'D';
+    await consumirAPI('/crudSucursalProdcuto', newSucProd);
+    close();
+    formPromo.reset();
+    await cargarData();
+  }
+
+  const columns = useMemo(
+    () => [
+      { accessorKey: 'sucursal',header: 'Sucursal',},
+      { accessorKey: 'nombre',header: 'Nombre Promoción',},
+      { accessorKey: 'dias',header: 'Días',},
+      { accessorKey: 'hora_inicio',header: 'Hora Inicio',},
+      { accessorKey: 'hora_fin',header: 'Hora Fin',},
+      { accessorKey: 'grupo_producto',header: 'Grupo Prodcuto',},
+      { accessorKey: 'producto',header: 'Producto',},
+      { accessorKey: 'descuento',header: 'Descuento',},
+    ],
+    [],
+  );
+
 
   return (
     <div>
@@ -148,15 +194,15 @@ const Control = () => {
       </Text>
       <Box pos='relative'>
         <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}/>
-        <Modal opened={opened} onClose={close} title={form.getValues().id_promocion?'Actualizar Promoción: '+ form.getValues().id_promocion:'Registrar Promoción'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudPromocion(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+        <Modal opened={opened} onClose={close} title={formPromo.getValues().id_promocion?'Actualizar Promoción: '+ formPromo.getValues().id_promocion:'Registrar Promoción'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+          <form onSubmit={formPromo.onSubmit((values) => crudPromocion(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <NativeSelect
               label="Sucursal:"
               data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               required
               leftSection={<IconBuilding size={16} />}
-              key={form.key("fid_sucursal")}
-              {...form.getInputProps("fid_sucursal")}
+              key={formPromo.key("fid_sucursal")}
+              {...formPromo.getInputProps("fid_sucursal")}
             />
             <TextInput
               label="Nombre:"
@@ -165,62 +211,62 @@ const Control = () => {
               type='text'
               maxLength={200}
               minLength={5}
-              key={form.key('nombre')}
-              {...form.getInputProps('nombre')}
+              key={formPromo.key('nombre')}
+              {...formPromo.getInputProps('nombre')}
             />
             <MultiSelect
               label="Días de promoción"
               placeholder="Seleccione los días"
               data={semana}
-              key={form.key('dias')}
-              {...form.getInputProps('dias')}
+              key={formPromo.key('dias')}
+              {...formPromo.getInputProps('dias')}
             />
             <TextInput
               label="Hora Inicio:"
               placeholder="10:00"
               leftSection={<IconTimeDuration15 size={16} />}
               type="time"
-              key={form.key('hora_inicio')}
-              {...form.getInputProps('hora_inicio')}
+              key={formPromo.key('hora_inicio')}
+              {...formPromo.getInputProps('hora_inicio')}
             />
             <TextInput
               label="Hora Fin:"
               placeholder="11:00"
               leftSection={<IconTimeDuration15 size={16} />}
               type="time"
-              key={form.key('hora_fin')}
-              {...form.getInputProps('hora_fin')}
+              key={formPromo.key('hora_fin')}
+              {...formPromo.getInputProps('hora_fin')}
             />
             <NativeSelect
               label="Grupo Producto:"
               data={['SELECCIONE...',...parametricas.filter(f=>f.grupo=='GRUPO_PRODUCTO').map(e=>e.nombre)]}
               required
               leftSection={<IconUser size={16} />}
-              key={form.key('grupo')}
-              {...form.getInputProps('grupo')}
+              key={formPromo.key('grupo')}
+              {...formPromo.getInputProps('grupo')}
             />
             <NativeSelect
               label="Producto:"
               data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
               required
               leftSection={<IconBuilding size={16} />}
-              key={form.key("fid_producto")}
-              {...form.getInputProps("fid_producto")}
+              key={formPromo.key("fid_producto")}
+              {...formPromo.getInputProps("fid_producto")}
             />
             <NumberInput
               label="Descuento %:"
               placeholder="33"
               allowDecimal={true}
-
+              decimalScale={2}
               min={0}
               max={100}
               suffix='%'
               leftSection={<IconCashBanknote size={16} />}
-              key={form.key('descuento')}
-              {...form.getInputProps('descuento')}
+              key={formPromo.key('descuento')}
+              {...formPromo.getInputProps('descuento')}
             />
             <Group justify="flex-end" mt="md">
-              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_proveedor ? 'Registrar':'Actualizar'} Proveedor</Button>
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formPromo.getValues().id_proveedor ? 'Registrar':'Actualizar'} Proveedor</Button>
             </Group>
           </form>
         </Modal>
