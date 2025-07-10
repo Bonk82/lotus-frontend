@@ -4,7 +4,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconSquarePlus, IconTimeDuration15, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconBottle, IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconSquarePlus, IconTimeDuration15, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -14,6 +14,7 @@ const Control = () => {
   const { user } = UserAuth();
   const { loading,consumirAPI,promociones,sucursales,productos,parametricas,precios } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
+  const [openedPrecio, { open:openPrecio, close:closePrecio }] = useDisclosure(false);
 
   useEffect(() => {
     cargarData('T')
@@ -21,20 +22,23 @@ const Control = () => {
   }, [])
 
   const cargarData = async (opcion) =>{
+    console.log('entrando',user);
+    
     if(['T','P'].includes(opcion)) await consumirAPI('/listarPromociones', { opcion: 'T' });
     if(['T','S'].includes(opcion)) await consumirAPI('/listarSucursalProductos', { opcion: 'T' });
     if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T' });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T' });
+    if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T' });
   }
 
   const semana = [
-  { value: '1', label: 'Lunes' },
-  { value: '2', label: 'Martes' },
-  { value: '3', label: 'Miércoles' },
-  { value: '4', label: 'Jueves' },
-  { value: '5', label: 'Viernes' },
-  { value: '6', label: 'Sábado' },
-  { value: '7', label: 'Domingo' },
+  { label: 'Lunes',value: '1' },
+  { label: 'Martes',value: '2' },
+  { label: 'Miércoles',value: '3' },
+  { label: 'Jueves',value: '4' },
+  { label: 'Viernes',value: '5' },
+  { label: 'Sábado',value: '6' },
+  { label: 'Domingo',value: '7' },
 ];
 
   const formPromo = useForm({
@@ -57,7 +61,7 @@ const Control = () => {
 
   const crudPromocion = async (data,eliminar) => {
     let newPromocion = { ...data };
-    if (data.od_promocion) {
+    if (data.id_promocion) {
       newPromocion = { ...data, operacion: 'U', usuario_registro: user.usuario };
     } else {
       newPromocion = { ...data, operacion: 'I', usuario_registro: user.usuario };
@@ -68,7 +72,8 @@ const Control = () => {
     formPromo.reset();
     await cargarData('P');
   }
-
+//? hacer pruebas de calculos de promos cuando se sobrepongan
+//? mejor creo es validar en PR al momento de registro o edicion
   const columnsPromo = useMemo(
     () => [
       { accessorKey: 'sucursal',header: 'Sucursal',},
@@ -127,8 +132,8 @@ const Control = () => {
     renderTopToolbarCustomActions: () => (
       <Tooltip label="Registrar Nuevo Producto" position="bottom" withArrow>
         <Box>
-          <Button onClick={()=>mostrarPromo()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nueva Promoción</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarPromo()}>
+          <Button onClick={()=>mostrarPromo()} variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nueva Promoción</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarPromo()}>
             <IconSquarePlus />
           </ActionIcon>
         </Box>
@@ -157,18 +162,18 @@ const Control = () => {
     // },
   });
 
-  const crudPrecios = async (data,eliminar) => {
+  const crudPrecio = async (data,eliminar) => {
     let newPrecio = { ...data };
-    if (data.od_promocion) {
+    if (data.id_sucursal_producto) {
       newPrecio = { ...data, operacion: 'U',};
     } else {
       newPrecio = { ...data, operacion: 'I',};
     }
     if (eliminar) newPrecio.operacion = 'D';
     await consumirAPI('/crudSucursalProdcuto', newPrecio);
-    close();
+    closePrecio();
     formPrecio.reset();
-    await cargarData();
+    await cargarData('S');
   }
 
   const columnsPrecio = useMemo(
@@ -178,12 +183,44 @@ const Control = () => {
       { accessorKey: 'existencia',header: 'Existencias',},
       { accessorKey: 'precio',header: 'Precio',},
       { accessorKey: 'promocion',header: 'Promocion',},
-      { accessorKey: 'grupo_producto',header: 'Grupo Prodcuto',},
-      { accessorKey: 'producto',header: 'Producto',},
-      { accessorKey: 'descuento',header: 'Descuento',},
     ],
     [],
   );
+//? colocar unique (fid_producto,fid_sucursal) en precio 
+  const mostrarPrecio = (data) => {
+    console.log('Mostrar precio:', data);
+    openPrecio();
+    formPrecio.reset();
+    if (data) formPrecio.setValues(data);
+  }
+
+  const tablePrecio = useMantineReactTable({
+    columns: columnsPrecio,
+    data: precios,
+    defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
+    initialState: {density: 'xs',},
+    enableRowActions: true,
+    renderRowActions: ({ row }) => (
+      <Box style={{gap:'0.8rem',display:'flex'}}>
+        <ActionIcon variant="subtle" onClick={() => mostrarPrecio(row.original)}>
+          <IconEdit color="orange" />
+        </ActionIcon>
+      </Box>
+    ),
+    renderTopToolbarCustomActions: () => (
+      <Tooltip label="Registrar Nuevo Precio" position="bottom" withArrow>
+        <Box>
+          <Button onClick={()=>mostrarPrecio()} variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nuevo Precio</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarPrecio()}>
+            <IconSquarePlus />
+          </ActionIcon>
+        </Box>
+      </Tooltip>
+    ),
+    mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
+    mantineTableProps:{striped: true,},
+    localization:MRT_Localization_ES
+  });
 
 
   return (
@@ -198,7 +235,7 @@ const Control = () => {
           <form onSubmit={formPromo.onSubmit((values) => crudPromocion(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <NativeSelect
               label="Sucursal:"
-              data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
+              data={[{label:'TODAS',value:1000},...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               required
               leftSection={<IconBuilding size={16} />}
               key={formPromo.key("fid_sucursal")}
@@ -218,8 +255,8 @@ const Control = () => {
               label="Días de promoción"
               placeholder="Seleccione los días"
               data={semana}
-              key={formPromo.key('dias')}
-              {...formPromo.getInputProps('dias')}
+              // key={formPromo.key('dias')}
+              // {...formPromo.getInputProps('dias')}
             />
             <TextInput
               label="Hora Inicio:"
@@ -247,7 +284,7 @@ const Control = () => {
             />
             <NativeSelect
               label="Producto:"
-              data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
+              data={["SELECCIONE...",...productos.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
               required
               leftSection={<IconBuilding size={16} />}
               key={formPromo.key("fid_producto")}
@@ -266,11 +303,75 @@ const Control = () => {
               {...formPromo.getInputProps('descuento')}
             />
             <Group justify="flex-end" mt="md">
-              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formPromo.getValues().id_proveedor ? 'Registrar':'Actualizar'} Proveedor</Button>
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formPromo.getValues().id_promocion ? 'Registrar':'Actualizar'} Promoción</Button>
             </Group>
           </form>
         </Modal>
         <MantineReactTable table={tablePromo} />
+      </Box>
+      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        Gestión de Precios
+      </Text>
+      <Box pos='relative'>
+        <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}/>
+        <Modal opened={openedPrecio} onClose={closePrecio} title={formPrecio.getValues().id_sucursal_producto?'Actualizar Precio: '+ formPrecio.getValues().id_sucursal_producto:'Registrar Precio'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+          <form onSubmit={formPrecio.onSubmit((values) => crudPrecio(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+            <NativeSelect
+              label="Sucursal:"
+              data={[{label:'TODAS',value:1000},...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
+              required
+              leftSection={<IconBuilding size={16} />}
+              key={formPrecio.key("fid_sucursal")}
+              {...formPrecio.getInputProps("fid_sucursal")}
+            />
+            <NativeSelect
+              label="Producto:"
+              data={["SELECCIONE...",...productos.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
+              required
+              leftSection={<IconBottle size={16} />}
+              key={formPrecio.key("fid_producto")}
+              {...formPrecio.getInputProps("fid_producto")}
+            />
+            <NumberInput
+              label="Existencia:"
+              placeholder="Cantidad de producto en stock"
+              allowDecimal={false}
+              min={0}
+              max={9000}
+              leftSection={<IconCashBanknote size={16} />}
+              key={formPrecio.key('existencia')}
+              {...formPrecio.getInputProps('existencia')}
+            />
+            <NumberInput
+              label="Precio:"
+              placeholder="Precio normal del producto"
+              allowDecimal={true}
+              decimalScale={2}
+              min={0}
+              max={9000}
+              prefix='Bs. '
+              leftSection={<IconCashBanknote size={16} />}
+              key={formPrecio.key('precio')}
+              {...formPrecio.getInputProps('precio')}
+            />
+            <NumberInput
+              label="Precio en Promoción:"
+              placeholder="Precio alternativo de promoción"
+              allowDecimal={true}
+              decimalScale={2}
+              min={0}
+              max={9000}
+              prefix='Bs. '
+              leftSection={<IconCashBanknote size={16} />}
+              key={formPrecio.key('promocion')}
+              {...formPrecio.getInputProps('promocion')}
+            />
+            <Group justify="flex-end" mt="md">
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formPrecio.getValues().id_sucursal_producto ? 'Registrar':'Actualizar'} Precio</Button>
+            </Group>
+          </form>
+        </Modal>
+        <MantineReactTable table={tablePrecio} />
       </Box>
     </div>
   )
