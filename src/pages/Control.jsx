@@ -12,17 +12,17 @@ import { modals } from '@mantine/modals';
 
 const Control = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,promociones,sucursales,productos,parametricas, } = DataApp();
+  const { loading,consumirAPI,promociones,sucursales,productos,parametricas,precios } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
 
   useEffect(() => {
-    cargarData()
+    cargarData('T')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const cargarData = async () =>{
-    await consumirAPI('/listarPromociones', { opcion: 'T' });
-    await consumirAPI('/listarSucursalProductos', { opcion: 'T' });
+  const cargarData = async (opcion) =>{
+    if(['T','P'].includes(opcion)) await consumirAPI('/listarPromociones', { opcion: 'T' });
+    if(['T','S'].includes(opcion)) await consumirAPI('/listarSucursalProductos', { opcion: 'T' });
     if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T' });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T' });
   }
@@ -66,10 +66,10 @@ const Control = () => {
     await consumirAPI('/crudPromocion', newPromocion);
     close();
     formPromo.reset();
-    await cargarData();
+    await cargarData('P');
   }
 
-  const columns = useMemo(
+  const columnsPromo = useMemo(
     () => [
       { accessorKey: 'sucursal',header: 'Sucursal',},
       { accessorKey: 'nombre',header: 'Nombre Promoción',},
@@ -83,7 +83,7 @@ const Control = () => {
     [],
   );
 
-  const mostrarRegistro = (data) => {
+  const mostrarPromo = (data) => {
     console.log('Mostrar registro:', data);
     open();
     formPromo.reset();
@@ -108,15 +108,15 @@ const Control = () => {
     });
   }
 
-  const table = useMantineReactTable({
-    columns,
+  const tablePromo = useMantineReactTable({
+    columns: columnsPromo,
     data: promociones,
     defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
     initialState: {density: 'xs',},
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
+        <ActionIcon variant="subtle" onClick={() => mostrarPromo(row.original)}>
           <IconEdit color="orange" />
         </ActionIcon>
         <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
@@ -127,8 +127,8 @@ const Control = () => {
     renderTopToolbarCustomActions: () => (
       <Tooltip label="Registrar Nuevo Producto" position="bottom" withArrow>
         <Box>
-          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nueva Promoción</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
+          <Button onClick={()=>mostrarPromo()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nueva Promoción</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarPromo()}>
             <IconSquarePlus />
           </ActionIcon>
         </Box>
@@ -140,7 +140,7 @@ const Control = () => {
   });
 
 //id_sucursal_producto,fid_sucursal,fid_producto,existencia,precio,promocion,producto,sucursal
-  const formSucProd = useForm({
+  const formPrecio = useForm({
     mode: 'uncontrolled',
     initialValues: {
       id_sucursal_producto:0,
@@ -157,27 +157,27 @@ const Control = () => {
     // },
   });
 
-  const crudSucProd = async (data,eliminar) => {
-    let newSucProd = { ...data };
+  const crudPrecios = async (data,eliminar) => {
+    let newPrecio = { ...data };
     if (data.od_promocion) {
-      newSucProd = { ...data, operacion: 'U',};
+      newPrecio = { ...data, operacion: 'U',};
     } else {
-      newSucProd = { ...data, operacion: 'I',};
+      newPrecio = { ...data, operacion: 'I',};
     }
-    if (eliminar) newSucProd.operacion = 'D';
-    await consumirAPI('/crudSucursalProdcuto', newSucProd);
+    if (eliminar) newPrecio.operacion = 'D';
+    await consumirAPI('/crudSucursalProdcuto', newPrecio);
     close();
-    formPromo.reset();
+    formPrecio.reset();
     await cargarData();
   }
 
-  const columns = useMemo(
+  const columnsPrecio = useMemo(
     () => [
       { accessorKey: 'sucursal',header: 'Sucursal',},
-      { accessorKey: 'nombre',header: 'Nombre Promoción',},
-      { accessorKey: 'dias',header: 'Días',},
-      { accessorKey: 'hora_inicio',header: 'Hora Inicio',},
-      { accessorKey: 'hora_fin',header: 'Hora Fin',},
+      { accessorKey: 'producto',header: 'Producto',},
+      { accessorKey: 'existencia',header: 'Existencias',},
+      { accessorKey: 'precio',header: 'Precio',},
+      { accessorKey: 'promocion',header: 'Promocion',},
       { accessorKey: 'grupo_producto',header: 'Grupo Prodcuto',},
       { accessorKey: 'producto',header: 'Producto',},
       { accessorKey: 'descuento',header: 'Descuento',},
@@ -270,7 +270,7 @@ const Control = () => {
             </Group>
           </form>
         </Modal>
-        <MantineReactTable table={table} />
+        <MantineReactTable table={tablePromo} />
       </Box>
     </div>
   )
