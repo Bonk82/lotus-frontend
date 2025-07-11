@@ -12,7 +12,7 @@ import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mj
 
 const Pedido = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast } = DataApp();
+  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast,promociones } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [grupo, setGrupo] = useState('')
   const [idPedido, setIdPedido] = useState(0)
@@ -118,6 +118,25 @@ const Pedido = () => {
     //todo: hacer tipo carrito de compras y al ultimo confirmar pedido y registrar pedido y sus detalles 
   }
 
+  const crudPedidoDetalle = async (data,eliminar) => {
+    let newPedidoDetalle = { ...data };
+    if (data.id_pedido) {
+      newPedidoDetalle = { ...data, operacion: 'U'};
+    } else {
+      newPedidoDetalle = { ...data, operacion: 'I'};
+    }
+    if (eliminar) newPedidoDetalle.operacion = 'D';
+    const id = await consumirAPI('/crudPedidoDetalle', newPedidoDetalle);
+    // form.reset(); resetear el carrito
+    await cargarDetalle();
+
+    //todo: hacer tipo carrito de compras y al ultimo confirmar pedido y registrar pedido y sus detalles 
+  }
+
+  const cargarDetalle = async ()=>{
+    await consumirAPI('/listarProductoDetalles', { opcion: 'PEDIDO',id:user.sucursal });
+  }
+
   return (
     <div>
       <p>{JSON.stringify(user)}</p>
@@ -177,10 +196,17 @@ const Pedido = () => {
         </Modal>
         <MantineReactTable table={table} />
       </Box>
-      <Modal opened={grupo} onClose={()=>setGrupo('')} title={`Listado de ${grupo}`} size={"xl"} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+      <Modal opened={grupo && grupo != 'PROMOS'} onClose={()=>setGrupo('')} title={`Listado de ${grupo}`} size={"xl"}   overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <Box className="btn-list">
           {productos.filter(f=>f.grupo == grupo).map(p=>(
             <Button key={p.id_producto} variant="outline" color="#00dbde">{p.descripcion} - {p.precio}</Button>
+          )) }
+        </Box>
+      </Modal>
+      <Modal opened={grupo && grupo == 'PROMOS'} onClose={()=>setGrupo('')} title={`Listado de Promociones`} size={"xl"}   overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+        <Box className="btn-list">
+          {promociones.map(p=>(
+            <Button key={p.id_promocion} variant="outline" color="#00dbde">{p.nombre} - {p.precio}</Button>
           )) }
         </Box>
       </Modal>

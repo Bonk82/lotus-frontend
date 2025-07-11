@@ -11,6 +11,11 @@
   /* --button-bg: #240846; */
 }
 
+*{
+  scrollbar-width:thin;          /* "auto" or "thin" */
+  scrollbar-color: #9775fa #291958;   /* scroll thumb and track */
+}
+
 #root {
   max-width: 1440px;
   margin: 0 auto;
@@ -24,8 +29,8 @@ body{
   background: var(--primary-backgrounbd-color);
   background: linear-gradient(0deg, #10061c 57%, #3b2550 93%, #3f2954 100%);
   height: 100%;
-  scrollbar-width:thin;          /* "auto" or "thin" */
-  scrollbar-color: #9775fa #291958;   /* scroll thumb and track */
+  /* scrollbar-width:thin;          
+  scrollbar-color: #9775fa #291958;   */
 }
 
 .logo {

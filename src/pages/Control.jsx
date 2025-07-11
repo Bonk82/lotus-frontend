@@ -47,11 +47,12 @@ const Control = () => {
       id_promocion:0,
       fid_sucursal:'',
       nombre:'',
-      dias:'',//tipo 1,5,6 y en el form hacer un select multi chips
+      dias:[],//tipo 1,5,6 y en el form hacer un select multi chips
       hora_inicio:'',
       hora_fin:'',
       grupo_producto:'',
-      fid_producto:'',
+      productos:[],
+      cantidad:0,
       descuento:'',
     },
     // validate: {
@@ -255,8 +256,10 @@ const Control = () => {
               label="Días de promoción"
               placeholder="Seleccione los días"
               data={semana}
-              // key={formPromo.key('dias')}
-              // {...formPromo.getInputProps('dias')}
+              clearable
+              searchable
+              key={formPromo.key('dias')}
+              {...formPromo.getInputProps('dias')}
             />
             <TextInput
               label="Hora Inicio:"
@@ -282,13 +285,23 @@ const Control = () => {
               key={formPromo.key('grupo')}
               {...formPromo.getInputProps('grupo')}
             />
-            <NativeSelect
-              label="Producto:"
+            <MultiSelect
+              label="Productos:"
               data={["SELECCIONE...",...productos.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
               required
               leftSection={<IconBuilding size={16} />}
-              key={formPromo.key("fid_producto")}
-              {...formPromo.getInputProps("fid_producto")}
+              key={formPromo.key("productos")}
+              {...formPromo.getInputProps("productos")}
+            />
+            <NumberInput
+              label="Cantidad:"
+              placeholder="Cantidad de productos del mismo grupo"
+              allowDecimal={false}
+              min={0}
+              max={20}
+              leftSection={<IconCashBanknote size={16} />}
+              key={formPromo.key('cantidad')}
+              {...formPromo.getInputProps('cantidad')}
             />
             <NumberInput
               label="Descuento %:"
