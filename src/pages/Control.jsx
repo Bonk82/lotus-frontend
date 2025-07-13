@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect } from 'react';
 import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
@@ -9,6 +10,7 @@ import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mj
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
+import dayjs from 'dayjs';
 
 const Control = () => {
   const { user } = UserAuth();
@@ -20,6 +22,7 @@ const Control = () => {
     cargarData('T')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
 
   const cargarData = async (opcion) =>{
     console.log('entrando',user);
@@ -45,7 +48,7 @@ const Control = () => {
     mode: 'uncontrolled',
     initialValues: {
       id_promocion:0,
-      fid_sucursal:'',
+      fid_sucursal:1,
       nombre:'',
       dias:[],//tipo 1,5,6 y en el form hacer un select multi chips
       hora_inicio:'',
@@ -53,7 +56,8 @@ const Control = () => {
       grupo_producto:'',
       productos:[],
       cantidad:0,
-      descuento:'',
+      precio:0,
+      descuento:0,
     },
     // validate: {
     //   tipo_cliente: (value) => (/^\S+@\S+$/.test(value) ? null : 'Correo Inválido'),
@@ -61,6 +65,8 @@ const Control = () => {
   });
 
   const crudPromocion = async (data,eliminar) => {
+    console.log('la data',data);
+    
     let newPromocion = { ...data };
     if (data.id_promocion) {
       newPromocion = { ...data, operacion: 'U', usuario_registro: user.usuario };
@@ -68,6 +74,8 @@ const Control = () => {
       newPromocion = { ...data, operacion: 'I', usuario_registro: user.usuario };
     }
     if (eliminar) newPromocion.operacion = 'D';
+    console.log('la newp',newPromocion);
+    
     await consumirAPI('/crudPromocion', newPromocion);
     close();
     formPromo.reset();
@@ -79,21 +87,40 @@ const Control = () => {
     () => [
       { accessorKey: 'sucursal',header: 'Sucursal',},
       { accessorKey: 'nombre',header: 'Nombre Promoción',},
-      { accessorKey: 'dias',header: 'Días',},
-      { accessorKey: 'hora_inicio',header: 'Hora Inicio',},
-      { accessorKey: 'hora_fin',header: 'Hora Fin',},
+      { accessorKey: 'dias_nombres',header: 'Días',Cell:({cell})=>(
+                <div>{cell.getValue().split(', ')
+                          .map((dia,index) => <div key={index}>{dia}</div>)}</div>
+              )},
+      { accessorKey: 'precio',header: 'Precio',},
+      { accessorKey: 'hora_inicio',header: 'Hora Inicio',Cell:({cell})=>(
+                <span>{cell.getValue() && dayjs('20250101 '+cell.getValue()).format('HH:mm')}</span>
+              )},
+      { accessorKey: 'hora_fin',header: 'Hora Fin',Cell:({cell})=>(
+                <span>{cell.getValue() && dayjs('20250101 '+cell.getValue()).format('HH:mm')}</span>
+              )},
       { accessorKey: 'grupo_producto',header: 'Grupo Prodcuto',},
-      { accessorKey: 'producto',header: 'Producto',},
-      { accessorKey: 'descuento',header: 'Descuento',},
+      { accessorKey: 'productos',header: 'Productos',Cell:({cell})=>(
+                <div>{cell.getValue()?.map(p => <div key={p.id_producto}>{p.descripcion} ({p.unidad})</div>)}</div>
+              )},
+      { accessorKey: 'cantidad',header: 'Cantidad',},
+      { accessorKey: 'descuento',header: 'Descuento',Cell:({cell})=>(
+                <span>{cell.getValue() && `${cell.getValue()}%`}</span>
+              )},
     ],
     [],
   );
 
   const mostrarPromo = (data) => {
     console.log('Mostrar registro:', data);
-    open();
     formPromo.reset();
-    if (data) formPromo.setValues(data);
+    open();
+    if (data){
+      // data.dias = ['5','6','7']
+      data.dias = data.dias.split(',');
+      formPromo.setValues(data);
+      // setDiasSel(['5','6','7'])
+    } 
+    console.log('form ahora',formPromo.getValues());
   }
 
   const confirmar = (e)=>{
@@ -236,7 +263,7 @@ const Control = () => {
           <form onSubmit={formPromo.onSubmit((values) => crudPromocion(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <NativeSelect
               label="Sucursal:"
-              data={[{label:'TODAS',value:1000},...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
+              data={[{label:'SELECCIONE...',value:0},...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               required
               leftSection={<IconBuilding size={16} />}
               key={formPromo.key("fid_sucursal")}
@@ -249,6 +276,7 @@ const Control = () => {
               type='text'
               maxLength={200}
               minLength={5}
+              required
               key={formPromo.key('nombre')}
               {...formPromo.getInputProps('nombre')}
             />
@@ -258,6 +286,8 @@ const Control = () => {
               data={semana}
               clearable
               searchable
+              required
+              // defaultValue={diasSel}
               key={formPromo.key('dias')}
               {...formPromo.getInputProps('dias')}
             />
@@ -282,13 +312,15 @@ const Control = () => {
               data={['SELECCIONE...',...parametricas.filter(f=>f.grupo=='GRUPO_PRODUCTO').map(e=>e.nombre)]}
               required
               leftSection={<IconUser size={16} />}
-              key={formPromo.key('grupo')}
-              {...formPromo.getInputProps('grupo')}
+              key={formPromo.key('grupo_producto')}
+              {...formPromo.getInputProps('grupo_producto')}
             />
             <MultiSelect
               label="Productos:"
-              data={["SELECCIONE...",...productos.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
+              data={productos.map((e) => {return{label:`${e.descripcion} - ${e.unidad}`,value:e.id_producto.toString()}})}
               required
+              searchable  
+              clearable
               leftSection={<IconBuilding size={16} />}
               key={formPromo.key("productos")}
               {...formPromo.getInputProps("productos")}
@@ -302,6 +334,18 @@ const Control = () => {
               leftSection={<IconCashBanknote size={16} />}
               key={formPromo.key('cantidad')}
               {...formPromo.getInputProps('cantidad')}
+            />
+             <NumberInput
+              label="Precio:"
+              placeholder="Precio final de la Promoción"
+              allowDecimal={true}
+              decimalScale={2}
+              min={0}
+              max={5000}
+              prefix='Bs. '
+              leftSection={<IconCashBanknote size={16} />}
+              key={formPromo.key('precio')}
+              {...formPromo.getInputProps('precio')}
             />
             <NumberInput
               label="Descuento %:"
@@ -331,7 +375,7 @@ const Control = () => {
           <form onSubmit={formPrecio.onSubmit((values) => crudPrecio(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <NativeSelect
               label="Sucursal:"
-              data={[{label:'TODAS',value:1000},...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
+              data={[...sucursales.filter(f=>f.nombre != 'TODAS').map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               required
               leftSection={<IconBuilding size={16} />}
               key={formPrecio.key("fid_sucursal")}
@@ -339,7 +383,7 @@ const Control = () => {
             />
             <NativeSelect
               label="Producto:"
-              data={["SELECCIONE...",...productos.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
+              data={["SELECCIONE...",...productos.map((e) => {return{label:`${e.descripcion} - ${e.unidad}`,value:e.id_producto}}),]}
               required
               leftSection={<IconBottle size={16} />}
               key={formPrecio.key("fid_producto")}

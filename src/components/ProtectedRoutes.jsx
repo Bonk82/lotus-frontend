@@ -4,14 +4,13 @@ import {jwtDecode} from "jwt-decode";
 
 const ProtectedRoute = ({ children }) => {
   const { user,logout } = UserAuth();
-  console.log('el user en protected',user);
+  // console.log('el user en protected',user);
   if(!user){
     const storedUser = localStorage.getItem('token');
     if (storedUser) {
       try {
         const decoded = jwtDecode(storedUser);
-        console.log('Token decodificado Protected:', decoded);
-        
+        // console.log('Token decodificado Protected:', decoded);
         if (decoded.exp * 1000 < Date.now()) {
           logout(); // Token expirado
           return <Navigate to="/login" replace />; // Redirige a la página de login

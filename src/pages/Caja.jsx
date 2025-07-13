@@ -29,15 +29,15 @@ const Caja = () => {
     mode: 'uncontrolled',
     initialValues: {
       id_control_caja:0,
-      fid_sucursal:0,
+      fid_sucursal:user?.sucursal,
       fid_usuario_inicio:0,
-      monto_inicio:'',
-      fid_usuario_cierre:0,
-      monto_cierre_qr:'',
-      monto_cierre_tarjeta:'',
-      monto_cierre_efectivo:'',
+      monto_inicio:0,
+      fid_usuario_cierre:null,
+      monto_cierre_qr:0,
+      monto_cierre_tarjeta:0,
+      monto_cierre_efectivo:0,
       observaciones:'',
-      estado:'',
+      estado:'APERTURA',
     },
     // validate: {
     //   tipo_cliente: (value) => (/^\S+@\S+$/.test(value) ? null : 'Correo Inválido'),
@@ -52,9 +52,9 @@ const Caja = () => {
       newCaja = { ...data, operacion: 'I', fid_usuario_inicio: user.usuario };
     }
     if (eliminar) newCaja.operacion = 'D';
-    if (newCaja.fid_sucursal === '') newCaja.fid_sucursal = user.fid_sucursal;
+    if (!newCaja.fid_sucursal) newCaja.fid_sucursal = user.sucursal;
     if (newCaja.estado !== 'APERTURA') newCaja.fid_usuario_cierre = user.usuario
-    await consumirAPI('/crudProveedor', newCaja);
+    await consumirAPI('/crudControlCaja', newCaja);
     close();
     form.reset();
     await cargarData();
@@ -80,7 +80,7 @@ const Caja = () => {
     open();
     form.reset();
     if (data) form.setValues(data);
-    if(!data) form.setValues({'estado':'APERTURA'})
+    // if(!data) form.setValues({'estado':'APERTURA'})
   }
 
   const table = useMantineReactTable({
@@ -99,8 +99,8 @@ const Caja = () => {
     renderTopToolbarCustomActions: () => (
       <Tooltip label="Aperturar Nueva Caja" position="bottom" withArrow>
         <Box>
-          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nueva Caja</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
+          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Nueva Caja</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
             <IconSquarePlus />
           </ActionIcon>
         </Box>
@@ -120,12 +120,12 @@ const Caja = () => {
       <Box pos='relative'>
         <LoadingOverlay visible={loading}  zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
-        <Modal opened={opened} onClose={close} title={form.getValues().id_control_caja?'Actualizar Proveedor: '+ form.getValues().id_control_caja:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+        <Modal opened={opened} onClose={close} title={form.getValues().id_control_caja?'Actualizar CAJA: '+ form.getValues().id_control_caja:'Registrar CAJA'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
           <form onSubmit={form.onSubmit((values) => crudCaja(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <NativeSelect
               label="Sucursal:"
               data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
-              value={user.sucursal}
+              value={user?.sucursal}
               disabled
               leftSection={<IconBuilding size={16} />}
               key={form.key("fid_sucursal")}
@@ -136,36 +136,39 @@ const Caja = () => {
               leftSection={<IconUser size={16} />}
               type='text'
               readOnly
-              value={user.cuenta}
+              value={user?.cuenta}
               key={form.key('fid_usuario_inicio')}
               {...form.getInputProps('fid_usuario_inicio')}
             />
             <NumberInput
               label="Monto Apertura:"
               placeholder="1000"
-              allowDecimal={false}
-              maxLength={6}
-              min={100000}
+              allowDecimal={true}
+              decimalScale={2}
+              min={0}
+              max={100000}
+              prefix='Bs. '
               required
               leftSection={<IconMoneybag size={16} />}
               key={form.key('monto_inicio')}
               {...form.getInputProps('monto_inicio')}
             />
-            {form.getValues().id_control_caja &&
+            {form.getValues().id_control_caja > 0 &&
               <Box>
                 <TextInput
                   label="Usuario Cierre:"
                   leftSection={<IconUser size={16} />}
                   type='text'
                   readOnly
-                  value={user.cuenta}
+                  value={user?.cuenta}
                   key={form.key('fid_usuario_cierre')}
                   {...form.getInputProps('fid_usuario_cierre')}
                 />
                 <NumberInput
                   label="Monto Cierre QR:"
                   placeholder="30000"
-                  allowDecimal={false}
+                  allowDecimal={true}
+                  decimalScale={2}
                   min={0}
                   max={100000}
                   required
@@ -176,7 +179,8 @@ const Caja = () => {
                 <NumberInput
                   label="Monto Cierre Tarjeta:"
                   placeholder="30000"
-                  allowDecimal={false}
+                  allowDecimal={true}
+                  decimalScale={2}
                   min={0}
                   max={100000}
                   required
@@ -187,7 +191,8 @@ const Caja = () => {
                 <NumberInput
                   label="Monto Cierre Efectivo:"
                   placeholder="30000"
-                  allowDecimal={false}
+                  allowDecimal={true}
+                  decimalScale={2}
                   min={0}
                   max={100000}
                   required

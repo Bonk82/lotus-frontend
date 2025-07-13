@@ -144,13 +144,14 @@ const Inventario = () => {
             style={{ marginBottom: "1rem" }}
             size="sm"
             visibleFrom="md"
+            variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
           >
             Nuevo Producto
           </Button>
           <ActionIcon
             variant="gradient"
             size="xl"
-            gradient={{ from: "violet", to: "#2c0d57", deg: 90 }}
+            gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
             hiddenFrom="md"
             onClick={() => mostrarProducto()}
           >
@@ -258,8 +259,8 @@ const Inventario = () => {
     renderTopToolbarCustomActions: () => (
       <Tooltip label="Registrar Nuevo Producto" position="bottom" withArrow>
         <Box>
-          <Button onClick={() => mostrarIngreso()} style={{ marginBottom: "1rem" }} size="sm" visibleFrom="md">Nuevo Ingreso</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: "violet", to: "#2c0d57", deg: 90 }} hiddenFrom="md"
+          <Button onClick={() => mostrarIngreso()} style={{ marginBottom: "1rem" }} size="sm" visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Nuevo Ingreso</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }} hiddenFrom="md"
           onClick={() => mostrarIngreso()}>
             <IconSquarePlus />
           </ActionIcon>

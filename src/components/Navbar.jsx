@@ -13,8 +13,9 @@ const Navbar = () => {
 
   useEffect(() => {
     console.log('Usuario autenticado:', user);
-    if (user) cargarMenu(user.id_rol);
+    if (user && menu.length==0) cargarMenu(user.id_rol);
     else setMenu([]);      
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const cargarMenu = async (rol) => {
