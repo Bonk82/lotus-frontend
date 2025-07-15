@@ -28,9 +28,8 @@ body{
   padding: 0;
   background: var(--primary-backgrounbd-color);
   background: linear-gradient(0deg, #10061c 57%, #3b2550 93%, #3f2954 100%);
-  height: 100%;
-  /* scrollbar-width:thin;          
-  scrollbar-color: #9775fa #291958;   */
+  min-height: 100vh;
+  background-attachment: fixed;
 }
 
 .logo {

@@ -11,12 +11,14 @@ import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { IconBottle, IconBuilding, IconCategoryPlus, IconDatabase, IconDeviceFloppy, IconEdit, IconFileBarcode, IconGlassGin, IconNumber10, IconSquarePlus, IconTicket, IconTrash,} from "@tabler/icons-react";
 import { MRT_Localization_ES } from "mantine-react-table/locales/es/index.esm.mjs";
 import dayjs from "dayjs";
+import { useState } from "react";
 
 const Inventario = () => {
   const { user } = UserAuth();
   const { loading, consumirAPI, productos, parametricas,ingresos,proveedores,sucursales } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [openedIngreso, { open:openIngreso, close:closeIngreso }] = useDisclosure(false);
+  const [idComponente, setIdComponente] = useState(null)
 
   useEffect(() => {
     cargarData("T");
@@ -279,11 +281,21 @@ const Inventario = () => {
   });
 
   const componenetes = (c) => {
-    const rows = c.map((element) => (
-      <Table.Tr key={element.id_componente}>
-        <Table.Td>{element.item}</Table.Td>
-        <Table.Td>{element.cantidad}</Table.Td>
-        <Table.Td>{element.unidad}</Table.Td>
+    const rows = c.map((row) => (
+      <Table.Tr key={row.id_componente}>
+        <Table.Td>{row.item}</Table.Td>
+        <Table.Td>{row.cantidad}</Table.Td>
+        <Table.Td>{row.unidad}</Table.Td>
+        <Table.Td>
+          <Box style={{ gap: "0.8rem", display: "flex" }}>
+            <ActionIcon variant="subtle" onClick={() => setIdComponente(row.id_componente)}>
+              <IconEdit color="orange" />
+            </ActionIcon>
+            <ActionIcon variant="subtle" onClick={() => confirmarComponente(row)}>
+              <IconTrash color="crimson" />
+            </ActionIcon>
+          </Box>
+        </Table.Td>
       </Table.Tr>
     ));
 
@@ -291,7 +303,8 @@ const Inventario = () => {
       <Table.Tr>
         <Table.Th>Item</Table.Th>
         <Table.Th>Cantidad</Table.Th>
-        <Table.Th>unidad</Table.Th>
+        <Table.Th>Unidad</Table.Th>
+        <Table.Th>Acción</Table.Th>
       </Table.Tr>
     );
 
@@ -304,6 +317,37 @@ const Inventario = () => {
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
     );
+  };
+
+  const confirmarComponente = (e) => {
+    modals.openConfirmModal({
+      title: "Confirmar Eliminación",
+      centered: true,
+      children: (
+        <Text size="sm">
+          Está seguro de ELIMINAR el componente:<br />
+          <strong>{`${e.item}`}</strong><br />
+        </Text>
+      ),
+      labels: { confirm: "Eliminar Componente", cancel: "Cancelar" },
+      confirmProps: { color: "violet" },
+      cancelProps: { style: { backgroundColor: "#240846" } },
+      overlayProps: { backgroundOpacity: 0.55, blur: 3 },
+      onCancel: () => console.log("Cancel"),
+      onConfirm: () => crudComponente(e, true),
+    });
+  };
+
+  const crudComponente = async (data, eliminar) => {
+    let newComponente = { ...data };
+    if (data.id_componente) {
+      newComponente = { ...data, operacion: "U", usuario_registro: user.usuario };
+    } else {
+      newComponente = { ...data, operacion: "I", usuario_registro: user.usuario };
+    }
+    if (eliminar) newComponente.operacion = "D";
+    await consumirAPI("/crudComponente", newComponente);
+    await consumirAPI("/listarProductos", { opcion: "p.id_producto",id:data.fid_producto_main});
   };
 
   return (
