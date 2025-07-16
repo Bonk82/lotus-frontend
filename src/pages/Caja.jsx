@@ -8,11 +8,13 @@ import { IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconMoneyba
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
+import { useState } from 'react';
 
 const Caja = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,cajas,sucursales,parametricas } = DataApp();
+  const { loading,consumirAPI,cajas,sucursales,parametricas,usuarios } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
+  const [idApertura, setIdApertura] = useState(null)
 
   useEffect(() => {
     if(user) cargarData()
@@ -20,9 +22,12 @@ const Caja = () => {
   }, [user])
 
   const cargarData = async () =>{
+    const id = await consumirAPI('/listarControlCajas', { opcion: 'ACTIVA',id:user.sucursal});
+    if(id) setIdApertura(id[0]?.id_control_caja);
     await consumirAPI('/listarControlCajas', { opcion: 'cc.fid_sucursal',id:user.sucursal });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T'});
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
+    if(usuarios.length == 0) await consumirAPI('/listarUsuarios', { opcion: 'T'});
   }
 //id_control_caja,fid_sucursal,fecha,fid_usuario_inicio,inicio,monto_inicio,fid_usuario_cierre,cierre,monto_cierre_qr,monto_cierre_tarjeta,monto_cierre_efectivo,observaciones,estado
   const form = useForm({
@@ -76,6 +81,10 @@ const Caja = () => {
   );
 
   const mostrarRegistro = (data) => {
+    if(data == 'CERRAR'){
+      data = cajas.find(f=>f.id_control_caja == idApertura)
+      data.estado = 'CIERRE'
+    } 
     console.log('Mostrar registro:', data);
     open();
     form.reset();
@@ -91,20 +100,32 @@ const Caja = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
+        <Tooltip label="Editar Caja" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
-      <Tooltip label="Aperturar Nueva Caja" position="bottom" withArrow>
-        <Box>
-          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Nueva Caja</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
-            <IconSquarePlus />
-          </ActionIcon>
-        </Box>
-      </Tooltip>
+      <Box style={{display:"flex", gap:"1rem"}}>
+        <Tooltip label="Aperturar Nueva Caja" position="bottom" withArrow>
+          <Box>
+            <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Aperturar Caja</Button>
+            <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
+              <IconSquarePlus />
+            </ActionIcon>
+          </Box>
+        </Tooltip>
+        {idApertura && <Tooltip label="Cerrar Caja" position="bottom" withArrow>
+          <Box>
+            <Button onClick={()=>mostrarRegistro('CERRAR')} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Cerrar Caja</Button>
+            <ActionIcon variant="gradient" size="xl" gradient={{ from: '#43ffff', to: '#005375', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro('CERRAR')}>
+              <IconSquarePlus />
+            </ActionIcon>
+          </Box>
+        </Tooltip>}
+      </Box>
     ),
     mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
     mantineTableProps:{striped: true,},
@@ -114,7 +135,7 @@ const Caja = () => {
   return (
     <div>
       <p>{JSON.stringify(user)}</p>
-      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Control de Cajas 
       </Text>
       <Box pos='relative'>
@@ -210,8 +231,8 @@ const Caja = () => {
                   {...form.getInputProps('observaciones')}
                 />
                 <NativeSelect
-                  label="Estado Cierre:"
-                  data={['SELECCIONE...',...parametricas.filter(f=>f.grupo == 'ESTADO_CIERRE').map(e=>e.nombre)]}
+                  label="Estado Caja:"
+                  data={['SELECCIONE...',...parametricas.filter(f=>f.grupo == 'ESTADO_CAJA').map(e=>e.nombre)]}
                   required
                   leftSection={<IconSettings size={16} />}
                   key={form.key("estado")}
@@ -225,6 +246,17 @@ const Caja = () => {
           </form>
         </Modal>
         <MantineReactTable table={table} />
+      </Box>
+
+      <Text size='2rem' mt={15} mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        {`Habilitar Usuarios para sucursal ${sucursales.find(f=>f.id_sucursal == user?.sucursal)?.nombre}`}
+      </Text>
+      <Box pos='relative' className='grid-usuarios'>
+        {usuarios.map(u=>(
+          <Box className='card-user' key={u.id_usuario}>{u.cuenta}</Box>
+        ))
+
+        }
       </Box>
     </div>
   )

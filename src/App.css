@@ -218,3 +218,15 @@ tr{
   overflow: hidden;
 }
 
+.grid-usuarios{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.card-user{
+  background-color: #00dbde;
+  height: 80px;
+  width: 100%;
+}
+
