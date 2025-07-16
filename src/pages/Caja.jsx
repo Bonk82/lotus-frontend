@@ -27,7 +27,7 @@ const Caja = () => {
     await consumirAPI('/listarControlCajas', { opcion: 'cc.fid_sucursal',id:user.sucursal });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T'});
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
-    if(usuarios.length == 0) await consumirAPI('/listarUsuarios', { opcion: 'T'});
+    await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
   }
 //id_control_caja,fid_sucursal,fecha,fid_usuario_inicio,inicio,monto_inicio,fid_usuario_cierre,cierre,monto_cierre_qr,monto_cierre_tarjeta,monto_cierre_efectivo,observaciones,estado
   const form = useForm({
@@ -63,6 +63,13 @@ const Caja = () => {
     close();
     form.reset();
     await cargarData();
+  }
+
+  const crudUsuario = async (data) => {
+    let newUsuario = { ...data };
+    newUsuario = { ...data, operacion: 'AU' };
+    await consumirAPI('/crudUsuario', newUsuario);
+    await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
   }
 
   const columns = useMemo(
@@ -131,6 +138,12 @@ const Caja = () => {
     mantineTableProps:{striped: true,},
     localization:MRT_Localization_ES
   });
+
+  const habilitarUsuario = (usuario) =>{
+    usuario.estado = usuario.estado == 'ALTA' ? 'ASIGNADO' : 'ALTA';
+    usuario.fid_sucursal = user.sucursal;
+    crudUsuario(usuario);
+  }
 
   return (
     <div>
@@ -251,12 +264,24 @@ const Caja = () => {
       <Text size='2rem' mt={15} mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         {`Habilitar Usuarios para sucursal ${sucursales.find(f=>f.id_sucursal == user?.sucursal)?.nombre}`}
       </Text>
-      <Box pos='relative' className='grid-usuarios'>
-        {usuarios.map(u=>(
-          <Box className='card-user' key={u.id_usuario}>{u.cuenta}</Box>
-        ))
-
-        }
+      <Box pos="relative" className="grid-usuarios">
+        {usuarios.map(u => {
+          if (u.estado === 'ALTA') {
+            return (
+              <Button key={u.id_usuario} onClick={() => habilitarUsuario(u)} size="lg" variant="outline">
+                {u.cuenta}
+              </Button>
+            );
+          }
+          if (u.estado === 'ASIGNADO') {
+            return (
+              <Button key={u.id_usuario} onClick={() => habilitarUsuario(u)} size="lg" variant="filled" color="violet">
+                {u.cuenta}
+              </Button>
+            );
+          }
+          return (<Box key={u.id_usuario}></Box>); // Importante: retornar null para otros estados
+        })}
       </Box>
     </div>
   )

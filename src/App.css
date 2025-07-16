@@ -220,12 +220,12 @@ tr{
 
 .grid-usuarios{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
 }
 
 .card-user{
-  background-color: #00dbde;
+  background: linear-gradient(0deg,violet,#2c0d57);
   height: 80px;
   width: 100%;
 }
