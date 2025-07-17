@@ -34,6 +34,12 @@ const myTheme =createTheme({
   // },
   secondaryColor:'grape',
   fontFamily:'Michroma, sans-serif',
+  cursorType:'pointer',
+  defaultGradient:{
+    from:'violet',
+    to:'#2c0d57',
+    deg:180,
+  },
 })
 
 
