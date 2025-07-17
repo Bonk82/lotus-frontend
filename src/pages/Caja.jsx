@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect } from 'react';
 import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
@@ -9,6 +10,7 @@ import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mj
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 
 const Caja = () => {
   const { user } = UserAuth();
@@ -34,10 +36,10 @@ const Caja = () => {
     mode: 'uncontrolled',
     initialValues: {
       id_control_caja:0,
-      fid_sucursal:user?.sucursal,
+      fid_sucursal:0,
       fid_usuario_inicio:0,
       monto_inicio:0,
-      fid_usuario_cierre:null,
+      fid_usuario_cierre:0,
       monto_cierre_qr:0,
       monto_cierre_tarjeta:0,
       monto_cierre_efectivo:0,
@@ -75,6 +77,9 @@ const Caja = () => {
   const columns = useMemo(
     () => [
       { accessorKey: 'sucursal',header: 'Sucursal',},
+      { accessorKey: 'fecha',header: 'Fecha',Cell:({cell})=>(
+          <span>{dayjs(cell.getValue()).format('DD/MM/YYYY')}</span>
+        ) },
       { accessorKey: 'usuario_inicio',header: 'Usuario Inicio',},
       { accessorKey: 'monto_inicio',header: 'Monto Inicio',},
       { accessorKey: 'usuario_cierre',header: 'usuario Cierre',},
@@ -89,14 +94,14 @@ const Caja = () => {
 
   const mostrarRegistro = (data) => {
     if(data == 'CERRAR'){
-      data = cajas.find(f=>f.id_control_caja == idApertura)
-      data.estado = 'CIERRE'
+      data = cajas.find(f=>f.id_control_caja == idApertura);
+      data.estado = 'CIERRE';
+      data.fid_usuario_cierre = user.usuario;
     } 
-    console.log('Mostrar registro:', data);
     open();
     form.reset();
     if (data) form.setValues(data);
-    // if(!data) form.setValues({'estado':'APERTURA'})
+    if (!data) form.setValues({fid_sucursal:user.sucursal,fid_usuario_inicio:user.usuario});
   }
 
   const table = useMantineReactTable({
@@ -158,21 +163,19 @@ const Caja = () => {
           <form onSubmit={form.onSubmit((values) => crudCaja(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <NativeSelect
               label="Sucursal:"
-              data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
-              value={user?.sucursal}
+              data={[...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               disabled
               leftSection={<IconBuilding size={16} />}
               key={form.key("fid_sucursal")}
               {...form.getInputProps("fid_sucursal")}
             />
-            <TextInput
+            <NativeSelect
               label="Usuario Apertura:"
+              data={[{label:user?.cuenta,value:user?.usuario},...usuarios.map((e) => {return{label:e.cuenta,value:e.id_usuario}}),]}
+              disabled
               leftSection={<IconUser size={16} />}
-              type='text'
-              readOnly
-              value={user?.cuenta}
-              key={form.key('fid_usuario_inicio')}
-              {...form.getInputProps('fid_usuario_inicio')}
+              key={form.key("fid_usuario_inicio")}
+              {...form.getInputProps("fid_usuario_inicio")}
             />
             <NumberInput
               label="Monto Apertura:"
@@ -189,14 +192,13 @@ const Caja = () => {
             />
             {form.getValues().id_control_caja > 0 &&
               <Box>
-                <TextInput
+                <NativeSelect
                   label="Usuario Cierre:"
+                  data={[{label:user?.cuenta,value:user?.usuario},...usuarios.map((e) => {return{label:e.cuenta,value:e.id_usuario}}),]}
+                  disabled
                   leftSection={<IconUser size={16} />}
-                  type='text'
-                  readOnly
-                  value={user?.cuenta}
-                  key={form.key('fid_usuario_cierre')}
-                  {...form.getInputProps('fid_usuario_cierre')}
+                  key={form.key("fid_usuario_cierre")}
+                  {...form.getInputProps("fid_usuario_cierre")}
                 />
                 <NumberInput
                   label="Monto Cierre QR:"

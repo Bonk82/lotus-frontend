@@ -16,6 +16,7 @@ const Personal = () => {
   const { user } = UserAuth();
   const { loading,consumirAPI,sucursales,usuarios,roles,parametricas } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
+  const [openedUsuario, { open:openUsuario, close:closeUsuario }] = useDisclosure(false);
 
   useEffect(() => {
     cargarData()
@@ -26,6 +27,7 @@ const Personal = () => {
     if(parametricas.length === 0) consumirAPI('/listarClasificador', { opcion: 'T' });
     consumirAPI('/listarSucursales', { opcion: 'T' });
     consumirAPI('/listarUsuarios', { opcion: 'T' });
+    consumirAPI('/listarRoles', { opcion: 'T' });
   }
 
   const formSucursal = useForm({
@@ -33,10 +35,9 @@ const Personal = () => {
     initialValues: {
       id_sucursal:0,
       codigo:'',
-      nombre:0,
+      nombre:'',
       direccion:'',
-      fid_encargado:0,
-      encargado:''
+      fid_encargado:null,
     },
     // validate: {
     //   tipo_cliente: (value) => (/^\S+@\S+$/.test(value) ? null : 'Correo Inválido'),
@@ -111,7 +112,7 @@ const Personal = () => {
     renderTopToolbarCustomActions: () => (
       <Tooltip label="Registrar Nueva Sucursal" position="bottom" withArrow>
         <Box>
-          <Button onClick={()=>mostrarSucursal()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nueva Sucursal</Button>
+          <Button onClick={()=>mostrarSucursal()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Nueva Sucursal</Button>
           <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarSucursal()}>
             <IconSquarePlus />
           </ActionIcon>
@@ -127,8 +128,8 @@ const Personal = () => {
     mode: 'uncontrolled',
     initialValues: {
       id_usuario:0,
-      fid_rol:0,
-      fid_sucursal:0,
+      fid_rol:null,
+      fid_sucursal:null,
       ci:'',
       fecha_nacimiento:'',
       nombres:'',
@@ -136,7 +137,7 @@ const Personal = () => {
       materno:'',
       correo:'',
       telefonos:0,
-      estado:''
+      estado:'ALTA'
     },
     // validate: {
     //   tipo_cliente: (value) => (/^\S+@\S+$/.test(value) ? null : 'Correo Inválido'),
@@ -145,15 +146,15 @@ const Personal = () => {
 
   const crudUsuario = async (data,eliminar) => {
     let newUsuario = { ...data };
-    if (data.id_sucursal) {
+    if (data.id_usuario) {
       newUsuario = { ...data, operacion: 'U'};
     } else {
       newUsuario = { ...data, operacion: 'I'};
     }
     if (eliminar) newUsuario.operacion = 'D';
     await consumirAPI('/crudUsuario', newUsuario);
-    close();
-    formSucursal.reset();
+    closeUsuario();
+    formUsuario.reset();
     await cargarData();
   }
 
@@ -175,10 +176,10 @@ const Personal = () => {
   );
 
   const mostrarUsuario = (data) => {
-    console.log('Mostrar registro:', data);
-    open();
     formUsuario.reset();
+    openUsuario();
     if (data) formUsuario.setValues(data);
+    if (!data) formUsuario.setValues({estado:'ALTA',fid_rol:2});
   }
 
   const confirmarUsuario = (e)=>{
@@ -195,7 +196,7 @@ const Personal = () => {
       cancelProps:{ style: { backgroundColor: '#240846' } },
       overlayProps:{backgroundOpacity: 0.55, blur: 3,},
       onCancel: () => console.log('Cancel'),
-      onConfirm: () => crudSucursal(e, true),
+      onConfirm: () => crudUsuario(e, true),
     });
   }
 
@@ -218,7 +219,7 @@ const Personal = () => {
     renderTopToolbarCustomActions: () => (
       <Tooltip label="Registrar Nuevo Usuario" position="bottom" withArrow>
         <Box>
-          <Button onClick={()=>mostrarUsuario()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nuevo Usuario</Button>
+          <Button onClick={()=>mostrarUsuario()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Nuevo Usuario</Button>
           <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarUsuario()}>
             <IconSquarePlus />
           </ActionIcon>
@@ -250,6 +251,7 @@ const Personal = () => {
               placeholder="Código de la sucursal"
               type='text'
               maxLength={20}
+              requiered
               leftSection={<IconGps size={16} />}
               key={formSucursal.key('codigo')}
               {...formSucursal.getInputProps('codigo')}
@@ -276,21 +278,20 @@ const Personal = () => {
             />
             <NativeSelect
               label="Encargado de Sucursal:"
-              data={['SELECCIONE...',...usuarios.filter(f=>f.fid_rol == 5).map(e=>e.cuenta)]}
-              required
+              data={[{label:'SELECCIONE...',value:null},...usuarios.filter(f=>f.fid_rol == 4).map(e=>{return {label:e.cuenta,value:e.id_usuario}})]}
               leftSection={<IconUser size={16} />}
               key={formSucursal.key('fid_encargado')}
               {...formSucursal.getInputProps('fid_encargado')}
             />
             <Group justify="flex-end" mt="md">
-              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formSucursal.getValues().id_sucursal ? 'Registrar':'Actualizar'} Paramétrica</Button>
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formSucursal.getValues().id_sucursal ? 'Registrar':'Actualizar'} Sucursal</Button>
             </Group>
           </form>
         </Modal>
         <MantineReactTable table={tableSucursal} />
       </Box>
 
-      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='2rem' mb={'lg'} mt={15} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Usuarios
       </Text>
       <Box pos='relative'>
@@ -300,11 +301,11 @@ const Personal = () => {
           overlayProps={{ radius: 'lg', blur: 4 }}
           loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
-        <Modal opened={opened} onClose={close} title={formUsuario.getValues().id_usuario?'Actualizar Usuario: '+ formUsuario.getValues().id_usuario:'Registrar Usuario'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'>   
+        <Modal opened={openedUsuario} onClose={closeUsuario} title={formUsuario.getValues().id_usuario?'Actualizar Usuario: '+ formUsuario.getValues().id_usuario:'Registrar Usuario'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'>   
           <form onSubmit={formUsuario.onSubmit((values) => crudUsuario(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
             <NativeSelect
               label="Rol Asignado:"
-              data={['SELECCIONE...',...roles.map(e=>e.nombre)]}
+              data={[{label:'SELECCIONE...',value:null},...roles.map(e=>{return {label:e.nombre,value:e.id_rol}})]}
               required
               leftSection={<IconUser size={16} />}
               key={formUsuario.key('fid_rol')}
@@ -312,8 +313,7 @@ const Personal = () => {
             />
             <NativeSelect
               label="Sucursal Asignado:"
-              data={['SELECCIONE...',...sucursales.map(e=>e.nombre)]}
-              required
+              data={[{label:'SELECCIONE...',value:null},...sucursales.map(e=>{return {label:e.nombre,value:e.id_sucursal}})]}
               leftSection={<IconUser size={16} />}
               key={formUsuario.key('fid_sucursal')}
               {...formUsuario.getInputProps('fid_sucursal')}
@@ -322,6 +322,7 @@ const Personal = () => {
               label="Número Documento:"
               placeholder="Número de Cédula de Identidad"
               type='text'
+              requiered
               maxLength={20}
               leftSection={<IconGps size={16} />}
               key={formUsuario.key('ci')}
@@ -330,7 +331,7 @@ const Personal = () => {
             <TextInput
               label="Fecha Nacimiento:"
               placeholder='Fecha Nacimeinto'
-              type='datetime-local'
+              type='date'
               maxLength={20}
               leftSection={<IconCalendar size={16} />}
               key={formUsuario.key('fecha_nacimiento')}
@@ -352,6 +353,7 @@ const Personal = () => {
               placeholder="Apellido Paterno del usuario"
               type='text'
               maxLength={100}
+              required
               leftSection={<IconGps size={16} />}
               key={formUsuario.key('paterno')}
               {...formUsuario.getInputProps('paterno')}

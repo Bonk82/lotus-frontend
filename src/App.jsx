@@ -5,7 +5,7 @@ import '@mantine/dates/styles.css';
 import 'mantine-react-table/styles.css';
 import './App.css'
 import { AuthProvider } from './context/AuthContext'
-import { Burger, createTheme, em, Group, MantineProvider } from '@mantine/core';
+import { Burger, createTheme, em, Group, Image, MantineProvider, Text } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from "@mantine/modals";
 import Login from './pages/Login';
@@ -71,10 +71,11 @@ function App() {
           >
             <AppShell.Header style={{ backgroundColor: 'black', color: '#9775fa' , borderBottom: '1px solid #9775fa'}}>
               <Group h="100%" px="md" style={{ justifyContent: 'space-between'}} color='primary'>
-                <Group align="center" h="100%" gap="s" style={{ border:'1px solid black', color: '#9775fa', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                <Group align="center" h="100%" w={'50%'} gap="s" style={{color: '#9775fa', fontSize: '1.2rem', fontWeight: 'bold',display:"flex" }}>
                   <Burger color="violet.4" opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" disabled={inicio} />
                   <Burger color="violet.4" opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" disabled={inicio} />
-                  LOTUS CLUB
+                  <Image src={'./assets/LOGO.png'} h={55} w={'auto'}></Image>
+                  <Text size='xl' fw={700} visibleFrom='md'>LOTUS CLUB</Text>
                 </Group>
                 <Header/>
               </Group>
