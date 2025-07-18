@@ -73,9 +73,9 @@ function App() {
             }}
             transitionDuration={600}
             transitionTimingFunction='ease'
-            style={{maxWidth: '100vw', overflow: 'hidden'}}
+            style={{maxWidth: '100vw', overflowX: 'hidden'}}
           >
-            <AppShell.Header style={{ backgroundColor: 'black', color: '#9775fa' , borderBottom: '1px solid #9775fa'}}>
+            <AppShell.Header style={{ backgroundColor: 'black', color: '#9775fa' , borderBottom: '1px solid #9775fa',boxShadow: '0 2px 10px rgba(144, 64, 168, 0.7)'}}>
               <Group h="100%" px="md" style={{ justifyContent: 'space-between'}} color='primary'>
                 <Group align="center" h="100%" w={'50%'} gap="s" style={{color: '#9775fa', fontSize: '1.2rem', fontWeight: 'bold',display:"flex" }}>
                   <Burger color="violet.4" opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" disabled={inicio} />

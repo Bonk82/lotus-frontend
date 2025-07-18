@@ -19,8 +19,9 @@
 #root {
   max-width: 1440px;
   margin: 0 auto;
-  padding: clamp(0.5rem, 4vw, 2rem);
+  padding: 0 clamp(0.5rem, 4vw, 2rem);
   text-align: center;
+  height: auto;
 }
 
 body{
@@ -28,7 +29,8 @@ body{
   padding: 0;
   background: var(--primary-backgrounbd-color);
   background: linear-gradient(0deg, #10061c 57%, #3b2550 93%, #3f2954 100%);
-  min-height: 100vh;
+  /* min-height: 100vh; */
+  /* height: calc(100vh - 60px); */
   background-attachment: fixed;
 }
 
@@ -230,3 +232,8 @@ tr{
   width: 100%;
 }
 
+.grid-detalle{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1rem;
+}

@@ -1,12 +1,14 @@
+/* eslint-disable react/prop-types */
 import { Navigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
 import {jwtDecode} from "jwt-decode";
 
 const ProtectedRoute = ({ children }) => {
   const { user,logout } = UserAuth();
-  // console.log('el user en protected',user);
+  console.log('el user en protected',user);
+  let storedUser;
   if(!user){
-    const storedUser = localStorage.getItem('token');
+    storedUser = localStorage.getItem('token');
     if (storedUser) {
       try {
         const decoded = jwtDecode(storedUser);
@@ -23,9 +25,9 @@ const ProtectedRoute = ({ children }) => {
     }
   }
 
-  // if (!user && !storedUser) {
-  //   return <Navigate to="/login" replace />; // Redirige a la página de login
-  // }
+  if (!user && !storedUser) {
+    return <Navigate to="/login" replace />; // Redirige a la página de login
+  }
 
   // if (!user) {
   //   console.log('No hay usuario autenticado, redirigiendo a login');

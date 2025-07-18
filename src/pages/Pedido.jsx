@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, Text, TextInput, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Button, Chip, Group, LoadingOverlay, Modal, NativeSelect, Text, TextInput, Tooltip } from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { DataApp } from "../context/DataContext";
 import { useEffect } from "react";
@@ -9,14 +9,16 @@ import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { IconDeviceFloppy, IconEdit, IconSquarePlus, IconUser } from "@tabler/icons-react";
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
+import { nanoid } from "nanoid";
 
 const Pedido = () => {
   const { user } = UserAuth();
   const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast,promociones } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [grupo, setGrupo] = useState('')
-  const [idPedido, setIdPedido] = useState(0)
+  const [idPedido, setIdPedido] = useState(null)
   const [idCaja, setIdCaja] = useState(0)
+  const [detalle, setDetalle] = useState([])
 
   useEffect(() => {
     if(user?.sucursal) cargarData()
@@ -73,6 +75,7 @@ const Pedido = () => {
   //?:cuando se haga un nueov pedido, ocultar el gridtable de pedidos y mostrar un grid de los pedidos que haga, 🧴🧴🧴🚬 y elimianr del listado con doble clic, y un boton de confirmar para ajustar las cantidades si hay repetidos y mandar en loop el crud detalle
 
   //? igual hay que definir la logica de promociones, cuando haya algunas promociones que el precio del producto cambie dinamicamnete
+
   const table = useMantineReactTable({
     columns,
     data: pedidos,
@@ -110,7 +113,7 @@ const Pedido = () => {
     }
     if (eliminar) newPedido.operacion = 'D';
     const id = await consumirAPI('/crudPedido', newPedido);
-    setIdPedido(id[0]?.id_pedido);
+    setIdPedido(id[0]?.message.split('|')[1]);
     close();
     // form.reset(); resetear el carrito
     await cargarData();
@@ -135,6 +138,26 @@ const Pedido = () => {
 
   const cargarDetalle = async ()=>{
     await consumirAPI('/listarProductoDetalles', { opcion: 'PEDIDO',id:user.sucursal });
+  }
+
+  const eliminarDetalle = (item)=>{
+    const pivot = detalle.filter(f=>f.id != item.id)
+    setDetalle(pivot);
+  }
+
+  const agregarDetalle = (data)=>{
+    console.log('el prodcuto',data);
+    const newDetalle = {
+        id: nanoid(10),
+        fid_pedido: idPedido,
+        fid_producto:data.id_producto,
+        fid_promocion:data.id_promocion,
+        cantidad: 1,
+        descuento: 0,//?revisar a ca como sacr el valor de descuento
+        precio:data.precio,//? data.precio - (calculo de descauento) a este valor hacer el calculo con el monto de descuento
+      }
+    setDetalle([...detalle,newDetalle])
+    // ,fid_pedido,fid_producto,cantidad,descuento,precio_unidad,fid_codigo_sync
   }
 
   return (
@@ -185,6 +208,7 @@ const Pedido = () => {
               label="Estado del Pedido:"
               data={['SELECCIONE...',...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO').map(e=>e.nombre)]}
               required
+              disabled={user?.rol == 2}
               leftSection={<IconUser size={16} />}
               key={form.key('estado')}
               {...form.getInputProps('estado')}
@@ -194,19 +218,26 @@ const Pedido = () => {
             </Group>
           </form>
         </Modal>
-        <MantineReactTable table={table} />
+        {!idPedido && <MantineReactTable table={table} />}
+        {idPedido &&
+        <Box className="grid-detalle">
+          {detalle.map(i=>(
+            <Chip variant="outline" size="lg" radius={"lg"} key={i.id_producto} onDoubleClick={eliminarDetalle}>{i.producto} - {i.precio}</Chip>
+          ))
+          }
+        </Box>}
       </Box>
       <Modal opened={grupo && grupo != 'PROMOS'} onClose={()=>setGrupo('')} title={`Listado de ${grupo}`} size={"xl"}   overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <Box className="btn-list">
           {productos.filter(f=>f.grupo == grupo).map(p=>(
-            <Button key={p.id_producto} variant="outline" color="#00dbde">{p.descripcion} - {p.precio}</Button>
+            <Button key={p.id_producto} variant="outline" color="#00dbde" onClick={agregarDetalle(p)}>{p.descripcion} - {p.precio}</Button>
           )) }
         </Box>
       </Modal>
       <Modal opened={grupo && grupo == 'PROMOS'} onClose={()=>setGrupo('')} title={`Listado de Promociones`} size={"xl"}   overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <Box className="btn-list">
           {promociones.map(p=>(
-            <Button key={p.id_promocion} variant="outline" color="#00dbde">{p.nombre} - {p.precio}</Button>
+            <Button key={p.id_promocion} variant="outline" color="#00dbde" onClick={agregarDetalle(p)}>{p.nombre} - {p.precio}</Button>
           )) }
         </Box>
       </Modal>
