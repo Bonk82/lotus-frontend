@@ -4,8 +4,8 @@ import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconMoneybag, IconSettings, IconSquarePlus, IconUser } from '@tabler/icons-react';
+import { ActionIcon, Alert, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Text, TextInput, Tooltip } from '@mantine/core';
+import { IconAlertCircle, IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconMoneybag, IconSettings, IconSquarePlus, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -14,14 +14,17 @@ import dayjs from 'dayjs';
 
 const Caja = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,cajas,sucursales,parametricas,usuarios } = DataApp();
+  const { loading,consumirAPI,cajas,sucursales,parametricas,usuarios, toast } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [idApertura, setIdApertura] = useState(null)
+  const [desface, setDesface] = useState(null)
 
   useEffect(() => {
     if(user) cargarData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
+
+  const icono = <IconAlertCircle/>
 
   const cargarData = async () =>{
     const id = await consumirAPI('/listarControlCajas', { opcion: 'ACTIVA',id:user.sucursal});
@@ -30,8 +33,12 @@ const Caja = () => {
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T'});
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
+    const f1 = dayjs(`${id[0]?.inicio}`);
+    const horas_apertura = dayjs().diff(f1,'h')
+    horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
+    
   }
-//id_control_caja,fid_sucursal,fecha,fid_usuario_inicio,inicio,monto_inicio,fid_usuario_cierre,cierre,monto_cierre_qr,monto_cierre_tarjeta,monto_cierre_efectivo,observaciones,estado
+
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
@@ -39,7 +46,7 @@ const Caja = () => {
       fid_sucursal:0,
       fid_usuario_inicio:0,
       monto_inicio:0,
-      fid_usuario_cierre:0,
+      fid_usuario_cierre:null,
       monto_cierre_qr:0,
       monto_cierre_tarjeta:0,
       monto_cierre_efectivo:0,
@@ -145,6 +152,14 @@ const Caja = () => {
   });
 
   const habilitarUsuario = (usuario) =>{
+    if(desface) {
+      toast(`Control Caja`, `La CAJA de fecha ${desface} aún con fue CERRADA debidamente.`, 'warning');
+      return false;
+    }
+    if(!idApertura){
+      toast(`Control Caja`, `Aún no cuenta con una caja aperturada para la sucursal`, 'warning');
+      return false;
+    }
     usuario.estado = usuario.estado == 'ALTA' ? 'ASIGNADO' : 'ALTA';
     usuario.fid_sucursal = user.sucursal;
     crudUsuario(usuario);
@@ -156,6 +171,9 @@ const Caja = () => {
       <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Control de Cajas 
       </Text>
+      {desface && <Alert variant="light" color="cyan" title="Alerta Control Caja" icon={icono}>
+        La CAJA de fecha {desface} aún con fue CERRADA debidamente.
+      </Alert>}
       <Box pos='relative'>
         <LoadingOverlay visible={loading}  zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
@@ -208,6 +226,7 @@ const Caja = () => {
                   min={0}
                   max={100000}
                   required
+                  prefix='Bs. '
                   leftSection={<IconCashBanknote size={16} />}
                   key={form.key('monto_cierre_qr')}
                   {...form.getInputProps('monto_cierre_qr')}
@@ -220,6 +239,7 @@ const Caja = () => {
                   min={0}
                   max={100000}
                   required
+                  prefix='Bs. '
                   leftSection={<IconCashBanknote size={16} />}
                   key={form.key('monto_cierre_tarjeta')}
                   {...form.getInputProps('monto_cierre_tarjeta')}
@@ -232,6 +252,7 @@ const Caja = () => {
                   min={0}
                   max={100000}
                   required
+                  prefix='Bs. '
                   leftSection={<IconCashBanknote size={16} />}
                   key={form.key('monto_cierre_efectivo')}
                   {...form.getInputProps('monto_cierre_efectivo')}

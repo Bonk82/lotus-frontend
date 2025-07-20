@@ -32,6 +32,13 @@ const Pedido = () => {
     await consumirAPI('/listarClasificador', { opcion: 'T',id:0 })
     const id = await consumirAPI('/listarControlCajas', { opcion: 'ACTIVA',id:user.sucursal });
     setIdCaja(id[0]?.id_control_caja);
+    const pedidoInciado = pedidos.find(f=>f.estado = 'PENDIENTE')
+    console.log('iniciando',pedidos,pedidoInciado,id);
+    
+    if(pedidoInciado){
+      setIdPedido(pedidoInciado.id_pedido)
+      //tambien precargar los detalles
+    } 
   }
 //id_pedido,fid_usuario,fid_control_caja,mesa,metodo_pago,codigo_sync,estado
   const form = useForm({
@@ -43,7 +50,7 @@ const Pedido = () => {
         mesa:'',
         metodo_pago:'',
         codigo_sync:'',
-        estado:'',
+        estado:'PENDIENTE',
         consumo:[],
       },
       // validate: {
@@ -141,6 +148,8 @@ const Pedido = () => {
   }
 
   const eliminarDetalle = (item)=>{
+    console.log('rev',item);
+    
     const pivot = detalle.filter(f=>f.id != item.id)
     setDetalle(pivot);
   }
@@ -152,11 +161,14 @@ const Pedido = () => {
         fid_pedido: idPedido,
         fid_producto:data.id_producto,
         fid_promocion:data.id_promocion,
+        nombre:data.id_producto ? productos.find(f=>f.id_producto == data.id_producto)?.descripcion:promociones.find(f=>f.id_promocion == data.id_promocion)?.nombre,
         cantidad: 1,
         descuento: 0,//?revisar a ca como sacr el valor de descuento
         precio:data.precio,//? data.precio - (calculo de descauento) a este valor hacer el calculo con el monto de descuento
       }
     setDetalle([...detalle,newDetalle])
+    setGrupo('')
+    console.log('el detalle',detalle);
     // ,fid_pedido,fid_producto,cantidad,descuento,precio_unidad,fid_codigo_sync
   }
 
@@ -167,6 +179,13 @@ const Pedido = () => {
         {user?.sucursal && `Pedidos Sucursal - ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre}`}
         {!user?.sucursal && `No cuenta con sucursal vinculada. Por favor coordinar con el administrador`} 
       </Text>
+      {idPedido &&
+      <Box className="grid-detalle">
+        {detalle.map(i=>(
+          <Chip defaultChecked variant="light" size="lg" radius={"lg"} key={i.id_producto || i.id_promocion} onClick={()=>eliminarDetalle(i)}>{i.nombre} - {i.precio}</Chip>
+        ))
+        }
+      </Box>}
       {idPedido>0 && <Box pos={"relative"} mb={10}>
         <Box className="grid-pedido">
           {parametricas.filter(f=>f.grupo == 'GRUPO_PRODUCTO').map(e => (
@@ -191,7 +210,7 @@ const Pedido = () => {
               placeholder="Ubicación o número de la mesa"
               type='text'
               maxLength={100}
-              requiered
+              required
               leftSection={<IconUser size={16} />}
               key={form.key('mesa')}
               {...form.getInputProps('mesa')}
@@ -214,30 +233,23 @@ const Pedido = () => {
               {...form.getInputProps('estado')}
             />
             <Group justify="flex-end" mt="md">
-              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_proveedor ? 'Registrar':'Actualizar'} Proveedor</Button>
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_pedido ? 'Registrar':'Actualizar'} Pedido</Button>
             </Group>
           </form>
         </Modal>
         {!idPedido && <MantineReactTable table={table} />}
-        {idPedido &&
-        <Box className="grid-detalle">
-          {detalle.map(i=>(
-            <Chip variant="outline" size="lg" radius={"lg"} key={i.id_producto} onDoubleClick={eliminarDetalle}>{i.producto} - {i.precio}</Chip>
-          ))
-          }
-        </Box>}
       </Box>
       <Modal opened={grupo && grupo != 'PROMOS'} onClose={()=>setGrupo('')} title={`Listado de ${grupo}`} size={"xl"}   overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <Box className="btn-list">
           {productos.filter(f=>f.grupo == grupo).map(p=>(
-            <Button key={p.id_producto} variant="outline" color="#00dbde" onClick={agregarDetalle(p)}>{p.descripcion} - {p.precio}</Button>
+            <Button key={p.id_producto} variant="outline" color="#00dbde" onClick={()=>agregarDetalle(p)}>{p.descripcion} - {p.precio}</Button>
           )) }
         </Box>
       </Modal>
       <Modal opened={grupo && grupo == 'PROMOS'} onClose={()=>setGrupo('')} title={`Listado de Promociones`} size={"xl"}   overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <Box className="btn-list">
           {promociones.map(p=>(
-            <Button key={p.id_promocion} variant="outline" color="#00dbde" onClick={agregarDetalle(p)}>{p.nombre} - {p.precio}</Button>
+            <Button key={p.id_promocion} variant="outline" color="#00dbde" onClick={()=>agregarDetalle(p)}>{p.nombre} - {p.precio}</Button>
           )) }
         </Box>
       </Modal>

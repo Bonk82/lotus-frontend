@@ -1,4 +1,4 @@
-import { Button, TextInput } from '@mantine/core';
+import { Button, PasswordInput, TextInput } from '@mantine/core';
 import { hasLength, useForm } from '@mantine/form';
 import { UserAuth } from '../context/AuthContext';
 import { DataApp } from '../context/DataContext';
@@ -35,7 +35,15 @@ const Login = () => {
       <h1>Login Lotus Pub</h1>
       <form onSubmit={iniciarSesion}>
         <TextInput leftSection={<IconUser size={16} />} required {...form.getInputProps('user')} label="Usuario" placeholder="Usuario" />
-        <TextInput leftSection={<IconPassword size={16} />} required type="password" {...form.getInputProps('pass')} mt="md" label="Contraseña" placeholder="Contraseña" />
+        {/* <TextInput leftSection={<IconPassword size={16} />} required type="password" {...form.getInputProps('pass')} mt="md" label="Contraseña" placeholder="Contraseña" /> */}
+        <PasswordInput
+          leftSection={<IconPassword size={16} />}
+          required
+          label="Contraseña"
+          mt="md"
+          placeholder="Contraseña"
+          {...form.getInputProps('pass')}
+        />
         <Button type="submit" mt="md">
           Ingresar
         </Button>

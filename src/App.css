@@ -212,7 +212,7 @@ tr{
 .btn-list {
   width: 100%;
   border-radius: 8px;
-  background: linear-gradient(145deg, #414040, #000);
+  /* background: linear-gradient(145deg, #414040, #000); */
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -233,7 +233,14 @@ tr{
 }
 
 .grid-detalle{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  display: flex;
+  width: 60%;
+  margin: 2rem auto;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 1rem;
+  border-top: 1px solid violet;
+  border-bottom: 1px solid violet;
+  padding: 1rem ;
 }
