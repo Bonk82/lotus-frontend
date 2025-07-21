@@ -167,7 +167,6 @@ const Caja = () => {
 
   return (
     <div>
-      <p>{JSON.stringify(user)}</p>
       <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Control de Cajas 
       </Text>
@@ -285,7 +284,7 @@ const Caja = () => {
       </Box>
 
       <Text size='2rem' mt={15} mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
-        {`Habilitar Usuarios para sucursal ${sucursales.find(f=>f.id_sucursal == user?.sucursal)?.nombre}`}
+        {`Usuarios para ${sucursales.find(f=>f.id_sucursal == user?.sucursal)?.nombre}`}
       </Text>
       <Box pos="relative" className="grid-usuarios">
         {usuarios.map(u => {

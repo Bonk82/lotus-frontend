@@ -122,7 +122,6 @@ const Proveedor = () => {
 
   return (
     <div>
-      <p>{JSON.stringify(user)}</p>
       <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Proveedores
       </Text>

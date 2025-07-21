@@ -48,8 +48,9 @@ export const DataProvider = ({ children }) => {
 
   const consumirAPI = async( ruta,parametros) =>{
     setLoading(true);
+    parametros.cache = new Date().getTime();
     try {
-      const resp = await apiClient.get(ruta, { params: { ...parametros } });
+      const resp = await apiClient.get(ruta, { params: { ...parametros }});
       if(ruta === '/listarProductos') setProductos(resp);
       if(ruta === '/listarProveedores') setProveedores(resp);
       if(ruta === '/listarSucursales') setSucursales(resp);

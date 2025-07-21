@@ -89,7 +89,7 @@ function App() {
             <AppShell.Navbar w={isMobile ? '100vw' : 300} p="sm" style={{overflow:'hidden',borderRight:'1px solid #9775fa'}} bg={{base:'#180c26',md:'transparent'}} onClick={toggleMobile}>
               <Navbar/>
             </AppShell.Navbar>
-            <AppShell.Main style={{position:"relative"}}>
+            <AppShell.Main style={{position:"relative",paddingTop:'5rem'}}>
               <Routes>
                 <Route path="/login" element={<Login/>} />
                 <Route path="/" element={<Dashboard/>} />

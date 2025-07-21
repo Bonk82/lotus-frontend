@@ -352,7 +352,6 @@ const Inventario = () => {
 
   return (
     <div>
-      <p>{JSON.stringify(user)}</p>
       <Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
         Gestión de Ingresos
       </Text>

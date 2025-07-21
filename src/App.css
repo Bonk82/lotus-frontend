@@ -206,6 +206,7 @@ tr{
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 /* lista especifica pedido */
@@ -215,7 +216,7 @@ tr{
   /* background: linear-gradient(145deg, #414040, #000); */
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 1rem;
   padding: 0.5rem;
   overflow: hidden;
 }
@@ -237,10 +238,19 @@ tr{
   width: 60%;
   margin: 2rem auto;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: start;
+  align-items: end;
   gap: 1rem;
   border-top: 1px solid violet;
   border-bottom: 1px solid violet;
   padding: 1rem ;
+}
+.total{
+  border-top:1px solid #7d58b1;
+  width:100%;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem 0 0;
+  display: flex;
+  justify-content: end;
 }
