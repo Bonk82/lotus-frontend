@@ -21,7 +21,7 @@ const Parametrica = () => {
   }, [])
 
   const cargarData = async () =>{
-    if(parametricas.length ==0) await consumirAPI('/listarClasificador', { opcion: 'T' });
+    await consumirAPI('/listarClasificador', { opcion: 'T' });
   }
 
   const form = useForm({
@@ -137,6 +137,7 @@ const Parametrica = () => {
               placeholder="Grupo clasificador"
               type='text'
               maxLength={100}
+              required
               leftSection={<IconGps size={16} />}
               key={form.key('grupo')}
               {...form.getInputProps('grupo')}
@@ -157,7 +158,7 @@ const Parametrica = () => {
               type='text'
               maxLength={100}
               minLength={5}
-              requiered
+              required
               leftSection={<IconUser size={16} />}
               key={form.key('nombre')}
               {...form.getInputProps('nombre')}

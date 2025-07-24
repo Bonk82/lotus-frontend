@@ -37,6 +37,7 @@ const Personal = () => {
       codigo:'',
       nombre:'',
       direccion:'',
+      ip:'',
       fid_encargado:null,
     },
     // validate: {
@@ -63,6 +64,7 @@ const Personal = () => {
       { accessorKey: 'codigo',header: 'Código',},
       { accessorKey: 'nombre',header: 'Nombre',},
       { accessorKey: 'direccion',header: 'Dirección',},
+      { accessorKey: 'ip',header: 'IP',},
       { accessorKey: 'encargado',header: 'Encargado',},
     ],
     [],
@@ -274,6 +276,15 @@ const Personal = () => {
               leftSection={<IconGps size={16} />}
               key={formSucursal.key('direccion')}
               {...formSucursal.getInputProps('direccion')}
+            />
+            <TextInput
+              label="IP:"
+              placeholder="Dirección IP de la sucursal (caja)"
+              type='text'
+              maxLength={17}
+              leftSection={<IconGps size={16} />}
+              key={formSucursal.key('ip')}
+              {...formSucursal.getInputProps('ip')}
             />
             <NativeSelect
               label="Encargado de Sucursal:"

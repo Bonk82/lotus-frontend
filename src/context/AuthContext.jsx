@@ -39,11 +39,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const resp = await apiClient.get('/login',{params:{operacion:'V', user, pass }});
       // const deco = decodificar_token(resp);
-      const deco = jwtDecode(resp);
+      console.log('la resp',resp);
+      
+      const deco = jwtDecode(resp.newToken);
       // console.log('Token decodificado:', deco);
       // const usuario = {rol:deco.rol,usuario:deco.usuario,sucursal:deco.sucursal,cuenta:deco.cuenta}
       setUser(deco);
-      localStorage.setItem('token', resp);
+      localStorage.setItem('token', resp.newToken);
+      localStorage.setItem('ip', resp.ip);
       navigate('/'); // Redirige a la página principal después del login
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
