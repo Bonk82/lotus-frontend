@@ -255,3 +255,10 @@ tr{
   display: flex;
   justify-content: end;
 }
+.subgrid-header{
+  display:flex;
+  justify-content:space-between;
+  width:100%;
+  align-items:center;
+  font-style:italic;
+}

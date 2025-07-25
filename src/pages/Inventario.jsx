@@ -18,7 +18,9 @@ const Inventario = () => {
   const { loading, consumirAPI, productos, parametricas,ingresos,proveedores,sucursales } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [openedIngreso, { open:openIngreso, close:closeIngreso }] = useDisclosure(false);
-  const [idComponente, setIdComponente] = useState(null)
+  const [openedComponente, { open:openComponente, close:closeComponente }] = useDisclosure(false);
+  const [idComponente, setIdComponente] = useState(null);
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     cargarData("T");
@@ -165,13 +167,12 @@ const Inventario = () => {
     mantineTableProps: { striped: true },
     localization: MRT_Localization_ES,
     renderDetailPanel: ({ row }) => (
-      <Box style={{ width: "clamp(350px,40%,600px)" }} p="md">
-        <Kbd color="orange">Composición del Producto</Kbd>
-        {row.original?.componentes && componenetes(row.original?.componentes)}
+      <Box style={{ width: "clamp(350px,50%,800px)" }} p="md">
+        {row.original?.componentes && componenetes(row.original)}
       </Box>
     ),
   });
-//id_ingreso,fid_proveedor,fid_sucursal,motivo,fecha_ingreso
+
   const formIngreso = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -280,8 +281,21 @@ const Inventario = () => {
     ),
   });
 
+  const formComponente = useForm({
+    mode: "uncontrolled",
+    initialValues: {
+      id_componente: 0,
+      fid_producto_main:0,
+      fid_producto: 0,
+      cantidad:2000,
+      unidada: 'ML',
+    },
+  });
+
   const componenetes = (c) => {
-    const rows = c.map((row) => (
+    console.log('los compos',c);
+    
+    const rows = c.componentes.map((row) => (
       <Table.Tr key={row.id_componente}>
         <Table.Td>{row.item}</Table.Td>
         <Table.Td>{row.cantidad}</Table.Td>
@@ -298,7 +312,6 @@ const Inventario = () => {
         </Table.Td>
       </Table.Tr>
     ));
-
     const ths = (
       <Table.Tr>
         <Table.Th>Item</Table.Th>
@@ -307,7 +320,6 @@ const Inventario = () => {
         <Table.Th>Acción</Table.Th>
       </Table.Tr>
     );
-
     return (
       <Table captionSide="top" width={50} striped highlightOnHover>
         <Table.Caption style={{ backgroundColor: "transparent" }}>
@@ -317,6 +329,82 @@ const Inventario = () => {
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
     );
+    // setItems(c.componentes);
+    // return(
+    //   <MantineReactTable table={tableComponente} />
+    // )
+  };
+
+  const columnsComponente = useMemo(
+    () => [
+      { accessorKey: "item", header: "Item" },
+      { accessorKey: "cantidad", header: "Cantidad" },
+      { accessorKey: "unidad", header: "Unidad" },
+    ],
+    []
+  );
+
+  const tableComponente = useMantineReactTable({
+    columns: columnsComponente,
+    data:items,
+    enableColumnFilters: false,
+    enablePagination: false,
+    enableSorting: false,
+    enableToolbarInternalActions:false,
+    defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
+    initialState: { density: "xs"},
+    enableRowActions: true,
+    positionActionsColumn:"last",
+    enableTableFooter:false,
+    renderRowActions: ({ row }) => (
+      <Box style={{ gap: "0.8rem", display: "flex" }}>
+        <ActionIcon variant="subtle" title="Editar Item" onClick={() => mostrarComponente(row.original)}>
+          <IconEdit color="orange" />
+        </ActionIcon>
+        <ActionIcon variant="subtle" title="Eliminar Item" onClick={() => confirmarComponente(row.original)}>
+          <IconTrash color="crimson" />
+        </ActionIcon>
+      </Box>
+    ),
+    renderTopToolbarCustomActions: () => (
+      <Box className="subgrid-header">
+        <Tooltip label="Registrar Nuevo Item" position="bottom" withArrow>
+          <Box>
+            <Button
+              onClick={() => mostrarProducto()}
+              size="sm"
+              visibleFrom="md"
+              variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
+            >
+              Nuevo Item
+            </Button>
+            <ActionIcon
+              variant="gradient"
+              size="xl"
+              gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
+              hiddenFrom="md"
+              onClick={() => mostrarProducto()}
+            >
+              <IconSquarePlus />
+            </ActionIcon>
+          </Box>
+        </Tooltip>
+        <Text>Composición del Producto</Text>
+      </Box>
+    ),
+    mantineTableProps: {
+      highlightOnHover: true,
+      striped: 'odd',
+      withRowBorders: true,
+      withTableBorder: true,
+    },
+  });
+
+  const mostrarComponente = (data) => {
+    console.log("Mostrar registro:", data);
+    openComponente();
+    formComponente.reset();
+    if (data) formComponente.setValues(data);
   };
 
   const confirmarComponente = (e) => {
@@ -325,11 +413,11 @@ const Inventario = () => {
       centered: true,
       children: (
         <Text size="sm">
-          Está seguro de ELIMINAR el componente:<br />
-          <strong>{`${e.item}`}</strong><br />
+          Está seguro de ELIMINAR el item:<br />
+          <strong>{`${e.producto}`}</strong><br />
         </Text>
       ),
-      labels: { confirm: "Eliminar Componente", cancel: "Cancelar" },
+      labels: { confirm: "Eliminar Item", cancel: "Cancelar" },
       confirmProps: { color: "violet" },
       cancelProps: { style: { backgroundColor: "#240846" } },
       overlayProps: { backgroundOpacity: 0.55, blur: 3 },
@@ -347,6 +435,8 @@ const Inventario = () => {
     }
     if (eliminar) newComponente.operacion = "D";
     await consumirAPI("/crudComponente", newComponente);
+    closeComponente();
+    formComponente.reset();
     await consumirAPI("/listarProductos", { opcion: "p.id_producto",id:data.fid_producto_main});
   };
 
@@ -535,6 +625,52 @@ const Inventario = () => {
           </form>
         </Modal>
         <MantineReactTable table={tableProducto} />
+      </Box>
+      <Box pos="relative">
+        <LoadingOverlay
+          visible={loading}
+          zIndex={39}
+          overlayProps={{ radius: "lg", blur: 4 }}
+          loaderProps={{ color: "violet", type: "dots", size: "xl" }}
+        />
+        <Modal opened={openedComponente} onClose={closeComponente} title={formComponente.getValues().id_componente ? "Actualizar Item: " + formComponente.getValues().id_componente : "Registrar Item"} size="lg" zIndex={20} overlayProps={{ backgroundOpacity: 0.55, blur: 3 }} yOffset="10dvh">
+            <form onSubmit={formComponente.onSubmit((values) => crudComponente(values))}
+              style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <NativeSelect
+                label="Producto:"
+                data={["SELECCIONE...",...productos.map((e) => {return{label:e.descripcion,value:e.id_producto}}),]}
+                required
+                leftSection={<IconBottle size={16} />}
+                key={formComponente.key("fid_producto")}
+                {...formComponente.getInputProps("fid_producto")}
+              />
+              <NumberInput
+                label="Cantidad:"
+                placeholder="Cantidad en mililitros"
+                leftSection={<IconDatabase size={16} />}
+                min={5}
+                max={2000}
+                required
+                key={formComponente.key("cantidad")}
+                {...formComponente.getInputProps("cantidad")}
+              />
+              <TextInput
+                label="Unidad Medida:"
+                placeholder="ML de la compra"
+                leftSection={<IconDatabase size={16} />}
+                type="text"
+                maxLength={20}
+                readOnly
+                key={formComponente.key("unidad")}
+                {...formComponente.getInputProps("unidad")}
+              />
+              <Group justify="flex-end" mt="md">
+                <Button fullWidth leftSection={<IconDeviceFloppy />} type="submit">
+                  {!formComponente.getValues().id_componente ? "Registrar " : "Actualizar "}Item
+                </Button>
+              </Group>
+            </form>
+        </Modal>
       </Box>
     </div>
   );
