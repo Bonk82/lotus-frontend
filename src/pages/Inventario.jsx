@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { ActionIcon, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Table, Text, TextInput, Tooltip,} from "@mantine/core";
+import { ActionIcon, Autocomplete, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Table, Text, TextInput, Tooltip,} from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -8,19 +8,20 @@ import { useForm } from "@mantine/form";
 import { useMemo } from "react";
 import { modals } from "@mantine/modals";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
-import { IconBottle, IconBuilding, IconCategoryPlus, IconDatabase, IconDeviceFloppy, IconEdit, IconFileBarcode, IconGlassGin, IconNumber10, IconSquarePlus, IconTicket, IconTrash,} from "@tabler/icons-react";
+import { IconBottle, IconBuilding, IconCash, IconCategoryPlus, IconDatabase, IconDeviceFloppy, IconEdit, IconEye, IconFileBarcode, IconGlassGin, IconNumber10, IconSquarePlus, IconTicket, IconTrash,} from "@tabler/icons-react";
 import { MRT_Localization_ES } from "mantine-react-table/locales/es/index.esm.mjs";
 import dayjs from "dayjs";
 import { useState } from "react";
 
 const Inventario = () => {
   const { user } = UserAuth();
-  const { loading, consumirAPI, productos, parametricas,ingresos,proveedores,sucursales } = DataApp();
+  const { loading, consumirAPI, productos, parametricas,ingresos,proveedores,sucursales,ingresoDetalles } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [openedIngreso, { open:openIngreso, close:closeIngreso }] = useDisclosure(false);
+  const [openedID, { open:openID, close:closeID }] = useDisclosure(false);
   const [openedComponente, { open:openComponente, close:closeComponente }] = useDisclosure(false);
-  const [idComponente, setIdComponente] = useState(null);
-  const [items, setItems] = useState([]);
+  // const [idComponente, setIdComponente] = useState(null);
+  const [elIdIngreso, setElIdIngreso] = useState(null);
 
   useEffect(() => {
     cargarData("T");
@@ -35,10 +36,10 @@ const Inventario = () => {
     if (["T", "I"].includes(opcion))
       await consumirAPI("/listarIngresos", { opcion: "T" });
     if (["T", "ID"].includes(opcion))
-      await consumirAPI("/listarIngresoDetalles", { opcion: "T" });
+      await consumirAPI("/listarIngresoDetalles", { opcion: "id.fid_ingreso",id:elIdIngreso });
     if (["T", "PR"].includes(opcion))
       await consumirAPI("/listarProveedores", { opcion: "T" });
-    if (["T", "ID"].includes(opcion))
+    if (["T", "S"].includes(opcion))
       await consumirAPI("/listarSucursales", { opcion: "T" });
   };
 
@@ -243,18 +244,25 @@ const Inventario = () => {
     });
   };
 
+  const toogleMostrarDetalle = (v) =>{
+    elIdIngreso == v ? setElIdIngreso(null) : setElIdIngreso(v);
+  }
+
   const tableIngreso = useMantineReactTable({
     columns: columnsIngreso,
     data: ingresos,
     defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
-    initialState: { density: "xs", columnPinning: {left: ["mrt-row-expand"],},},
+    initialState: { density: "xs",},
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{ gap: "0.8rem", display: "flex" }}>
-        <ActionIcon variant="subtle" onClick={() => mostrarIngreso(row.original)}>
+        <ActionIcon variant="subtle" title="Ver Detalle" onClick={() => toogleMostrarDetalle(row.original.id_ingreso)}>
+          <IconEye color="cyan" />
+        </ActionIcon>
+        <ActionIcon variant="subtle" title="Editar" onClick={() => mostrarIngreso(row.original)}>
           <IconEdit color="orange" />
         </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmarIngreso(row.original)}>
+        <ActionIcon variant="subtle" title="Eliminar" onClick={() => confirmarIngreso(row.original)}>
           <IconTrash color="crimson" />
         </ActionIcon>
       </Box>
@@ -281,6 +289,99 @@ const Inventario = () => {
     ),
   });
 
+  const formIngresoDetalle = useForm({
+    mode: "uncontrolled",
+    initialValues: {
+      id_ingreso_detalle: 0,
+      fid_ingreso: 0,
+      fid_producto:null,
+      cantidad: null,
+      precio_compra:0,
+    },
+  });
+
+  const crudIngresoDetalle = async (data, eliminar) => {
+    let newIngresoDetalle = { ...data };
+    if (data.id_ingreso_detalle) {
+      newIngresoDetalle = { ...data, operacion: "U", usuario_registro: user.usuario };
+    } else {
+      newIngresoDetalle = { ...data, operacion: "I", usuario_registro: user.usuario };
+    }
+    if (eliminar) newIngresoDetalle.operacion = "D";
+    await consumirAPI("/crudIngresoDetalle", newIngresoDetalle);
+    closeID();
+    formIngresoDetalle.reset();
+    await cargarData("ID");
+  };
+
+  const columnsID = useMemo(
+    () => [
+      { accessorKey: "ingreso", header: "Ingreso" },
+      { accessorKey: "producto", header: "Producto" },
+      { accessorKey: "cantidad", header: "Cantidad" },
+      { accessorKey: "precio_compra", header: "Precio Compra"},
+    ],
+    []
+  );
+
+  const mostrarID = (data) => {
+    console.log("Mostrar registro:", data);
+    openID();
+    formIngresoDetalle.reset();
+    if (data) formIngresoDetalle.setValues(data);
+    formIngresoDetalle.setValues({fid_ingreso:elIdIngreso})
+  };
+
+  const confirmarID = (e) => {
+    modals.openConfirmModal({
+      title: "Confirmar Eliminación",
+      centered: true,
+      children: (
+        <Text size="sm">
+          Está seguro de ELIMINAR el ingreso:<br />
+          <strong>{`${e.producto.toUpperCase()} - Bs. ${e.precio_compra}`}</strong><br />
+        </Text>
+      ),
+      labels: { confirm: "Eliminar Ingreso del Producto", cancel: "Cancelar" },
+      confirmProps: { color: "violet" },
+      cancelProps: { style: { backgroundColor: "#240846" } },
+      overlayProps: { backgroundOpacity: 0.55, blur: 3 },
+      onCancel: () => console.log("Cancel"),
+      onConfirm: () => crudIngresoDetalle(e, true),
+    });
+  };
+
+  const tableIngresoDetalle = useMantineReactTable({
+    columns: columnsID,
+    data: ingresoDetalles,
+    defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
+    initialState: { density: "xs",},
+    enableRowActions: true,
+    renderRowActions: ({ row }) => (
+      <Box style={{ gap: "0.8rem", display: "flex" }}>
+        <ActionIcon variant="subtle" onClick={() => mostrarID(row.original)}>
+          <IconEdit color="orange" />
+        </ActionIcon>
+        <ActionIcon variant="subtle" onClick={() => confirmarID(row.original)}>
+          <IconTrash color="crimson" />
+        </ActionIcon>
+      </Box>
+    ),
+    renderTopToolbarCustomActions: () => (
+      <Tooltip label="Registrar Nuevo Detalle" position="bottom" withArrow>
+        <Box>
+          <Button onClick={() => mostrarID()} style={{ marginBottom: "1rem" }} size="sm" visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Nuevo Detalle</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }} hiddenFrom="md"
+          onClick={() => mostrarID()}>
+            <IconSquarePlus />
+          </ActionIcon>
+        </Box>
+      </Tooltip>
+    ),
+    mantineTableProps: { striped: true },
+    localization: MRT_Localization_ES,
+  });
+
   const formComponente = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -302,7 +403,7 @@ const Inventario = () => {
         <Table.Td>{row.unidad}</Table.Td>
         <Table.Td>
           <Box style={{ gap: "0.8rem", display: "flex" }}>
-            <ActionIcon variant="subtle" onClick={() => setIdComponente(row.id_componente)}>
+            <ActionIcon variant="subtle" onClick={() => mostrarComponente(row)}>
               <IconEdit color="orange" />
             </ActionIcon>
             <ActionIcon variant="subtle" onClick={() => confirmarComponente(row)}>
@@ -321,6 +422,8 @@ const Inventario = () => {
       </Table.Tr>
     );
     return (
+      <>
+      <Button variant="gradient" onClick={()=>mostrarComponente({fid_producto_main:c.id_producto})}>Agregar Componente</Button>
       <Table captionSide="top" width={50} striped highlightOnHover>
         <Table.Caption style={{ backgroundColor: "transparent" }}>
           Composición del Producto
@@ -328,6 +431,7 @@ const Inventario = () => {
         <Table.Thead>{ths}</Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
+      </>
     );
     // setItems(c.componentes);
     // return(
@@ -335,70 +439,70 @@ const Inventario = () => {
     // )
   };
 
-  const columnsComponente = useMemo(
-    () => [
-      { accessorKey: "item", header: "Item" },
-      { accessorKey: "cantidad", header: "Cantidad" },
-      { accessorKey: "unidad", header: "Unidad" },
-    ],
-    []
-  );
+  // const columnsComponente = useMemo(
+  //   () => [
+  //     { accessorKey: "item", header: "Item" },
+  //     { accessorKey: "cantidad", header: "Cantidad" },
+  //     { accessorKey: "unidad", header: "Unidad" },
+  //   ],
+  //   []
+  // );
 
-  const tableComponente = useMantineReactTable({
-    columns: columnsComponente,
-    data:items,
-    enableColumnFilters: false,
-    enablePagination: false,
-    enableSorting: false,
-    enableToolbarInternalActions:false,
-    defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
-    initialState: { density: "xs"},
-    enableRowActions: true,
-    positionActionsColumn:"last",
-    enableTableFooter:false,
-    renderRowActions: ({ row }) => (
-      <Box style={{ gap: "0.8rem", display: "flex" }}>
-        <ActionIcon variant="subtle" title="Editar Item" onClick={() => mostrarComponente(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" title="Eliminar Item" onClick={() => confirmarComponente(row.original)}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
-      </Box>
-    ),
-    renderTopToolbarCustomActions: () => (
-      <Box className="subgrid-header">
-        <Tooltip label="Registrar Nuevo Item" position="bottom" withArrow>
-          <Box>
-            <Button
-              onClick={() => mostrarProducto()}
-              size="sm"
-              visibleFrom="md"
-              variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
-            >
-              Nuevo Item
-            </Button>
-            <ActionIcon
-              variant="gradient"
-              size="xl"
-              gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
-              hiddenFrom="md"
-              onClick={() => mostrarProducto()}
-            >
-              <IconSquarePlus />
-            </ActionIcon>
-          </Box>
-        </Tooltip>
-        <Text>Composición del Producto</Text>
-      </Box>
-    ),
-    mantineTableProps: {
-      highlightOnHover: true,
-      striped: 'odd',
-      withRowBorders: true,
-      withTableBorder: true,
-    },
-  });
+  // const tableComponente = useMantineReactTable({
+  //   columns: columnsComponente,
+  //   data:items,
+  //   enableColumnFilters: false,
+  //   enablePagination: false,
+  //   enableSorting: false,
+  //   enableToolbarInternalActions:false,
+  //   defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
+  //   initialState: { density: "xs"},
+  //   enableRowActions: true,
+  //   positionActionsColumn:"last",
+  //   enableTableFooter:false,
+  //   renderRowActions: ({ row }) => (
+  //     <Box style={{ gap: "0.8rem", display: "flex" }}>
+  //       <ActionIcon variant="subtle" title="Editar Item" onClick={() => mostrarComponente(row.original)}>
+  //         <IconEdit color="orange" />
+  //       </ActionIcon>
+  //       <ActionIcon variant="subtle" title="Eliminar Item" onClick={() => confirmarComponente(row.original)}>
+  //         <IconTrash color="crimson" />
+  //       </ActionIcon>
+  //     </Box>
+  //   ),
+  //   renderTopToolbarCustomActions: () => (
+  //     <Box className="subgrid-header">
+  //       <Tooltip label="Registrar Nuevo Item" position="bottom" withArrow>
+  //         <Box>
+  //           <Button
+  //             onClick={() => mostrarProducto()}
+  //             size="sm"
+  //             visibleFrom="md"
+  //             variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
+  //           >
+  //             Nuevo Item
+  //           </Button>
+  //           <ActionIcon
+  //             variant="gradient"
+  //             size="xl"
+  //             gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
+  //             hiddenFrom="md"
+  //             onClick={() => mostrarProducto()}
+  //           >
+  //             <IconSquarePlus />
+  //           </ActionIcon>
+  //         </Box>
+  //       </Tooltip>
+  //       <Text>Composición del Producto</Text>
+  //     </Box>
+  //   ),
+  //   mantineTableProps: {
+  //     highlightOnHover: true,
+  //     striped: 'odd',
+  //     withRowBorders: true,
+  //     withTableBorder: true,
+  //   },
+  // });
 
   const mostrarComponente = (data) => {
     console.log("Mostrar registro:", data);
@@ -439,7 +543,7 @@ const Inventario = () => {
     formComponente.reset();
     await consumirAPI("/listarProductos", { opcion: "p.id_producto",id:data.fid_producto_main});
   };
-
+  /*id_ingreso_detalle:,fid_ingreso:,fid_producto:,cantidad:,precio_compra:,*/
   return (
     <div>
       <Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
@@ -495,40 +599,64 @@ const Inventario = () => {
         </Modal>
         <MantineReactTable table={tableIngreso} />
       </Box>
+      {elIdIngreso && 
+      <><Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
+        Gestión Productos del Ingresos
+      </Text>
+      <Box pos="relative">
+        <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: "lg", blur: 4 }} loaderProps={{ color: "violet", type: "dots", size: "xl" }}/>
+        <Modal opened={openedID} onClose={closeID} title={formIngresoDetalle.getValues().id_ingreso_detalle ? "Actualizar Producto Ingreso: " + formIngresoDetalle.getValues().id_ingreso_detalle : "Registrar Producto Ingreso"} size="lg" zIndex={20} overlayProps={{ backgroundOpacity: 0.55, blur: 3 }} yOffset="10dvh">
+          <form onSubmit={formIngresoDetalle.onSubmit((values) => crudIngresoDetalle(values))}
+            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <Autocomplete
+              label="Producto:"
+              data={productos.filter(f=> f.pedido_minimo >0).map((e) => {return{label:e.descripcion,value:e.id_producto}})}
+              required
+              limit={6}
+              leftSection={<IconBottle size={16} />}
+              key={formIngresoDetalle.key('fid_producto')}
+              {...formIngresoDetalle.getInputProps('fid_producto')}
+            />
+            <NumberInput
+              label="Cantidad:"
+              placeholder="Cantiad del mismo producto"
+              allowDecimal={false}
+              min={1}
+              max={1000}
+              required
+              leftSection={<IconDatabase size={16} />}
+              key={formIngresoDetalle.key("cantidad")}
+              {...formIngresoDetalle.getInputProps("cantidad")}
+            />
+            <NumberInput
+              label="Precio Compra:"
+              placeholder="100.00"
+              allowDecimal={true}
+              decimalScale={2}
+              min={1}
+              max={10000}
+              required
+              leftSection={<IconCash size={16} />}
+              key={formIngresoDetalle.key("precio_compra")}
+              {...formIngresoDetalle.getInputProps("precio_compra")}
+            />
+            <Group justify="flex-end" mt="md">
+              <Button fullWidth leftSection={<IconDeviceFloppy />} type="submit">
+                {!formIngresoDetalle.getValues().id_ingreso_detalle ? "Registrar " : "Actualizar "}Producto Ingreso
+              </Button>
+            </Group>
+          </form>
+        </Modal>
+        <MantineReactTable table={tableIngresoDetalle} />
+      </Box></>}
 
-      <Text
-        size="2rem"
-        py={5} my={10}
-        fw={900}
-        variant="gradient"
-        gradient={{ from: "gainsboro", to: "violet", deg: 90 }}
-      >
+      <Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
         Gestión de Productos
       </Text>
       <Box pos="relative">
-        <LoadingOverlay
-          visible={loading}
-          zIndex={39}
-          overlayProps={{ radius: "lg", blur: 4 }}
-          loaderProps={{ color: "violet", type: "dots", size: "xl" }}
-        />
-        <Modal
-          opened={opened}
-          onClose={close}
-          title={
-            formProducto.getValues().id_producto
-              ? "Actualizar Producto: " + formProducto.getValues().id_producto
-              : "Registrar Producto"
-          }
-          size="lg"
-          zIndex={20}
-          overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
-          yOffset="10dvh"
-        >
-          <form
-            onSubmit={formProducto.onSubmit((values) => crudProducto(values))}
-            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-          >
+        <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: "lg", blur: 4 }} loaderProps={{ color: "violet", type: "dots", size: "xl" }}/>
+        <Modal opened={opened} onClose={close} title={formProducto.getValues().id_producto? "Actualizar Producto: " + formProducto.getValues().id_producto: "Registrar Producto"} size="lg" zIndex={20} overlayProps={{ backgroundOpacity: 0.55, blur: 3 }} yOffset="10dvh">
+          <form onSubmit={formProducto.onSubmit((values) => crudProducto(values))} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             <TextInput
               label="Código:"
               placeholder="NC001-750"
@@ -627,12 +755,7 @@ const Inventario = () => {
         <MantineReactTable table={tableProducto} />
       </Box>
       <Box pos="relative">
-        <LoadingOverlay
-          visible={loading}
-          zIndex={39}
-          overlayProps={{ radius: "lg", blur: 4 }}
-          loaderProps={{ color: "violet", type: "dots", size: "xl" }}
-        />
+        <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: "lg", blur: 4 }} loaderProps={{ color: "violet", type: "dots", size: "xl" }}/>
         <Modal opened={openedComponente} onClose={closeComponente} title={formComponente.getValues().id_componente ? "Actualizar Item: " + formComponente.getValues().id_componente : "Registrar Item"} size="lg" zIndex={20} overlayProps={{ backgroundOpacity: 0.55, blur: 3 }} yOffset="10dvh">
             <form onSubmit={formComponente.onSubmit((values) => crudComponente(values))}
               style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>

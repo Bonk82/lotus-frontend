@@ -47,7 +47,12 @@ export const AuthProvider = ({ children }) => {
       setUser(deco);
       localStorage.setItem('token', resp.newToken);
       localStorage.setItem('ip', resp.ip);
-      navigate('/'); // Redirige a la página principal después del login
+      console.log('el deco',deco);
+      
+      if([1,5].includes(deco.rol)) navigate('/');
+      if([2].includes(deco.rol)) navigate('/pedido');
+      if([3].includes(deco.rol)) navigate('/caja');
+      if([4].includes(deco.rol)) navigate('/inventario');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       throw new Error(error.error || 'Error al iniciar sesión'); // Lanza un error para que pueda ser manejado en el componente que llama a login

@@ -3,6 +3,7 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import '@mantine/dates/styles.css';
 import 'mantine-react-table/styles.css';
+import '@mantine/charts/styles.css';
 import './App.css'
 import { AuthProvider } from './context/AuthContext'
 import { Burger, createTheme, em, Group, Image, MantineProvider, Text } from '@mantine/core';
