@@ -63,7 +63,7 @@ body{
   }
 }
 
-.card {
+.card-old {
   padding: 2em;
 }
 
@@ -261,4 +261,54 @@ tr{
   width:100%;
   align-items:center;
   font-style:italic;
+}
+
+.cards-pedidos {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.cards-pedidos .red {
+  background-color: #522963;
+  background: linear-gradient(0deg, #10061c 57%, #3b2550 93%, #3f2954 100%);
+}
+
+.cards-pedidos .card {
+  display: grid;
+  align-items: start;
+  min-height: 100px;
+  width: 300px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: 400ms;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 0 6px rgba(247, 245, 245, 0.5)
+            , 0 0 2px rgba(238, 236, 236, 0.4);
+}
+
+.cards-pedidos .card:hover {
+  transform: scale(1.2, 1.2);
+  border: 2px solid #8850a0;
+  box-shadow: 0 0 0;
+}
+
+.cards-pedidos:hover > .card:not(:hover) {
+  filter: blur(10px);
+  transform: scale(0.9, 0.9);
+}
+
+.card strong{
+  width: 100%;
+  text-align: left;
+}
+.card p{
+  width: 100%;
+  text-align: right;
+  margin: 0.2rem 0;
+}
+.card .total{
+  border-top: 1px solid gainsboro;
+  align-self: flex-end;
 }

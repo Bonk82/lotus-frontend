@@ -14,8 +14,9 @@ import dayjs from 'dayjs';
 
 const Caja = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,cajas,sucursales,parametricas,usuarios, toast } = DataApp();
+  const { loading,consumirAPI,cajas,sucursales,parametricas,usuarios,pedidos,toast } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
+  const [openedPedido, { open:openPedido, close:closePedido }] = useDisclosure(false);
   const [idApertura, setIdApertura] = useState(null)
   const [desface, setDesface] = useState(null)
 
@@ -33,6 +34,7 @@ const Caja = () => {
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T'});
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
+    await consumirAPI('/listarPedidos', { opcion: 'p.fid_control_caja',id:idApertura});
     const f1 = dayjs(`${id[0]?.inicio}`);
     const horas_apertura = dayjs().diff(f1,'h')
     horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
@@ -165,8 +167,82 @@ const Caja = () => {
     crudUsuario(usuario);
   }
 
+  const formPedido = useForm({
+    mode: 'uncontrolled',
+    initialValues: {
+      id_pedido:0,
+      fid_usuario:0,
+      fid_control_caja:0,
+      mesa:'',
+      metodo_pago:'',
+      estado:''
+    }
+  });
+
+  const mostrarPedido = (data) => {
+    console.log('Mostrar registro:', data);
+    openPedido();
+    formPedido.setValues(data);
+  }
+
+  const cerrarPedido = async (data) => {
+    let elPedido = { ...data };
+    elPedido = { ...data, operacion: 'U', usuario_registro: user.usuario };
+    await consumirAPI('/crudPedido', elPedido);
+    closePedido();
+    await consumirAPI('/listarPedidos', {  opcion: 'p.fid_control_caja',id:idApertura });
+  }
+
   return (
     <div>
+      {pedidos.length>0 &&
+        <>
+        <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+          Control Pedidos 
+        </Text>
+        {pedidos.map(p=>(
+            <Box className="cards" key={p.id_pedido} onClick={()=>mostrarPedido(p)}>
+              <Box className="card red">
+                  <strong className="tip">{p.id_pedido} - {p.mesa}</strong>
+                  {p.consumo.map(c=>(
+                    <p className="second-text" key={c.id_pedido_detalle}>🟣 {c.nombre}</p>
+                    ))
+                  }
+                  <p className="total"> TOTAL: {p.consumo.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2)}</p>
+              </Box>
+            </Box>
+          ))
+        }
+        </>
+      }
+      <Modal opened={openedPedido} onClose={closePedido} title={'Cerrar Pedido'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
+        <form onSubmit={formPedido.onSubmit((values) => cerrarPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <NativeSelect
+            label="Sucursal:"
+            data={[...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
+            disabled
+            leftSection={<IconBuilding size={16} />}
+            key={formPedido.key("fid_sucursal")}
+            {...formPedido.getInputProps("fid_sucursal")}
+          />
+          <NumberInput
+            label="Monto Apertura:"
+            placeholder="1000"
+            allowDecimal={true}
+            decimalScale={2}
+            min={0}
+            max={100000}
+            prefix='Bs. '
+            required
+            leftSection={<IconMoneybag size={16} />}
+            key={formPedido.key('monto_inicio')}
+            {...formPedido.getInputProps('monto_inicio')}
+          />
+          <Group justify="flex-end" mt="md">
+            <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>Cerrar Pedido</Button>
+          </Group>
+        </form>
+      </Modal>
       <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Control de Cajas 
       </Text>

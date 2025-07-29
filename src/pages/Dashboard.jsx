@@ -14,6 +14,10 @@ const Dashboard = () => {
   const [f1, setF1] = useState(dayjs().startOf('month'))
   const [f2, setF2] = useState(dayjs().endOf('month'))
 
+  const [listaProductos, setListaProductos] = useState([])
+  const [listaPedidos, setListaPedidos] = useState([])
+  const [pedidosDia, setPedidosDia] = useState([])
+
   useEffect(() => {
     cargarData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,7 +34,50 @@ const Dashboard = () => {
 
   const armarData= async (ped,prod,tran)=>{
     console.log('armar data',productos,ingresos,pedidos,sucursales);
-    
+    const data = [
+      { month: 'January', Smartphones: 1200, Laptops: 900, Tablets: 200 },
+      { month: 'February', Smartphones: 1900, Laptops: 1200, Tablets: 400 },
+      { month: 'March', Smartphones: 400, Laptops: 1000, Tablets: 200 },
+      { month: 'April', Smartphones: 1000, Laptops: 200, Tablets: 800 },
+      { month: 'May', Smartphones: 800, Laptops: 1400, Tablets: 1200 },
+      { month: 'June', Smartphones: 750, Laptops: 600, Tablets: 1000 },
+    ];
+    setListaProductos(data)
+    setListaPedidos(data)
+
+    const data2 = [
+      {
+        date: 'Mar 22',
+        Apples: 2890,
+        Oranges: 2338,
+        Tomatoes: 2452,
+      },
+      {
+        date: 'Mar 23',
+        Apples: 2756,
+        Oranges: 2103,
+        Tomatoes: 2402,
+      },
+      {
+        date: 'Mar 24',
+        Apples: 3322,
+        Oranges: 986,
+        Tomatoes: 1821,
+      },
+      {
+        date: 'Mar 25',
+        Apples: 3470,
+        Oranges: 2108,
+        Tomatoes: 2809,
+      },
+      {
+        date: 'Mar 26',
+        Apples: 3129,
+        Oranges: 1726,
+        Tomatoes: 2290,
+      },
+    ];
+    setPedidosDia(data2)
   }
 
   const obtenerReporte = async (tipo,data) =>{
@@ -111,12 +158,12 @@ const Dashboard = () => {
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, lg: 3 }}><Button color='blue.2' variant='light' fullWidth onClick={()=>cargarData()} size='sm'>Cargar Transacciones</Button></Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('DOS',transacciones)} size='sm'> Histórico Pedidos</Button></Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('DOS',pedidos)} size='sm'> Histórico Pedidos</Button></Grid.Col>
         </Grid>
         <Box style={{display:'flex', gap:'1rem',gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))'}}>
-          {productos.length>0 && <BarChart
+          {listaProductos.length>0 && <BarChart
             h={300}
-            data={productos}
+            data={listaProductos}
             dataKey="descripcion"
             series={[{name:'existencia',color:'teal.6'}]}
             tickLine="y"

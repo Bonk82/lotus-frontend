@@ -34,7 +34,7 @@ export const DataProvider = ({ children }) => {
   
   const toast = (title,message,type) =>{
     let color = type
-    if(type == 'success') color = 'teal.9';
+    if(type == 'success') color = 'grape.9';
     if(type == 'info') color = 'cyan.9';
     if(type == 'warning') color = 'yellow.9';
     if(type == 'error') color = 'red.9';
