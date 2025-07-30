@@ -5,7 +5,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Alert, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconAlertCircle, IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconMoneybag, IconSettings, IconSquarePlus, IconUser } from '@tabler/icons-react';
+import { IconAlertCircle, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDeviceFloppy, IconEdit, IconMoneybag, IconSettings, IconSquarePlus, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -19,6 +19,7 @@ const Caja = () => {
   const [openedPedido, { open:openPedido, close:closePedido }] = useDisclosure(false);
   const [idApertura, setIdApertura] = useState(null)
   const [desface, setDesface] = useState(null)
+  const [cambio, setCambio] = useState(0)
 
   useEffect(() => {
     if(user) cargarData()
@@ -34,7 +35,7 @@ const Caja = () => {
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T'});
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
-    await consumirAPI('/listarPedidos', { opcion: 'p.fid_control_caja',id:idApertura});
+    await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura || id[0]?.id_control_caja});
     const f1 = dayjs(`${id[0]?.inicio}`);
     const horas_apertura = dayjs().diff(f1,'h')
     horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
@@ -90,11 +91,11 @@ const Caja = () => {
           <span>{dayjs(cell.getValue()).format('DD/MM/YYYY')}</span>
         ) },
       { accessorKey: 'usuario_inicio',header: 'Usuario Inicio',},
-      { accessorKey: 'monto_inicio',header: 'Monto Inicio',},
+      { accessorKey: 'monto_inicio',header: 'Monto Inicio', mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'usuario_cierre',header: 'usuario Cierre',},
-      { accessorKey: 'monto_cierre_qr',header: 'Cierre QR',},
-      { accessorKey: 'monto_cierre_tarjeta',header: 'Cierre TRJ',},
-      { accessorKey: 'monto_cierre_efectivo',header: 'Cierre EFE',},
+      { accessorKey: 'monto_cierre_qr',header: 'Cierre QR',mantineTableBodyCellProps: {align: 'right'}},
+      { accessorKey: 'monto_cierre_tarjeta',header: 'Cierre TRJ',mantineTableBodyCellProps: {align: 'right'}},
+      { accessorKey: 'monto_cierre_efectivo',header: 'Cierre EFE',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'observaciones',header: 'Observaciones',},
       { accessorKey: 'estado',header: 'Estado Caja',},
     ],
@@ -175,11 +176,15 @@ const Caja = () => {
       fid_control_caja:0,
       mesa:'',
       metodo_pago:'',
-      estado:''
+      estado:'',
+      monto_total:0,
+      monto_efectivo:0,
+      cambio:0,
     }
   });
 
   const mostrarPedido = (data) => {
+    data.monto_total = data.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2);
     console.log('Mostrar registro:', data);
     openPedido();
     formPedido.setValues(data);
@@ -188,9 +193,16 @@ const Caja = () => {
   const cerrarPedido = async (data) => {
     let elPedido = { ...data };
     elPedido = { ...data, operacion: 'U', usuario_registro: user.usuario };
+    elPedido.estado = 'PAGADO'
     await consumirAPI('/crudPedido', elPedido);
     closePedido();
-    await consumirAPI('/listarPedidos', {  opcion: 'p.fid_control_caja',id:idApertura });
+    await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
+  }
+
+  const calcularCambio = ()=>{
+    // console.log(formPedido.getValues().monto_total,formPedido.getValues().monto_efectivo);
+    const dif = Number(formPedido.getValues().monto_efectivo) - Number(formPedido.getValues().monto_total)
+    setCambio(dif)
   }
 
   return (
@@ -200,44 +212,61 @@ const Caja = () => {
         <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
           Control Pedidos 
         </Text>
-        {pedidos.map(p=>(
-            <Box className="cards" key={p.id_pedido} onClick={()=>mostrarPedido(p)}>
-              <Box className="card red">
-                  <strong className="tip">{p.id_pedido} - {p.mesa}</strong>
-                  {p.consumo.map(c=>(
-                    <p className="second-text" key={c.id_pedido_detalle}>🟣 {c.nombre}</p>
-                    ))
-                  }
-                  <p className="total"> TOTAL: {p.consumo.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2)}</p>
-              </Box>
+        <Box className="cards-pedidos">
+          {pedidos.map(p=>(
+            <Box className="card red" key={p.id_pedido} onClick={()=>mostrarPedido(p)}>
+              <strong className="tip">{p.id_pedido} - {p.mesa}</strong>
+              {p.consumo?.map(c=>(
+                <p className="second-text" key={c.id_pedido_detalle}><IconCheck size={'14px'}/> {c.nombre}</p>
+                ))
+              }
+              <p className="total"> TOTAL: {p.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2)}</p>
             </Box>
-          ))
-        }
+            ))
+          }
+        </Box>
         </>
       }
       <Modal opened={openedPedido} onClose={closePedido} title={'Cerrar Pedido'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <form onSubmit={formPedido.onSubmit((values) => cerrarPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
-          <NativeSelect
-            label="Sucursal:"
-            data={[...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
-            disabled
-            leftSection={<IconBuilding size={16} />}
-            key={formPedido.key("fid_sucursal")}
-            {...formPedido.getInputProps("fid_sucursal")}
-          />
           <NumberInput
-            label="Monto Apertura:"
-            placeholder="1000"
+            label="Monto Total Pedido:"
             allowDecimal={true}
             decimalScale={2}
             min={0}
-            max={100000}
+            max={10000}
+            prefix='Bs. '
+            readOnly
+            leftSection={<IconCash size={16} />}
+            key={formPedido.key('monto_total')}
+            {...formPedido.getInputProps('monto_total')}
+          />
+          <NativeSelect
+            label="Método Pago:"
+            data={[...parametricas.filter(f=>f.grupo == 'METODO_PAGO').map((e) => e.nombre)]}
+            disabled
+            leftSection={<IconCreditCard size={16} />}
+            key={formPedido.key("metodo_pago")}
+            {...formPedido.getInputProps("metodo_pago")}
+          />
+          {formPedido.getValues().metodo_pago == 'EFECTIVO' &&
+           <>
+            <NumberInput
+            label="Monto Efectivo:"
+            placeholder="Monto dado en efectivo" 
+            allowDecimal={false}
+            min={10}
+            max={10000}
             prefix='Bs. '
             required
-            leftSection={<IconMoneybag size={16} />}
-            key={formPedido.key('monto_inicio')}
-            {...formPedido.getInputProps('monto_inicio')}
-          />
+            onKeyUpCapture={calcularCambio}
+            leftSection={<IconCash size={16} />}
+            key={formPedido.key('monto_efectivo')}
+            {...formPedido.getInputProps('monto_efectivo')}
+            />
+            <Text size="xl" c="cyan.3">Monto Devolución: {cambio}</Text>
+           </>
+          }
           <Group justify="flex-end" mt="md">
             <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>Cerrar Pedido</Button>
           </Group>

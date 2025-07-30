@@ -251,7 +251,7 @@ tr{
   width:100%;
   font-size: 1.1rem;
   font-weight: bold;
-  padding: 0.5rem 1rem 0 0;
+  padding: 0.5rem 0 0 0;
   display: flex;
   justify-content: end;
 }
@@ -267,31 +267,34 @@ tr{
   display: flex;
   flex-direction: row;
   gap: 15px;
+  margin-bottom: 3rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 30px;
 }
 
 .cards-pedidos .red {
-  background-color: #522963;
-  background: linear-gradient(0deg, #10061c 57%, #3b2550 93%, #3f2954 100%);
+  /* background-color: #522963; */
+  background: linear-gradient(180deg, #40c9ff 0%, #115e7cff 80%);
 }
 
 .cards-pedidos .card {
   display: grid;
   align-items: start;
   min-height: 100px;
-  width: 300px;
+  width: 360px;
   border-radius: 10px;
   color: white;
   cursor: pointer;
   transition: 400ms;
   padding: 0.5rem 1rem;
-  box-shadow: 0 0 6px rgba(247, 245, 245, 0.5)
-            , 0 0 2px rgba(238, 236, 236, 0.4);
+  /* box-shadow: 0 6px 8px rgba(247, 245, 245, 0.5)
+            , 0 6px 8px rgba(238, 236, 236, 0.4); */
 }
 
 .cards-pedidos .card:hover {
-  transform: scale(1.2, 1.2);
-  border: 2px solid #8850a0;
-  box-shadow: 0 0 0;
+  transform: scale(1.1, 1.1);
+  /* box-shadow: 0 0 0; */
 }
 
 .cards-pedidos:hover > .card:not(:hover) {
@@ -307,8 +310,10 @@ tr{
   width: 100%;
   text-align: right;
   margin: 0.2rem 0;
+  font-size: 0.7rem;
 }
 .card .total{
   border-top: 1px solid gainsboro;
   align-self: flex-end;
+  font-size: 1rem;
 }

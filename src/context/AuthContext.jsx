@@ -49,10 +49,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('ip', resp.ip);
       console.log('el deco',deco);
       
-      if([1,5].includes(deco.rol)) navigate('/');
-      if([2].includes(deco.rol)) navigate('/pedido');
-      if([3].includes(deco.rol)) navigate('/caja');
-      if([4].includes(deco.rol)) navigate('/inventario');
+      if([1,5].includes(deco.id_rol)) navigate('/');
+      if([2].includes(deco.id_rol)) navigate('/pedido');
+      if([3].includes(deco.id_rol)) navigate('/caja');
+      if([4].includes(deco.id_rol)) navigate('/inventario');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       throw new Error(error.error || 'Error al iniciar sesión'); // Lanza un error para que pueda ser manejado en el componente que llama a login
