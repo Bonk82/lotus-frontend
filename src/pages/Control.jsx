@@ -4,7 +4,7 @@ import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Text, TextInput, Tooltip } from '@mantine/core';
+import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Select, Text, TextInput, Tooltip } from '@mantine/core';
 import { IconBottle, IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconSquarePlus, IconTimeDuration15, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
@@ -366,7 +366,7 @@ const Control = () => {
         <MantineReactTable table={tablePromo} />
       </Box>
       <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
-        Gestión de Precios
+        Gestión de Precios por Sucursal
       </Text>
       <Box pos='relative'>
         <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}/>
@@ -380,10 +380,12 @@ const Control = () => {
               key={formPrecio.key("fid_sucursal")}
               {...formPrecio.getInputProps("fid_sucursal")}
             />
-            <NativeSelect
+            <Select
               label="Producto:"
-              data={["SELECCIONE...",...productos.map((e) => {return{label:`${e.descripcion} - ${e.unidad}`,value:e.id_producto}}),]}
+              data={[...productos.filter(f=>f.pedido_minimo>0).map((e) => {return{label:`${e.descripcion} - ${e.unidad}`,value:e.id_producto.toString()}}),]}
               required
+              searchable
+              limit={5}
               leftSection={<IconBottle size={16} />}
               key={formPrecio.key("fid_producto")}
               {...formPrecio.getInputProps("fid_producto")}

@@ -139,7 +139,7 @@ const Proveedor = () => {
               placeholder="Nombre del proveedor o empresa"
               type='text'
               maxLength={100}
-              requiered
+              required
               leftSection={<IconUser size={16} />}
               key={form.key('nombre')}
               {...form.getInputProps('nombre')}
@@ -173,12 +173,11 @@ const Proveedor = () => {
               key={form.key('telefonos')}
               {...form.getInputProps('telefonos')}
             />
-            <NumberInput
+            <TextInput
               label="Cuenta Bancaria:"
-              placeholder="El numero de cuenta bancaria"
-              allowDecimal={false}
-              maxLength={15}
-              min={100000}
+              placeholder="Banco y n{umero de cuenta bancaria"
+              maxLength={20}
+              minLength={8}
               leftSection={<IconCashBanknote size={16} />}
               key={form.key('cuenta')}
               {...form.getInputProps('cuenta')}

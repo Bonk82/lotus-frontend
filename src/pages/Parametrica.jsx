@@ -157,7 +157,7 @@ const Parametrica = () => {
               placeholder="Nombre del proveedor o empresa"
               type='text'
               maxLength={100}
-              minLength={5}
+              minLength={2}
               required
               leftSection={<IconUser size={16} />}
               key={form.key('nombre')}

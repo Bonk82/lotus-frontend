@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { ActionIcon, Autocomplete, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Table, Text, TextInput, Tooltip,} from "@mantine/core";
+import { ActionIcon, Autocomplete, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Select, Table, Text, TextInput, Tooltip,} from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -35,7 +35,7 @@ const Inventario = () => {
       await consumirAPI("/listarProductos", { opcion: "T" });
     if (["T", "I"].includes(opcion))
       await consumirAPI("/listarIngresos", { opcion: "T" });
-    if (["T", "ID"].includes(opcion))
+    if (["T", "ID"].includes(opcion) && elIdIngreso)
       await consumirAPI("/listarIngresoDetalles", { opcion: "id.fid_ingreso",id:elIdIngreso });
     if (["T", "PR"].includes(opcion))
       await consumirAPI("/listarProveedores", { opcion: "T" });
@@ -43,6 +43,7 @@ const Inventario = () => {
       await consumirAPI("/listarSucursales", { opcion: "T" });
   };
 
+//#region PRODUCTO  
   const formProducto = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -168,26 +169,26 @@ const Inventario = () => {
     mantineTableProps: { striped: true },
     localization: MRT_Localization_ES,
     renderDetailPanel: ({ row }) => (
-      <Box style={{ width: "clamp(350px,50%,800px)" }} p="md">
-        {row.original?.componentes && componenetes(row.original)}
+      <Box style={{ width: "clamp(350px,50%,800px)", minHeight:'40px' }} p="xs">
+        {/* {row.original?.componentes && componenetes(row.original)} */}
+        {componenetes(row.original)}
       </Box>
     ),
   });
+//#endregion  
 
+//#region INGRESO
   const formIngreso = useForm({
     mode: "uncontrolled",
     initialValues: {
       id_ingreso: 0,
-      fid_proveedor: 0,
+      fid_proveedor: null,
       proveedor:'',
-      fid_sucursal: 0,
+      fid_sucursal: null,
       sucursal:'',
       motivo: "",
       fecha_ingreso: "",
-    },
-    // validate: {
-    //   tipo_cliente: (value) => (/^\S+@\S+$/.test(value) ? null : 'Correo Inválido'),
-    // },
+    }
   });
 
   const crudIngreso = async (data, eliminar) => {
@@ -200,16 +201,17 @@ const Inventario = () => {
     if (eliminar) newIngreso.operacion = "D";
     await consumirAPI("/crudIngreso", newIngreso);
     closeIngreso();
-    formProducto.reset();
+    formIngreso.reset();
     await cargarData("I");
   };
 
   const columnsIngreso = useMemo(
     () => [
-      { accessorKey: "proveedor", header: "proveedor" },
-      { accessorKey: "sucursal", header: "sucursal" },
-      { accessorKey: "motivo", header: "motivo" },
-      { accessorKey: "fecha_ingreso", header: "fecha_ingreso",Cell:({cell})=>(
+      { accessorKey: "id_ingreso", header: "N°" },
+      { accessorKey: "proveedor", header: "Proveedor" },
+      { accessorKey: "sucursal", header: "Cucursal" },
+      { accessorKey: "motivo", header: "Motivo" },
+      { accessorKey: "fecha_ingreso", header: "Fecha de Ingreso",Cell:({cell})=>(
           <span>{dayjs(cell.getValue()).format('DD/MM/YYYY')}</span>
         ) },
     ],
@@ -218,6 +220,7 @@ const Inventario = () => {
 
   const mostrarIngreso = (data) => {
     console.log("Mostrar registro:", data);
+    // if(dayjs(data?.fecha_registro).isBefore(dayjs().add(1,'day')))
     openIngreso();
     formIngreso.reset();
     if (data) formIngreso.setValues(data);
@@ -246,6 +249,7 @@ const Inventario = () => {
 
   const toogleMostrarDetalle = (v) =>{
     elIdIngreso == v ? setElIdIngreso(null) : setElIdIngreso(v);
+    if(elIdIngreso) cargarData('ID');
   }
 
   const tableIngreso = useMantineReactTable({
@@ -259,10 +263,10 @@ const Inventario = () => {
         <ActionIcon variant="subtle" title="Ver Detalle" onClick={() => toogleMostrarDetalle(row.original.id_ingreso)}>
           <IconEye color="cyan" />
         </ActionIcon>
-        <ActionIcon variant="subtle" title="Editar" onClick={() => mostrarIngreso(row.original)}>
+        <ActionIcon variant="subtle" title="Editar" onClick={() => mostrarIngreso(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
           <IconEdit color="orange" />
         </ActionIcon>
-        <ActionIcon variant="subtle" title="Eliminar" onClick={() => confirmarIngreso(row.original)}>
+        <ActionIcon variant="subtle" title="Eliminar" onClick={() => confirmarIngreso(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
           <IconTrash color="crimson" />
         </ActionIcon>
       </Box>
@@ -280,15 +284,10 @@ const Inventario = () => {
     ),
     mantineTableProps: { striped: true },
     localization: MRT_Localization_ES,
-    renderDetailPanel: ({ row }) => (
-      <Box style={{ width: "clamp(350px,40%,600px)" }} p="md">
-        <Kbd color="orange">Productos Ingresados</Kbd>
-        TODO: definir como se muestre el detalle de ingreso
-        {row.original?.componentes && componenetes(row.original?.componentes)}
-      </Box>
-    ),
   });
+//#endregion 
 
+//#region INGRESO DETALLE
   const formIngresoDetalle = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -325,7 +324,7 @@ const Inventario = () => {
   );
 
   const mostrarID = (data) => {
-    console.log("Mostrar registro:", data);
+    console.log("Mostrar registro:", data,elIdIngreso);
     openID();
     formIngresoDetalle.reset();
     if (data) formIngresoDetalle.setValues(data);
@@ -359,20 +358,19 @@ const Inventario = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{ gap: "0.8rem", display: "flex" }}>
-        <ActionIcon variant="subtle" onClick={() => mostrarID(row.original)}>
+        <ActionIcon variant="subtle" onClick={() => mostrarID(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
           <IconEdit color="orange" />
         </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmarID(row.original)}>
+        <ActionIcon variant="subtle" onClick={() => confirmarID(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
           <IconTrash color="crimson" />
         </ActionIcon>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
-      <Tooltip label="Registrar Nuevo Detalle" position="bottom" withArrow>
+      <Tooltip label="Nuevo Ingreso Producto" position="bottom" withArrow>
         <Box>
-          <Button onClick={() => mostrarID()} style={{ marginBottom: "1rem" }} size="sm" visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Nuevo Detalle</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }} hiddenFrom="md"
-          onClick={() => mostrarID()}>
+          <Button onClick={() => mostrarID()} style={{ marginBottom: "1rem" }} size="sm" visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }} disabled={dayjs(ingresos.find(f=>f.id_ingreso == elIdIngreso).fecha_registro).isBefore(dayjs().add(-1,'day'))}>Agregar Producto</Button>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }} hiddenFrom="md" onClick={() => mostrarID()} disabled={dayjs(ingresos.find(f=>f.id_ingreso == elIdIngreso).fecha_registro).isBefore(dayjs().add(-1,'day'))}>
             <IconSquarePlus />
           </ActionIcon>
         </Box>
@@ -381,7 +379,9 @@ const Inventario = () => {
     mantineTableProps: { striped: true },
     localization: MRT_Localization_ES,
   });
+  //#endregion
 
+//#region COMPONENTE
   const formComponente = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -389,14 +389,12 @@ const Inventario = () => {
       fid_producto_main:0,
       fid_producto: 0,
       cantidad:2000,
-      unidada: 'ML',
+      unidad: 'ML',
     },
   });
 
   const componenetes = (c) => {
-    console.log('los compos',c);
-    
-    const rows = c.componentes.map((row) => (
+    const rows = c.componentes?.map((row) => (
       <Table.Tr key={row.id_componente}>
         <Table.Td>{row.item}</Table.Td>
         <Table.Td>{row.cantidad}</Table.Td>
@@ -423,86 +421,19 @@ const Inventario = () => {
     );
     return (
       <>
-      <Button variant="gradient" onClick={()=>mostrarComponente({fid_producto_main:c.id_producto})}>Agregar Componente</Button>
-      <Table captionSide="top" width={50} striped highlightOnHover>
-        <Table.Caption style={{ backgroundColor: "transparent" }}>
-          Composición del Producto
-        </Table.Caption>
-        <Table.Thead>{ths}</Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
+      <Button variant="gradient" size="xs" pos={'absolute'} left={'1.5rem'} onClick={()=>mostrarComponente({fid_producto_main:c.id_producto})}>Agregar Componente</Button>
+      {c.componentes?.length >0 &&
+        <Table captionSide="top" width={50} striped highlightOnHover>
+          <Table.Caption style={{ backgroundColor: "transparent",fontSize:'1.5rem' }}>
+            {c.componentes?.find(f=>f.unidad == 'ML') ? 'Composición del Producto':'Mezcladores'}
+          </Table.Caption>
+          <Table.Thead style={{lineHeight:'0.6rem',marginTop:'0.7rem'}}>{ths}</Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      }
       </>
     );
-    // setItems(c.componentes);
-    // return(
-    //   <MantineReactTable table={tableComponente} />
-    // )
   };
-
-  // const columnsComponente = useMemo(
-  //   () => [
-  //     { accessorKey: "item", header: "Item" },
-  //     { accessorKey: "cantidad", header: "Cantidad" },
-  //     { accessorKey: "unidad", header: "Unidad" },
-  //   ],
-  //   []
-  // );
-
-  // const tableComponente = useMantineReactTable({
-  //   columns: columnsComponente,
-  //   data:items,
-  //   enableColumnFilters: false,
-  //   enablePagination: false,
-  //   enableSorting: false,
-  //   enableToolbarInternalActions:false,
-  //   defaultColumn: { minSize: 50, maxSize: 200, size: 100 },
-  //   initialState: { density: "xs"},
-  //   enableRowActions: true,
-  //   positionActionsColumn:"last",
-  //   enableTableFooter:false,
-  //   renderRowActions: ({ row }) => (
-  //     <Box style={{ gap: "0.8rem", display: "flex" }}>
-  //       <ActionIcon variant="subtle" title="Editar Item" onClick={() => mostrarComponente(row.original)}>
-  //         <IconEdit color="orange" />
-  //       </ActionIcon>
-  //       <ActionIcon variant="subtle" title="Eliminar Item" onClick={() => confirmarComponente(row.original)}>
-  //         <IconTrash color="crimson" />
-  //       </ActionIcon>
-  //     </Box>
-  //   ),
-  //   renderTopToolbarCustomActions: () => (
-  //     <Box className="subgrid-header">
-  //       <Tooltip label="Registrar Nuevo Item" position="bottom" withArrow>
-  //         <Box>
-  //           <Button
-  //             onClick={() => mostrarProducto()}
-  //             size="sm"
-  //             visibleFrom="md"
-  //             variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
-  //           >
-  //             Nuevo Item
-  //           </Button>
-  //           <ActionIcon
-  //             variant="gradient"
-  //             size="xl"
-  //             gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}
-  //             hiddenFrom="md"
-  //             onClick={() => mostrarProducto()}
-  //           >
-  //             <IconSquarePlus />
-  //           </ActionIcon>
-  //         </Box>
-  //       </Tooltip>
-  //       <Text>Composición del Producto</Text>
-  //     </Box>
-  //   ),
-  //   mantineTableProps: {
-  //     highlightOnHover: true,
-  //     striped: 'odd',
-  //     withRowBorders: true,
-  //     withTableBorder: true,
-  //   },
-  // });
 
   const mostrarComponente = (data) => {
     console.log("Mostrar registro:", data);
@@ -518,7 +449,7 @@ const Inventario = () => {
       children: (
         <Text size="sm">
           Está seguro de ELIMINAR el item:<br />
-          <strong>{`${e.producto}`}</strong><br />
+          <strong>{`${e.item}`}</strong><br />
         </Text>
       ),
       labels: { confirm: "Eliminar Item", cancel: "Cancelar" },
@@ -541,9 +472,11 @@ const Inventario = () => {
     await consumirAPI("/crudComponente", newComponente);
     closeComponente();
     formComponente.reset();
-    await consumirAPI("/listarProductos", { opcion: "p.id_producto",id:data.fid_producto_main});
+    // await consumirAPI("/listarProductos", { opcion: "p.id_producto",id:data.fid_producto_main});
+    await consumirAPI("/listarProductos", { opcion: "T"});
   };
-  /*id_ingreso_detalle:,fid_ingreso:,fid_producto:,cantidad:,precio_compra:,*/
+ //#endregion
+  
   return (
     <div>
       <Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
@@ -556,15 +489,14 @@ const Inventario = () => {
             style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             <NativeSelect
               label="Proveedor:"
-              data={["SELECCIONE...",...proveedores.map((e) => {return{label:e.nombre,value:e.id_proveedor}}),]}
-              required
+              data={[{label:"SELECCIONE...",value:null},...proveedores.map((e) => {return{label:e.nombre,value:e.id_proveedor}}),]}
               leftSection={<IconBottle size={16} />}
               key={formIngreso.key("fid_proveedor")}
               {...formIngreso.getInputProps("fid_proveedor")}
             />
             <NativeSelect
               label="Sucursal:"
-              data={["SELECCIONE...",...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
+              data={[...sucursales.filter(f=>f.codigo != 'LT00').map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               required
               leftSection={<IconBuilding size={16} />}
               key={formIngreso.key("fid_sucursal")}
@@ -586,6 +518,7 @@ const Inventario = () => {
               leftSection={<IconDatabase size={16} />}
               type="date"
               maxLength={10}
+              max={dayjs().format('YYYY-MM-DD')}
               required
               key={formIngreso.key("fecha_ingreso")}
               {...formIngreso.getInputProps("fecha_ingreso")}
@@ -600,19 +533,20 @@ const Inventario = () => {
         <MantineReactTable table={tableIngreso} />
       </Box>
       {elIdIngreso && 
-      <><Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
-        Gestión Productos del Ingresos
+      <><Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "#a8daeeff", to: "#40c9ff", deg: 90 }}>
+        Productos del Ingreso N° {elIdIngreso}
       </Text>
       <Box pos="relative">
         <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: "lg", blur: 4 }} loaderProps={{ color: "violet", type: "dots", size: "xl" }}/>
         <Modal opened={openedID} onClose={closeID} title={formIngresoDetalle.getValues().id_ingreso_detalle ? "Actualizar Producto Ingreso: " + formIngresoDetalle.getValues().id_ingreso_detalle : "Registrar Producto Ingreso"} size="lg" zIndex={20} overlayProps={{ backgroundOpacity: 0.55, blur: 3 }} yOffset="10dvh">
           <form onSubmit={formIngresoDetalle.onSubmit((values) => crudIngresoDetalle(values))}
             style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            <Autocomplete
+            <Select
               label="Producto:"
-              data={productos.filter(f=> f.pedido_minimo >0).map((e) => {return{label:e.descripcion,value:e.id_producto}})}
+              data={productos.filter(f=> f.pedido_minimo >0).map((e) => {return{label:e.descripcion,value:e.id_producto.toString()}})}
               required
-              limit={6}
+              limit={5}
+              searchable
               leftSection={<IconBottle size={16} />}
               key={formIngresoDetalle.key('fid_producto')}
               {...formIngresoDetalle.getInputProps('fid_producto')}
@@ -771,19 +705,18 @@ const Inventario = () => {
                 label="Cantidad:"
                 placeholder="Cantidad en mililitros"
                 leftSection={<IconDatabase size={16} />}
-                min={5}
+                min={1}
                 max={2000}
                 required
                 key={formComponente.key("cantidad")}
                 {...formComponente.getInputProps("cantidad")}
               />
-              <TextInput
+              <NativeSelect
                 label="Unidad Medida:"
-                placeholder="ML de la compra"
+                placeholder="ML por receta o UNIDAD por mezclador"
+                data={["SELECCIONE...",...parametricas.filter(f=>f.grupo == 'UNIDAD_MEDIDA').map((e) => e.nombre),]}
+                required
                 leftSection={<IconDatabase size={16} />}
-                type="text"
-                maxLength={20}
-                readOnly
                 key={formComponente.key("unidad")}
                 {...formComponente.getInputProps("unidad")}
               />
