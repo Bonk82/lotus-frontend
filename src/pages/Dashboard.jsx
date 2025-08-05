@@ -118,7 +118,6 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1>Dashboard</h1>
       <Center>
         <Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
           Datos del {dayjs(f1).format('DD MMM YYYY')} al {dayjs(f2).format('DD MMM YYYY')}
@@ -164,14 +163,14 @@ const Dashboard = () => {
           {listaProductos.length>0 && <BarChart
             h={300}
             data={listaProductos}
-            dataKey="descripcion"
+            dataKey="month"
             series={[{name:'existencia',color:'teal.6'}]}
             tickLine="y"
           />}
           {listaPedidos.length>0 && <BarChart
             h={300}
             data={listaPedidos}
-            dataKey="cliente"
+            dataKey="month"
             series={[{name:'monto_pago',color:'orange.4'}]}
             tickLine="y"
           />}
@@ -180,8 +179,10 @@ const Dashboard = () => {
           style={{marginTop:'1rem'}}
           h={400}
           data={pedidosDia}
-          dataKey="fecha_entrega"
-          series={[{ name: 'cantidad_entregada', color: 'indigo.4' }]}
+          // dataKey="fecha_entrega"
+          dataKey="date"
+          // series={[{ name: 'cantidad_entregada', color: 'indigo.4' }]}
+          series={[{ name: 'temperature', label: 'Avg. Temperature' }]}
           curveType="bump"
           connectNulls
         />}
