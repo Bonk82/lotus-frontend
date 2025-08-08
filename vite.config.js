@@ -12,22 +12,31 @@ export default defineConfig({
       manifest: {
         name: 'Lotus App',
         short_name: 'LTSapp',
-        description: 'Aplicación para la gesti{on de discotecas',
+        description: 'Aplicación para la gestión de discotecas',
         theme_color: '#7048e8',
+        display: 'standalone',
         icons: [
           {
-            src: 'icon-192x192.png',
+            src: '/icons/icon-2x72.png',
+            sizes: '72x72',
+            type: 'image/png'
+          },
+          {
+            src: '/icons/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'icon-512x512.png',
+            src: '/icons/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           }
         ]
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
