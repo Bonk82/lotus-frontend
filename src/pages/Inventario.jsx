@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { ActionIcon, Autocomplete, Box, Button, Group, Kbd, LoadingOverlay, Modal, NativeSelect, NumberInput, Select, Table, Text, TextInput, Tooltip,} from "@mantine/core";
+import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Select, Table, Text, TextInput, Tooltip,} from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -8,7 +8,7 @@ import { useForm } from "@mantine/form";
 import { useMemo } from "react";
 import { modals } from "@mantine/modals";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
-import { IconBottle, IconBuilding, IconCash, IconCategoryPlus, IconDatabase, IconDeviceFloppy, IconEdit, IconEye, IconFileBarcode, IconGlassGin, IconNumber10, IconSquarePlus, IconTicket, IconTrash,} from "@tabler/icons-react";
+import { IconBottle, IconBuilding, IconCalendar, IconCash, IconCategoryPlus, IconDatabase, IconDatabaseExclamation, IconDatabaseImport, IconDeviceFloppy, IconEdit, IconEye, IconFileBarcode, IconGlassGin, IconMaximize, IconSquarePlus, IconTicket, IconTrash,} from "@tabler/icons-react";
 import { MRT_Localization_ES } from "mantine-react-table/locales/es/index.esm.mjs";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -128,18 +128,16 @@ const Inventario = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{ gap: "0.8rem", display: "flex" }}>
-        <ActionIcon
-          variant="subtle"
-          onClick={() => mostrarProducto(row.original)}
-        >
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon
-          variant="subtle"
-          onClick={() => confirmarProducto(row.original)}
-        >
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="Editar Producto" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarProducto(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Producto" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmarProducto(row.original)}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -260,15 +258,21 @@ const Inventario = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{ gap: "0.8rem", display: "flex" }}>
-        <ActionIcon variant="subtle" title="Ver Detalle" onClick={() => toogleMostrarDetalle(row.original.id_ingreso)}>
-          <IconEye color="cyan" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" title="Editar" onClick={() => mostrarIngreso(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" title="Eliminar" onClick={() => confirmarIngreso(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="REvisar Detalle" position="bottom" withArrow>
+          <ActionIcon variant="subtle" title="Ver Detalle" onClick={() => toogleMostrarDetalle(row.original.id_ingreso)}>
+            <IconEye color="cyan" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Editar Ingreso" position="bottom" withArrow>
+          <ActionIcon variant="subtle" title="Editar" onClick={() => mostrarIngreso(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Ingreso" position="bottom" withArrow>
+          <ActionIcon variant="subtle" title="Eliminar" onClick={() => confirmarIngreso(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -358,12 +362,16 @@ const Inventario = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{ gap: "0.8rem", display: "flex" }}>
-        <ActionIcon variant="subtle" onClick={() => mostrarID(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmarID(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="Editar Detalle" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarID(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Detalle" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmarID(row.original)} disabled={dayjs(row.original.fecha_registro).isBefore(dayjs().add(-1,'day'))}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -505,7 +513,7 @@ const Inventario = () => {
             <TextInput
               label="Motivo del Ingreso:"
               placeholder="Compra de Productos"
-              leftSection={<IconDatabase size={16} />}
+              leftSection={<IconDatabaseImport size={16} />}
               type="text"
               maxLength={100}
               required
@@ -515,7 +523,7 @@ const Inventario = () => {
             <TextInput
               label="Fecha Ingreso:"
               placeholder="Fecha de la compra"
-              leftSection={<IconDatabase size={16} />}
+              leftSection={<IconCalendar size={16} />}
               type="date"
               maxLength={10}
               max={dayjs().format('YYYY-MM-DD')}
@@ -627,7 +635,7 @@ const Inventario = () => {
             <TextInput
               label="Tamaño Presentación:"
               placeholder="750 ml"
-              leftSection={<IconDatabase size={16} />}
+              leftSection={<IconMaximize size={16} />}
               type="text"
               maxLength={100}
               required
@@ -641,7 +649,7 @@ const Inventario = () => {
               max={1000}
               min={1}
               required
-              leftSection={<IconNumber10 size={16} />}
+              leftSection={<IconDatabaseExclamation size={16} />}
               key={formProducto.key("pedido_minimo")}
               {...formProducto.getInputProps("pedido_minimo")}
             />

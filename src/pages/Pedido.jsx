@@ -86,12 +86,18 @@ const Pedido = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" title="Editar Pedido" onClick={() => mostrarRegistro(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        {['PENDIENTE','CONFIRMADO'].includes(row.original.estado) && <ActionIcon variant="subtle" title="Revisar Consumo" onClick={() => cargarDetalle(row.original)}>
-          <IconBottle color="cyan" />
-        </ActionIcon>}
+        <Tooltip label="Editar Pedido" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        {['PENDIENTE','CONFIRMADO'].includes(row.original.estado) &&
+        <Tooltip label="Revisar Consumo" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => cargarDetalle(row.original)}>
+            <IconBottle color="cyan" />
+          </ActionIcon>
+        </Tooltip>
+        }
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -209,7 +215,7 @@ const Pedido = () => {
           loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={form.getValues().id_pedido?'Actualizar Pedido: '+ form.getValues().id_pedido:'Registrar Pedido'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <form onSubmit={form.onSubmit((values) => crudPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <TextInput
               label="Mesa:"
               placeholder="Ubicación o número de la mesa"

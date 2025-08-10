@@ -5,7 +5,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Select, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconBottle, IconBuilding, IconCashBanknote, IconDeviceFloppy, IconEdit, IconSquarePlus, IconTimeDuration15, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconAlignLeft, IconBottle, IconBuilding, IconCashBanknote, IconCashMinus, IconCategoryPlus, IconDeviceFloppy, IconDialpad, IconEdit, IconHours24, IconMatrix, IconSquarePlus, IconTimeDuration15, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -149,12 +149,16 @@ const Control = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarPromo(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="Editar Promoción" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarPromo(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Promoción" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -230,9 +234,11 @@ const Control = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarPrecio(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
+        <Tooltip label="Editar Precio" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarPrecio(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -253,13 +259,13 @@ const Control = () => {
 
   return (
     <div>
-      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='2rem' my={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Promociones
       </Text>
       <Box pos='relative'>
         <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}/>
         <Modal opened={opened} onClose={close} title={formPromo.getValues().id_promocion?'Actualizar Promoción: '+ formPromo.getValues().id_promocion:'Registrar Promoción'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={formPromo.onSubmit((values) => crudPromocion(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <form onSubmit={formPromo.onSubmit((values) => crudPromocion(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <NativeSelect
               label="Sucursal:"
               data={[{label:'SELECCIONE...',value:0},...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
@@ -271,7 +277,7 @@ const Control = () => {
             <TextInput
               label="Nombre:"
               placeholder="Nombre de la promoción"
-              leftSection={<IconBuilding size={16} />}
+              leftSection={<IconAlignLeft size={16} />}
               type='text'
               maxLength={200}
               minLength={5}
@@ -281,12 +287,12 @@ const Control = () => {
             />
             <MultiSelect
               label="Días de promoción"
+              leftSection={<IconHours24 size={16} />}
               placeholder="Seleccione los días"
               data={semana}
               clearable
               searchable
               required
-              // defaultValue={diasSel}
               key={formPromo.key('dias')}
               {...formPromo.getInputProps('dias')}
             />
@@ -310,7 +316,7 @@ const Control = () => {
               label="Grupo Producto:"
               data={['SELECCIONE...',...parametricas.filter(f=>f.grupo=='GRUPO_PRODUCTO').map(e=>e.nombre)]}
               required
-              leftSection={<IconUser size={16} />}
+              leftSection={<IconCategoryPlus size={16} />}
               key={formPromo.key('grupo_producto')}
               {...formPromo.getInputProps('grupo_producto')}
             />
@@ -320,7 +326,7 @@ const Control = () => {
               required
               searchable  
               clearable
-              leftSection={<IconBuilding size={16} />}
+              leftSection={<IconBottle size={16} />}
               key={formPromo.key("productos")}
               {...formPromo.getInputProps("productos")}
             />
@@ -330,7 +336,7 @@ const Control = () => {
               allowDecimal={false}
               min={0}
               max={20}
-              leftSection={<IconCashBanknote size={16} />}
+              leftSection={<IconDialpad size={16} />}
               key={formPromo.key('cantidad')}
               {...formPromo.getInputProps('cantidad')}
             />
@@ -354,7 +360,7 @@ const Control = () => {
               min={0}
               max={100}
               suffix='%'
-              leftSection={<IconCashBanknote size={16} />}
+              leftSection={<IconCashMinus size={16} />}
               key={formPromo.key('descuento')}
               {...formPromo.getInputProps('descuento')}
             />
@@ -365,13 +371,13 @@ const Control = () => {
         </Modal>
         <MantineReactTable table={tablePromo} />
       </Box>
-      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='2rem' my={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Precios por Sucursal
       </Text>
       <Box pos='relative'>
         <LoadingOverlay visible={loading} zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}/>
         <Modal opened={openedPrecio} onClose={closePrecio} title={formPrecio.getValues().id_sucursal_producto?'Actualizar Precio: '+ formPrecio.getValues().id_sucursal_producto:'Registrar Precio'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={formPrecio.onSubmit((values) => crudPrecio(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <form onSubmit={formPrecio.onSubmit((values) => crudPrecio(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <NativeSelect
               label="Sucursal:"
               data={[...sucursales.filter(f=>f.nombre != 'TODAS').map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
@@ -396,7 +402,7 @@ const Control = () => {
               allowDecimal={false}
               min={0}
               max={9000}
-              leftSection={<IconCashBanknote size={16} />}
+              leftSection={<IconMatrix size={16} />}
               key={formPrecio.key('existencia')}
               {...formPrecio.getInputProps('existencia')}
             />

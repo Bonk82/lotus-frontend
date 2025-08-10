@@ -5,7 +5,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconCalendar, IconDeviceFloppy, IconEdit, IconGps, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconAlertHexagon, IconAlignLeft, IconBuilding, IconCalendar, IconDeviceFloppy, IconEdit, IconGps, IconId, IconMail, IconScan, IconSquarePlus, IconTrash, IconUser, IconUserCircle } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -103,12 +103,16 @@ const Personal = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarSucursal(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmarSucursal(row.original)}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="Editar Sucursal" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarSucursal(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Sucursal" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmarSucursal(row.original)}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -122,7 +126,7 @@ const Personal = () => {
       </Tooltip>
     ),
     mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
-    mantineTableProps:{striped: true,},
+    mantineTableProps:{striped:true},
     localization:MRT_Localization_ES
   });
 
@@ -162,17 +166,17 @@ const Personal = () => {
 
   const columnsUsuario = useMemo(
     () => [
-      { accessorKey: 'fid_rol',header: 'fid_rol',},
-      { accessorKey: 'fid_sucursal',header: 'fid_sucursal',},
-      { accessorKey: 'ci',header: 'ci',},
-      { accessorKey: 'fecha_nacimiento',header: 'fecha_nacimiento',Cell:({cell})=>(
+      { accessorKey: 'rol',header: 'Rol',},
+      { accessorKey: 'sucursal',header: 'Sucursal',},
+      { accessorKey: 'ci',header: 'Documento',},
+      { accessorKey: 'fecha_nacimiento',header: 'Fecha Nacimiento',Cell:({cell})=>(
           <span>{dayjs(cell.getValue()).format('DD/MM/YYYY')}</span>)},
-      { accessorKey: 'nombres',header: 'nombres',},
-      { accessorKey: 'paterno',header: 'paterno',},
-      { accessorKey: 'materno',header: 'materno',},
-      { accessorKey: 'correo',header: 'correo',},
-      { accessorKey: 'telefonos',header: 'telefonos',},
-      { accessorKey: 'estado',header: 'estado',},
+      { accessorKey: 'nombres',header: 'Nombres',},
+      { accessorKey: 'paterno',header: 'Paterno',},
+      { accessorKey: 'materno',header: 'Materno',},
+      { accessorKey: 'correo',header: 'Correo',},
+      { accessorKey: 'telefonos',header: 'Telefonos',},
+      { accessorKey: 'estado',header: 'Estado',},
     ],
     [],
   );
@@ -210,12 +214,16 @@ const Personal = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarUsuario(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmarUsuario(row.original)}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="Editar Usuario" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarUsuario(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Usuario" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmarUsuario(row.original)}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -235,6 +243,107 @@ const Personal = () => {
 
   return (
     <div>
+      <Text size='2rem' mb={'lg'} mt={15} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        Gestión de Usuarios
+      </Text>
+      <Box pos='relative'>
+        <LoadingOverlay
+          visible={loading}
+          zIndex={39}
+          overlayProps={{ radius: 'lg', blur: 4 }}
+          loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
+        />
+        <Modal opened={openedUsuario} onClose={closeUsuario} title={formUsuario.getValues().id_usuario?'Actualizar Usuario: '+ formUsuario.getValues().id_usuario:'Registrar Usuario'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'>   
+          <form onSubmit={formUsuario.onSubmit((values) => crudUsuario(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
+            <NativeSelect
+              label="Rol Asignado:"
+              data={[{label:'SELECCIONE...',value:null},...roles.map(e=>{return {label:e.nombre,value:e.id_rol}})]}
+              required
+              leftSection={<IconUserCircle size={16} />}
+              key={formUsuario.key('fid_rol')}
+              {...formUsuario.getInputProps('fid_rol')}
+            />
+            <NativeSelect
+              label="Sucursal Asignado:"
+              data={[{label:'SELECCIONE...',value:null},...sucursales.map(e=>{return {label:e.nombre,value:e.id_sucursal}})]}
+              leftSection={<IconBuilding size={16} />}
+              key={formUsuario.key('fid_sucursal')}
+              {...formUsuario.getInputProps('fid_sucursal')}
+            />
+            <TextInput
+              label="Número Documento:"
+              placeholder="Número de Cédula de Identidad"
+              type='text'
+              required
+              maxLength={20}
+              leftSection={<IconId size={16} />}
+              key={formUsuario.key('ci')}
+              {...formUsuario.getInputProps('ci')}
+            />
+            <TextInput
+              label="Fecha Nacimiento:"
+              placeholder='Fecha Nacimeinto'
+              type='date'
+              maxLength={20}
+              leftSection={<IconCalendar size={16} />}
+              key={formUsuario.key('fecha_nacimiento')}
+              {...formUsuario.getInputProps('fecha_nacimiento')}
+            />
+            <TextInput
+              label="Nombre:"
+              placeholder="Nombre del usuario"
+              type='text'
+              maxLength={50}
+              minLength={3}
+              required
+              leftSection={<IconAlignLeft size={16} />}
+              key={formUsuario.key('nombres')}
+              {...formUsuario.getInputProps('nombres')}
+            />
+            <TextInput
+              label="Apellido Paterno:"
+              placeholder="Apellido Paterno del usuario"
+              type='text'
+              maxLength={100}
+              required
+              leftSection={<IconAlignLeft size={16} />}
+              key={formUsuario.key('paterno')}
+              {...formUsuario.getInputProps('paterno')}
+            />
+            <TextInput
+              label="Apellido Materno:"
+              placeholder="Apellido Materno del usuario"
+              type='text'
+              maxLength={100}
+              leftSection={<IconAlignLeft size={16} />}
+              key={formUsuario.key('materno')}
+              {...formUsuario.getInputProps('materno')}
+            />
+            <TextInput
+              label="Email:"
+              placeholder="Correo del usuario"
+              type='email'
+              maxLength={100}
+              leftSection={<IconMail size={16} />}
+              key={formUsuario.key('correo')}
+              {...formUsuario.getInputProps('correo')}
+            />
+            <NativeSelect
+              label="Estado del Usuario:"
+              data={['SELECCIONE...',...parametricas.filter(f=>f.grupo == 'ESTADO_USUARIO').map(e=>e.nombre)]}
+              required
+              leftSection={<IconAlertHexagon size={16} />}
+              key={formUsuario.key('estado')}
+              {...formUsuario.getInputProps('estado')}
+            />
+            <Group justify="flex-end" mt="md">
+              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formUsuario.getValues().id_usuario ? 'Registrar':'Actualizar'} Usuario</Button>
+            </Group>
+          </form>
+        </Modal>
+        <MantineReactTable table={tableUsuario} />
+      </Box>
+
       <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Sucursales
       </Text>
@@ -246,14 +355,14 @@ const Personal = () => {
           loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={formSucursal.getValues().id_sucursal?'Actualizar Sucursal: '+ formSucursal.getValues().id_sucursal:'Registrar Sucursal'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={formSucursal.onSubmit((values) => crudSucursal(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <form onSubmit={formSucursal.onSubmit((values) => crudSucursal(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <TextInput
               label="Código:"
               placeholder="Código de la sucursal"
               type='text'
               maxLength={20}
               requiered
-              leftSection={<IconGps size={16} />}
+              leftSection={<IconScan size={16} />}
               key={formSucursal.key('codigo')}
               {...formSucursal.getInputProps('codigo')}
             />
@@ -299,107 +408,6 @@ const Personal = () => {
           </form>
         </Modal>
         <MantineReactTable table={tableSucursal} />
-      </Box>
-
-      <Text size='2rem' mb={'lg'} mt={15} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
-        Gestión de Usuarios
-      </Text>
-      <Box pos='relative'>
-        <LoadingOverlay
-          visible={loading}
-          zIndex={39}
-          overlayProps={{ radius: 'lg', blur: 4 }}
-          loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
-        />
-        <Modal opened={openedUsuario} onClose={closeUsuario} title={formUsuario.getValues().id_usuario?'Actualizar Usuario: '+ formUsuario.getValues().id_usuario:'Registrar Usuario'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'>   
-          <form onSubmit={formUsuario.onSubmit((values) => crudUsuario(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
-            <NativeSelect
-              label="Rol Asignado:"
-              data={[{label:'SELECCIONE...',value:null},...roles.map(e=>{return {label:e.nombre,value:e.id_rol}})]}
-              required
-              leftSection={<IconUser size={16} />}
-              key={formUsuario.key('fid_rol')}
-              {...formUsuario.getInputProps('fid_rol')}
-            />
-            <NativeSelect
-              label="Sucursal Asignado:"
-              data={[{label:'SELECCIONE...',value:null},...sucursales.map(e=>{return {label:e.nombre,value:e.id_sucursal}})]}
-              leftSection={<IconUser size={16} />}
-              key={formUsuario.key('fid_sucursal')}
-              {...formUsuario.getInputProps('fid_sucursal')}
-            />
-            <TextInput
-              label="Número Documento:"
-              placeholder="Número de Cédula de Identidad"
-              type='text'
-              requiered
-              maxLength={20}
-              leftSection={<IconGps size={16} />}
-              key={formUsuario.key('ci')}
-              {...formUsuario.getInputProps('ci')}
-            />
-            <TextInput
-              label="Fecha Nacimiento:"
-              placeholder='Fecha Nacimeinto'
-              type='date'
-              maxLength={20}
-              leftSection={<IconCalendar size={16} />}
-              key={formUsuario.key('fecha_nacimiento')}
-              {...formUsuario.getInputProps('fecha_nacimiento')}
-            />
-            <TextInput
-              label="Nombre:"
-              placeholder="Nombre del usuario"
-              type='text'
-              maxLength={50}
-              minLength={3}
-              requiered
-              leftSection={<IconUser size={16} />}
-              key={formUsuario.key('nombres')}
-              {...formUsuario.getInputProps('nombres')}
-            />
-            <TextInput
-              label="Apellido Paterno:"
-              placeholder="Apellido Paterno del usuario"
-              type='text'
-              maxLength={100}
-              required
-              leftSection={<IconGps size={16} />}
-              key={formUsuario.key('paterno')}
-              {...formUsuario.getInputProps('paterno')}
-            />
-            <TextInput
-              label="Apellido Materno:"
-              placeholder="Apellido Materno del usuario"
-              type='text'
-              maxLength={100}
-              leftSection={<IconGps size={16} />}
-              key={formUsuario.key('materno')}
-              {...formUsuario.getInputProps('materno')}
-            />
-            <TextInput
-              label="Email:"
-              placeholder="Correo del usuario"
-              type='email'
-              maxLength={100}
-              leftSection={<IconGps size={16} />}
-              key={formUsuario.key('correo')}
-              {...formUsuario.getInputProps('correo')}
-            />
-            <NativeSelect
-              label="Estado del Usuario:"
-              data={['SELECCIONE...',...parametricas.filter(f=>f.grupo == 'ESTADO_USUARIO').map(e=>e.nombre)]}
-              required
-              leftSection={<IconUser size={16} />}
-              key={formUsuario.key('estado')}
-              {...formUsuario.getInputProps('estado')}
-            />
-            <Group justify="flex-end" mt="md">
-              <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!formUsuario.getValues().id_usuario ? 'Registrar':'Actualizar'} Usuario</Button>
-            </Group>
-          </form>
-        </Modal>
-        <MantineReactTable table={tableUsuario} />
       </Box>
     </div>
   )

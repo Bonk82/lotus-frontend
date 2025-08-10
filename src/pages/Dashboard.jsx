@@ -6,11 +6,12 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { DatePickerInput } from "@mantine/dates";
 import { BarChart,LineChart } from '@mantine/charts';
+import { IconCalendar } from "@tabler/icons-react";
 
 const Dashboard = () => {
   const { user } = UserAuth();
   const { loading, consumirAPI, productos, parametricas,ingresos,pedidos,sucursales} = DataApp();
-  const colores = ['violet.6','green.6','red.6'];
+  const colores = ['violet.6','blue.6','teal.6','indigo.6'];
   const [f1, setF1] = useState(dayjs().startOf('month'))
   const [f2, setF2] = useState(dayjs().endOf('month'))
 
@@ -138,6 +139,7 @@ const Dashboard = () => {
         <Grid my={12} display='flex' align='end'>
           <Grid.Col span={{ base: 12, lg: 2 }}>
             <DatePickerInput
+              leftSection={<IconCalendar size={18} stroke={1.5} />}
               value={f1}
               onChange={setF1}
               label="Fecha Inicio"
@@ -148,6 +150,7 @@ const Dashboard = () => {
           </Grid.Col>
           <Grid.Col span={{ base: 12, lg: 2 }}>
             <DatePickerInput
+              leftSection={<IconCalendar size={18} stroke={1.5} />}
               value={f2}
               onChange={setF2}
               label="Fecha Fin"
@@ -164,14 +167,22 @@ const Dashboard = () => {
             h={300}
             data={listaProductos}
             dataKey="month"
-            series={[{name:'existencia',color:'teal.6'}]}
+            series={[
+              { name: 'Smartphones', color: colores[0] },
+              { name: 'Laptops', color: colores[1] },
+              { name: 'Tablets', color: colores[2] },
+            ]}
             tickLine="y"
           />}
           {listaPedidos.length>0 && <BarChart
             h={300}
             data={listaPedidos}
             dataKey="month"
-            series={[{name:'monto_pago',color:'orange.4'}]}
+            series={[
+              { name: 'Smartphones', color: colores[0] },
+              { name: 'Laptops', color: colores[1] },
+              { name: 'Tablets', color: colores[2] },
+            ]}
             tickLine="y"
           />}
         </Box>
@@ -182,7 +193,11 @@ const Dashboard = () => {
           // dataKey="fecha_entrega"
           dataKey="date"
           // series={[{ name: 'cantidad_entregada', color: 'indigo.4' }]}
-          series={[{ name: 'temperature', label: 'Avg. Temperature' }]}
+          series={[
+            { name: 'Apples', color: colores[0] },
+            { name: 'Oranges', color: colores[1] },
+            { name: 'Tomatoes', color: colores[2] },
+          ]}
           curveType="bump"
           connectNulls
         />}

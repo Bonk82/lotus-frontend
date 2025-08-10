@@ -92,7 +92,7 @@ const Caja = () => {
         ) },
       { accessorKey: 'usuario_inicio',header: 'Usuario Inicio',},
       { accessorKey: 'monto_inicio',header: 'Monto Inicio', mantineTableBodyCellProps: {align: 'right'}},
-      { accessorKey: 'usuario_cierre',header: 'usuario Cierre',},
+      { accessorKey: 'usuario_cierre',header: 'Usuario Cierre',},
       { accessorKey: 'monto_cierre_qr',header: 'Cierre QR',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_tarjeta',header: 'Cierre TRJ',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_efectivo',header: 'Cierre EFE',mantineTableBodyCellProps: {align: 'right'}},
@@ -228,7 +228,7 @@ const Caja = () => {
         </>
       }
       <Modal opened={openedPedido} onClose={closePedido} title={'Cerrar Pedido'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-        <form onSubmit={formPedido.onSubmit((values) => cerrarPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+        <form onSubmit={formPedido.onSubmit((values) => cerrarPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
           <NumberInput
             label="Monto Total Pedido:"
             allowDecimal={true}
@@ -282,7 +282,7 @@ const Caja = () => {
         <LoadingOverlay visible={loading}  zIndex={39} overlayProps={{ radius: 'lg', blur: 4 }} loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={form.getValues().id_control_caja?'Actualizar CAJA: '+ form.getValues().id_control_caja:'Registrar CAJA'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudCaja(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <form onSubmit={form.onSubmit((values) => crudCaja(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <NativeSelect
               label="Sucursal:"
               data={[...sucursales.map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
@@ -313,7 +313,7 @@ const Caja = () => {
               {...form.getInputProps('monto_inicio')}
             />
             {form.getValues().id_control_caja > 0 &&
-              <Box>
+              <>
                 <NativeSelect
                   label="Usuario Cierre:"
                   data={[{label:user?.cuenta,value:user?.usuario},...usuarios.map((e) => {return{label:e.cuenta,value:e.id_usuario}}),]}
@@ -378,7 +378,7 @@ const Caja = () => {
                   key={form.key("estado")}
                   {...form.getInputProps("estado")}
                 />
-              </Box>
+              </>
             }
             <Group justify="flex-end" mt="md">
               <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>{!form.getValues().id_control_caja ? 'Registrar':'Actualizar'} Caja</Button>

@@ -1,3 +1,4 @@
+import 'dayjs/locale/es';
 import { Route, Routes } from 'react-router-dom'
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -26,6 +27,7 @@ import Header from './components/Header';
 import Navbar from './components/Navbar';
 import { useLocation } from 'react-router-dom';
 import { DataProvider } from './context/DataContext';
+import { DatesProvider } from '@mantine/dates';
 
 const myTheme =createTheme({
   primaryColor:'violet',
@@ -76,7 +78,7 @@ function App() {
             transitionTimingFunction='ease'
             style={{maxWidth: '100vw', overflowX: 'hidden'}}
           >
-            <AppShell.Header style={{ backgroundColor: 'black', color: '#9775fa' , borderBottom: '1px solid #9775fa',boxShadow: '0 2px 10px rgba(144, 64, 168, 0.7)'}}>
+            <AppShell.Header style={{ backgroundColor: 'rgba(0,0,0,0.8)',backdropFilter:' blur(10px)', color: '#9775fa' , borderBottom: '1px solid #9775fa',boxShadow: '0 2px 10px rgba(144, 64, 168, 0.7)'}}>
               <Group h="100%" px="md" style={{ justifyContent: 'space-between'}} color='primary'>
                 <Group align="center" h="100%" w={'50%'} gap="s" style={{color: '#9775fa', fontSize: '1.2rem', fontWeight: 'bold',display:"flex" }}>
                   <Burger color="violet.4" opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" disabled={inicio} />
@@ -90,7 +92,8 @@ function App() {
             <AppShell.Navbar w={isMobile ? '100vw' : 300} p="sm" style={{overflow:'hidden',borderRight:'1px solid #9775fa'}} bg={{base:'#180c26',md:'transparent'}} onClick={toggleMobile}>
               <Navbar/>
             </AppShell.Navbar>
-            <AppShell.Main style={{position:"relative",paddingTop:'5rem'}}>
+            <AppShell.Main style={{position:"relative",paddingTop:'5rem',overflow:'hidden'}}>
+              <DatesProvider settings={{ locale: 'es' }}>
               <Routes>
                 <Route path="/login" element={<Login/>} />
                 <Route path="/" element={<Dashboard/>} />
@@ -103,6 +106,7 @@ function App() {
                 <Route path="/parametrica" element={<ProtectedRoute><Parametrica/></ProtectedRoute>} />
                 <Route path="*" element={<h1>404 Página no encontrada</h1>} />
               </Routes>
+              </DatesProvider>
             </AppShell.Main>
           </AppShell>
         </ModalsProvider>

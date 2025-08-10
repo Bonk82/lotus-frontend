@@ -97,12 +97,16 @@ const Proveedor = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="Editar Proveedor" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Proveedor" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -133,7 +137,7 @@ const Proveedor = () => {
           loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={form.getValues().id_proveedor?'Actualizar Proveedor: '+ form.getValues().id_proveedor:'Registrar Proveedor'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudProveedor(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <form onSubmit={form.onSubmit((values) => crudProveedor(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <TextInput
               label="Nombre:"
               placeholder="Nombre del proveedor o empresa"
@@ -175,7 +179,7 @@ const Proveedor = () => {
             />
             <TextInput
               label="Cuenta Bancaria:"
-              placeholder="Banco y n{umero de cuenta bancaria"
+              placeholder="Banco y núumero de cuenta bancaria"
               maxLength={20}
               minLength={8}
               leftSection={<IconCashBanknote size={16} />}

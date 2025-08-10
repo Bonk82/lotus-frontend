@@ -79,6 +79,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('ip');
     console.log('saliendo');
     navigate('/login'); // Redirige a la página de login después del logout
   };

@@ -95,12 +95,16 @@ const Parametrica = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
-        <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
-          <IconEdit color="orange" />
-        </ActionIcon>
-        <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
-          <IconTrash color="crimson" />
-        </ActionIcon>
+        <Tooltip label="Editar Paramétrica" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
+            <IconEdit color="orange" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Eliminar Paramétrica" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmar(row.original)}>
+            <IconTrash color="crimson" />
+          </ActionIcon>
+        </Tooltip>
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
@@ -131,7 +135,7 @@ const Parametrica = () => {
           loaderProps={{ color: 'violet', type: 'dots',size:'xl' }}
         />
         <Modal opened={opened} onClose={close} title={form.getValues().id_clasificador?'Actualizar Paramétrica: '+ form.getValues().id_clasificador:'Registrar Paramétrica'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
-          <form onSubmit={form.onSubmit((values) => crudParametrica(values))} style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+          <form onSubmit={form.onSubmit((values) => crudParametrica(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <TextInput
               label="Grupo:"
               placeholder="Grupo clasificador"

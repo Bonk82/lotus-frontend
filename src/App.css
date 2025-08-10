@@ -18,7 +18,7 @@
 }
 
 #root {
-  max-width: 1440px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 0 clamp(0.5rem, 4vw, 2rem);
   text-align: center;
@@ -105,6 +105,10 @@ tr{
   background-color: var(--primary-backgrounbd-color) !important;
 }
 .mantine-Input-input,.mantine-Select-input{
+  background-color: var(--primary-backgrounbd-color) !important;
+}
+
+.mantine-Popover-dropdown{
   background-color: var(--primary-backgrounbd-color) !important;
 }
 

@@ -5,7 +5,7 @@ import {jwtDecode} from "jwt-decode";
 
 const ProtectedRoute = ({ children }) => {
   const { user,logout } = UserAuth();
-  console.log('el user en protected',user);
+  // console.log('el user en protected',user);
   let storedUser;
   if(!user){
     storedUser = localStorage.getItem('token');

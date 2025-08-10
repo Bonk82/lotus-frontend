@@ -34,10 +34,10 @@ export const DataProvider = ({ children }) => {
   
   const toast = (title,message,type) =>{
     let color = type
-    if(type == 'success') color = 'violet.5';
-    if(type == 'info') color = 'cyan.5';
-    if(type == 'warning') color = 'yellow.5';
-    if(type == 'error') color = 'red.5';
+    if(type == 'success') color = 'violet.9';
+    if(type == 'info') color = 'blue.9';
+    if(type == 'warning') color = 'cyan.9';
+    if(type == 'error') color = 'red.9';
     notifications.show({
       title,
       message,
