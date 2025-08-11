@@ -79,8 +79,8 @@ function App() {
             style={{maxWidth: '100vw', overflowX: 'hidden'}}
           >
             <AppShell.Header style={{ backgroundColor: 'rgba(0,0,0,0.8)',backdropFilter:' blur(10px)', color: '#9775fa' , borderBottom: '1px solid #9775fa',boxShadow: '0 2px 10px rgba(144, 64, 168, 0.7)'}}>
-              <Group h="100%" px="md" style={{ justifyContent: 'space-between'}} color='primary'>
-                <Group align="center" h="100%" w={'50%'} gap="s" style={{color: '#9775fa', fontSize: '1.2rem', fontWeight: 'bold',display:"flex" }}>
+              <Group h="100%" px="md" style={{ justifyContent: 'space-between',overflowX:'hidden'}} color='primary'>
+                <Group align="center" h="100%" gap="s" style={{color: '#9775fa', fontSize: '1.2rem', fontWeight: 'bold',display:"flex" }}>
                   <Burger color="violet.4" opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" disabled={inicio} />
                   <Burger color="violet.4" opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" disabled={inicio} />
                   <Image src={'./assets/LOGO.png'} h={55} w={'auto'}></Image>

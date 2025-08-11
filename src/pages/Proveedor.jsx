@@ -126,7 +126,7 @@ const Proveedor = () => {
 
   return (
     <div>
-      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Proveedores
       </Text>
       <Box pos='relative'>

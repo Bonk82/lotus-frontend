@@ -209,7 +209,7 @@ const Caja = () => {
     <div>
       {pedidos.length>0 &&
         <>
-        <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        <Text size='clamp(1.5rem, 2vw, 2rem)' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
           Control Pedidos 
         </Text>
         <Box className="cards-pedidos">
@@ -272,7 +272,7 @@ const Caja = () => {
           </Group>
         </form>
       </Modal>
-      <Text size='2rem' mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Control de Cajas 
       </Text>
       {desface && <Alert variant="light" color="cyan" title="Alerta Control Caja" icon={icono}>
@@ -388,7 +388,7 @@ const Caja = () => {
         <MantineReactTable table={table} />
       </Box>
 
-      <Text size='2rem' mt={15} mb={'lg'} h={40} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' mt={15} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         {`Usuarios para ${sucursales.find(f=>f.id_sucursal == user?.sucursal)?.nombre}`}
       </Text>
       <Box pos="relative" className="grid-usuarios">

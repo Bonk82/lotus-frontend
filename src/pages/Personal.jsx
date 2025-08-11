@@ -243,7 +243,7 @@ const Personal = () => {
 
   return (
     <div>
-      <Text size='2rem' mb={'lg'} mt={15} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' mb={'lg'} mt={15} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Usuarios
       </Text>
       <Box pos='relative'>
@@ -344,7 +344,7 @@ const Personal = () => {
         <MantineReactTable table={tableUsuario} />
       </Box>
 
-      <Text size='2rem' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' my={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Gestión de Sucursales
       </Text>
       <Box pos='relative'>

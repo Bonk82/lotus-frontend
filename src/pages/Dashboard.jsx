@@ -120,7 +120,7 @@ const Dashboard = () => {
   return (
     <div>
       <Center>
-        <Text size="2rem" py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
+        <Text size='clamp(1.2rem, 2vw, 2rem)' py={5} mb={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
           Datos del {dayjs(f1).format('DD MMM YYYY')} al {dayjs(f2).format('DD MMM YYYY')}
         </Text>
       </Center>
