@@ -17,7 +17,7 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: '/icons/icon-2x72.png',
+            src: '/icons/icon-72x72.png',
             sizes: '72x72',
             type: 'image/png'
           },
