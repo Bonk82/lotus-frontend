@@ -341,7 +341,23 @@ const Personal = () => {
             </Group>
           </form>
         </Modal>
-        <MantineReactTable table={tableUsuario} />
+        <Box visibleFrom='md'>
+          <MantineReactTable table={tableUsuario} />
+        </Box>
+        <Box hiddenFrom='md'>
+          {usuarios.map(u=>(
+            <div key={u.id_usuario} className='card-box bg-blue'>
+              <div className="card-box bg-violet">
+                <div className="inner">
+                  <strong>{u.cuenta}</strong>
+                  <p>{u.rol}</p>
+                </div>
+                <div className="icon"><IconUser/></div>
+                <div className="card-box-footer">{u.estado}</div>
+              </div>
+            </div>
+          ))}
+        </Box>
       </Box>
 
       <Text size='clamp(1.5rem, 2vw, 2rem)' my={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
@@ -407,7 +423,23 @@ const Personal = () => {
             </Group>
           </form>
         </Modal>
-        <MantineReactTable table={tableSucursal} />
+        <Box visibleFrom='md'>
+          <MantineReactTable table={tableSucursal}/>
+        </Box>
+        <Box hiddenFrom='md'>
+          {sucursales.map(s=>(
+            <div key={s.id_sucursal} className='card-box bg-blue'>
+              <div className="card-box bg-blue">
+                <div className="inner">
+                  <strong>{s.nombre}</strong>
+                  <p>{s.direccion}</p>
+                </div>
+                <div className="icon"><IconBuilding/></div>
+                <div className="card-box-footer">{s.codigo}</div>
+              </div>
+            </div>
+          ))}
+        </Box>
       </Box>
     </div>
   )
