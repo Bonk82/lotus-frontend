@@ -346,15 +346,13 @@ const Personal = () => {
         </Box>
         <Box hiddenFrom='md'>
           {usuarios.map(u=>(
-            <div key={u.id_usuario} className='card-box bg-blue'>
-              <div className="card-box bg-violet">
-                <div className="inner">
-                  <strong>{u.cuenta}</strong>
-                  <p>{u.rol}</p>
-                </div>
-                <div className="icon"><IconUser/></div>
-                <div className="card-box-footer">{u.estado}</div>
+            <div key={u.id_usuario} className='card-box bg-violet' onClick={()=>mostrarUsuario(u)}>
+              <div className="inner">
+                <strong>{u.cuenta}</strong>
+                <p>{u.rol}</p>
               </div>
+              <div className="icon"><IconUser size={60}/></div>
+              <div className="card-box-footer">{u.estado}</div>
             </div>
           ))}
         </Box>
@@ -427,16 +425,14 @@ const Personal = () => {
           <MantineReactTable table={tableSucursal}/>
         </Box>
         <Box hiddenFrom='md'>
-          {sucursales.map(s=>(
-            <div key={s.id_sucursal} className='card-box bg-blue'>
-              <div className="card-box bg-blue">
-                <div className="inner">
-                  <strong>{s.nombre}</strong>
-                  <p>{s.direccion}</p>
-                </div>
-                <div className="icon"><IconBuilding/></div>
-                <div className="card-box-footer">{s.codigo}</div>
+          {sucursales.filter(f=>f.nombre != 'TODAS').map(s=>(
+            <div key={s.id_sucursal} className='card-box bg-blue' onClick={()=>mostrarSucursal(s)}>
+              <div className="inner">
+                <strong>{s.nombre}</strong>
+                <p>{s.direccion}</p>
               </div>
+              <div className="icon"><IconBuilding size={60}/></div>
+              <div className="card-box-footer">{s.codigo}</div>
             </div>
           ))}
         </Box>

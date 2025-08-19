@@ -326,7 +326,7 @@ tr{
 .card-box {
     font-family: sans-serif;
     position: relative;
-    color: #fff;
+    color: gainsboro;
     padding: 10px;
     margin: 20px 0px;
     border-radius: 8px;
@@ -356,24 +356,29 @@ tr{
   .card-box strong {
     display: block;
     width: 100%;
-    font-size: clamp(1rem,4vw,3rem);
+    font-size: clamp(1rem,5vw,3rem);
     font-weight: bold;
     white-space: nowrap;
     padding: 0;
     text-align: left;
   }
   .card-box p {
-    font-size: 1.5rem;
     font-style: italic;
     font-weight: 300;
     text-align: left;
-    margin: 0.5rem 0;
-    letter-spacing: 0.3rem;
+    margin-top: -0.4rem;
+    letter-spacing: 0.2rem;
+  }
+  .bg-violet p{
+    font-size: 1.5rem;
+  }
+  .bg-blue p{
+    font-size: 1.1rem;
   }
   .card-box .icon {
     position: absolute;
     top: auto;
-    bottom: 5px;
+    bottom: -15px;
     right: 10px;
     z-index: 0;
     font-size: 72px;
@@ -388,15 +393,20 @@ tr{
     right: 0px;
     bottom: 0px;
     padding: 0.3rem 1rem;
-    color: #03366d;
-    font-weight: 400;
+    font-weight: 600;
     /* background: rgba(0, 0, 0, 0.2); */
-    width: 100%;
+    width: 60%;
     text-decoration: none;
     border-radius: 0 0 8px 8px;
     text-align: center;
     letter-spacing: 0.6rem;
     transition: all 0.4s ease-in-out;
+  }
+  .bg-violet .card-box-footer{
+    color: #4b036d;
+  }
+  .bg-blue .card-box-footer{
+    color: #035974;
   }
   .card-box:hover .card-box-footer {
     color: gainsboro;
@@ -405,8 +415,8 @@ tr{
     letter-spacing: 1rem;
   }
   .bg-blue {
-    background: linear-gradient(to left, #007bff, #03366d);
+    background: linear-gradient(to left, #0184ac, #44afcf);
   }
   .bg-violet {
-    background: linear-gradient(to left, #9900ff, #4f036d);
+    background: linear-gradient(to left, #4f036d, #9900ff);
   }

@@ -36,46 +36,46 @@ const Dashboard = () => {
   const armarData= async (ped,prod,tran)=>{
     console.log('armar data',productos,ingresos,pedidos,sucursales);
     const data = [
-      { month: 'January', Smartphones: 1200, Laptops: 900, Tablets: 200 },
-      { month: 'February', Smartphones: 1900, Laptops: 1200, Tablets: 400 },
-      { month: 'March', Smartphones: 400, Laptops: 1000, Tablets: 200 },
-      { month: 'April', Smartphones: 1000, Laptops: 200, Tablets: 800 },
-      { month: 'May', Smartphones: 800, Laptops: 1400, Tablets: 1200 },
-      { month: 'June', Smartphones: 750, Laptops: 600, Tablets: 1000 },
+      { month: 'Enero', Efectivo: 1200, QR: 900, Tarjeta: 200 },
+      { month: 'Febrero', Efectivo: 1900, QR: 1200, Tarjeta: 400 },
+      { month: 'Marzo', Efectivo: 400, QR: 1000, Tarjeta: 200 },
+      { month: 'Abril', Efectivo: 1000, QR: 200, Tarjeta: 800 },
+      { month: 'Mayo', Efectivo: 800, QR: 1400, Tarjeta: 1200 },
+      { month: 'Junio', Efectivo: 750, QR: 600, Tarjeta: 1000 },
     ];
     setListaProductos(data)
     setListaPedidos(data)
 
     const data2 = [
       {
-        date: 'Mar 22',
-        Apples: 2890,
-        Oranges: 2338,
-        Tomatoes: 2452,
+        date: 'Agosto 12',
+        'Lotus Club Prado': 2890,
+        'Lotus Bar': 2338,
+        'The Jungle Club': 2452,
       },
       {
-        date: 'Mar 23',
-        Apples: 2756,
-        Oranges: 2103,
-        Tomatoes: 2402,
+        date: 'Agosto 13',
+        'Lotus Club Prado': 2756,
+        'Lotus Bar': 2103,
+        'The Jungle Club': 2402,
       },
       {
-        date: 'Mar 24',
-        Apples: 3322,
-        Oranges: 986,
-        Tomatoes: 1821,
+        date: 'Agosto 14',
+        'Lotus Club Prado': 3322,
+        'Lotus Bar': 986,
+        'The Jungle Club': 1821,
       },
       {
-        date: 'Mar 25',
-        Apples: 3470,
-        Oranges: 2108,
-        Tomatoes: 2809,
+        date: 'Agosto 15',
+        'Lotus Club Prado': 3470,
+        'Lotus Bar': 2108,
+        'The Jungle Club': 2809,
       },
       {
-        date: 'Mar 26',
-        Apples: 3129,
-        Oranges: 1726,
-        Tomatoes: 2290,
+        date: 'Agosto 16',
+        'Lotus Club Prado': 3129,
+        'Lotus Bar': 1726,
+        'The Jungle Club': 2290,
       },
     ];
     setPedidosDia(data2)
@@ -168,9 +168,9 @@ const Dashboard = () => {
             data={listaProductos}
             dataKey="month"
             series={[
-              { name: 'Smartphones', color: colores[0] },
-              { name: 'Laptops', color: colores[1] },
-              { name: 'Tablets', color: colores[2] },
+              { name: 'Efectivo', color: colores[0] },
+              { name: 'QR', color: colores[1] },
+              { name: 'Tarjeta', color: colores[2] },
             ]}
             tickLine="y"
           />}
@@ -179,9 +179,9 @@ const Dashboard = () => {
             data={listaPedidos}
             dataKey="month"
             series={[
-              { name: 'Smartphones', color: colores[0] },
-              { name: 'Laptops', color: colores[1] },
-              { name: 'Tablets', color: colores[2] },
+              { name: 'Efectivo', color: colores[0] },
+              { name: 'QR', color: colores[1] },
+              { name: 'Tarjeta', color: colores[2] },
             ]}
             tickLine="y"
           />}
@@ -194,12 +194,13 @@ const Dashboard = () => {
           dataKey="date"
           // series={[{ name: 'cantidad_entregada', color: 'indigo.4' }]}
           series={[
-            { name: 'Apples', color: colores[0] },
-            { name: 'Oranges', color: colores[1] },
-            { name: 'Tomatoes', color: colores[2] },
+            { name: 'Lotus Club Prado', color: colores[0] },
+            { name: 'Lotus Bar', color: colores[1] },
+            { name: 'The Jungle Club', color: colores[2] },
           ]}
           curveType="bump"
           connectNulls
+          withLegend='true'
         />}
       </Box>
     </div>
