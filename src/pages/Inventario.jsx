@@ -487,7 +487,7 @@ const Inventario = () => {
   
   return (
     <div>
-      <Text size='clamp(1.5rem, 2vw, 2rem)' py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
         Gestión de Ingresos
       </Text>
       <Box pos="relative">
@@ -541,7 +541,7 @@ const Inventario = () => {
         <MantineReactTable table={tableIngreso} />
       </Box>
       {elIdIngreso && 
-      <><Text size='clamp(1.5rem, 2vw, 2rem)' py={5} my={10} fw={900} variant="gradient" gradient={{ from: "#a8daeeff", to: "#40c9ff", deg: 90 }}>
+      <><Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} py={5} my={10} fw={900} variant="gradient" gradient={{ from: "#a8daeeff", to: "#40c9ff", deg: 90 }}>
         Productos del Ingreso N° {elIdIngreso}
       </Text>
       <Box pos="relative">
@@ -592,7 +592,7 @@ const Inventario = () => {
         <MantineReactTable table={tableIngresoDetalle} />
       </Box></>}
 
-      <Text size='clamp(1.5rem, 2vw, 2rem)' py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} py={5} my={10} fw={900} variant="gradient" gradient={{ from: "gainsboro", to: "violet", deg: 90 }}>
         Gestión de Productos
       </Text>
       <Box pos="relative">

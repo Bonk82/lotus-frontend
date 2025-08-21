@@ -240,7 +240,7 @@ tr{
 
 .grid-detalle{
   display: flex;
-  width: 60%;
+  width: clamp(380px,60%,1200px);
   margin: 2rem auto;
   flex-direction: column;
   justify-content: start;
@@ -332,7 +332,7 @@ tr{
     border-radius: 8px;
     min-width: 230px;
     height: 100px;
-    width: 350px;
+    width: 100%;
     box-shadow: 
         8px 8px 16px rgba(0, 0, 0, 0.5), /* Sombra exterior difusa */
         -4px -4px 10px rgba(255, 255, 255, 0.05), /* "Luz" suave superior-izquierda */
@@ -373,7 +373,7 @@ tr{
     font-size: 1.5rem;
   }
   .bg-blue p{
-    font-size: 1.1rem;
+    font-size: 0.8rem;
   }
   .card-box .icon {
     position: absolute;
@@ -415,7 +415,7 @@ tr{
     letter-spacing: 1rem;
   }
   .bg-blue {
-    background: linear-gradient(to left, #0184ac, #44afcf);
+    background: linear-gradient(to left, #0b5369, #44afcf);
   }
   .bg-violet {
     background: linear-gradient(to left, #4f036d, #9900ff);

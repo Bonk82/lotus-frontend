@@ -4,8 +4,8 @@ import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { ActionIcon, Alert, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconAlertCircle, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDeviceFloppy, IconEdit, IconMoneybag, IconSettings, IconSquarePlus, IconUser } from '@tabler/icons-react';
+import { ActionIcon, Alert, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
+import { IconAlertCircle, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDeviceFloppy, IconEdit, IconLock, IconMoneybag, IconSettings, IconSquarePlus, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -96,8 +96,8 @@ const Caja = () => {
       { accessorKey: 'monto_cierre_qr',header: 'Cierre QR',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_tarjeta',header: 'Cierre TRJ',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_efectivo',header: 'Cierre EFE',mantineTableBodyCellProps: {align: 'right'}},
-      { accessorKey: 'observaciones',header: 'Observaciones',},
-      { accessorKey: 'estado',header: 'Estado Caja',},
+      { accessorKey: 'observaciones',header: 'Observaciones',size:150},
+      { accessorKey: 'estado',header: 'Estado Caja'},
     ],
     [],
   );
@@ -123,7 +123,7 @@ const Caja = () => {
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
         <Tooltip label="Editar Caja" position="bottom" withArrow>
-          <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
+          <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)} disabled={row.original.estado == 'CIERRE FINAL'}>
             <IconEdit color="orange" />
           </ActionIcon>
         </Tooltip>
@@ -143,7 +143,7 @@ const Caja = () => {
           <Box>
             <Button onClick={()=>mostrarRegistro('CERRAR')} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Cerrar Caja</Button>
             <ActionIcon variant="gradient" size="xl" gradient={{ from: '#43ffff', to: '#005375', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro('CERRAR')}>
-              <IconSquarePlus />
+              <IconLock />
             </ActionIcon>
           </Box>
         </Tooltip>}
@@ -209,7 +209,7 @@ const Caja = () => {
     <div>
       {pedidos.length>0 &&
         <>
-        <Text size='clamp(1.5rem, 2vw, 2rem)' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
           Control Pedidos 
         </Text>
         <Box className="cards-pedidos">
@@ -272,7 +272,7 @@ const Caja = () => {
           </Group>
         </form>
       </Modal>
-      <Text size='clamp(1.5rem, 2vw, 2rem)' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         Control de Cajas 
       </Text>
       {desface && <Alert variant="light" color="cyan" title="Alerta Control Caja" icon={icono}>
@@ -361,11 +361,12 @@ const Caja = () => {
                   key={form.key('monto_cierre_efectivo')}
                   {...form.getInputProps('monto_cierre_efectivo')}
                 />
-                <TextInput
+                <Textarea
                   label="Observaciones:"
                   placeholder="observaciones para el cierre de caja"
-                  type='text'
                   maxLength={1000}
+                  minRows={2}
+                  autosize
                   leftSection={<IconUser size={16} />}
                   key={form.key('observaciones')}
                   {...form.getInputProps('observaciones')}
@@ -388,7 +389,7 @@ const Caja = () => {
         <MantineReactTable table={table} />
       </Box>
 
-      <Text size='clamp(1.5rem, 2vw, 2rem)' mt={15} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} mt={15} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         {`Usuarios para ${sucursales.find(f=>f.id_sucursal == user?.sucursal)?.nombre}`}
       </Text>
       <Box pos="relative" className="grid-usuarios">
