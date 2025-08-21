@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Lotus App',
-        short_name: 'LTSapp',
+        short_name: 'Lotus',
         description: 'Aplicación para la gestión de discotecas',
         theme_color: '#7048e8',
         display: 'standalone',
