@@ -27,7 +27,7 @@ const Pedido = () => {
   }, [user])
 
   const cargarData = async () =>{
-    if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'PEDIDO',id:user.sucursal });
+    await consumirAPI('/listarProductos', { opcion: 'PEDIDO',id:user.sucursal });
     await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
     if(sucursales.length==0) await consumirAPI('/listarSucursales', { opcion: 'T',id:0 })
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T',id:0 })
@@ -57,7 +57,7 @@ const Pedido = () => {
       { accessorKey: 'metodo_pago',header: 'Método Pago',},
       { accessorKey: 'estado',header: 'Estado',},
       { accessorKey: 'consumo',header: 'Consumo',Cell:({cell})=>(
-                <div>{cell.getValue()?.map(c => <div key={c.fid_producto || c.fid_promocion}>{c.producto || c.promocion}</div>)}</div>
+                <div>{cell.getValue()?.map(c => <div key={nanoid(5)}>{c.producto || c.promocion}</div>)}</div>
               )},
     ],
     [],
@@ -180,26 +180,26 @@ const Pedido = () => {
 
   return (
     <div>
-      <Text size='clamp(1.5rem, 2vw, 2rem)' mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
         {user?.sucursal && `Pedidos Sucursal - ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre}`}
         {!user?.sucursal && `No cuenta con sucursal vinculada. Por favor coordinar con el administrador`} 
       </Text>
       {idPedido && detalle?.length>0 &&
       <Box className="grid-detalle">
         {detalle.map(i=>(
-          <Chip defaultChecked variant="light" size="lg" radius={"lg"} key={(i.id || i.id_pedido_detalle)} onClick={()=>eliminarDetalle(i)}>{i.nombre} - Bs. {Number(i.precio_venta).toFixed(2)}</Chip>
+          <Chip defaultChecked variant="light" size="md" radius={"lg"} key={(i.id || i.id_pedido_detalle)} onClick={()=>eliminarDetalle(i)}>{i.nombre} - Bs. {Number(i.precio_venta).toFixed(0)}</Chip>
         ))
         }
         <Box className="total">
           <Button variant="gradient" leftSection={<IconCash size={14}/>} onClick={insertarDetalles}>
-            Confirmar<Space w="lg"/>Bs. {detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2)}
+            Confirmar<Space w="lg"/>Bs. {detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0)}
           </Button>
           {/* TOTAL : <Space w="lg" />{detalle.reduce((ac,el)=>ac+Number(el.precio),0).toFixed(2)} */}
         </Box>
       </Box>}
       {idPedido>0 && <Box pos={"relative"} mb={10}>
         <Box className="grid-pedido">
-          {parametricas.filter(f=>f.grupo == 'GRUPO_PRODUCTO').map(e => (
+          {parametricas.filter(f=>f.grupo == 'GRUPO_PRODUCTO' && f.sub_grupo == 'VENTA').map(e => (
             <Box my={10} className="card-prod" key={e.id_clasificador} onClick={()=>setGrupo(e.nombre)}>
               <img className="card-bg" src={`../assets/${e.nombre}.png`} alt=""/>
               <p className="heading">{e.nombre}</p>
@@ -228,7 +228,7 @@ const Pedido = () => {
             />
             <NativeSelect
               label="Método Pago:"
-              data={['SELECCIONE...',...parametricas.filter(f=>f.grupo == 'METODO_PAGO').map(e=>e.nombre)]}
+              data={[...parametricas.filter(f=>f.grupo == 'METODO_PAGO').map(e=>e.nombre)]}
               required
               leftSection={<IconUser size={16} />}
               key={form.key('metodo_pago')}
@@ -236,7 +236,7 @@ const Pedido = () => {
             />
             <NativeSelect
               label="Estado del Pedido:"
-              data={['SELECCIONE...',...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO').map(e=>e.nombre)]}
+              data={[...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO').map(e=>e.nombre)]}
               required
               disabled={user?.rol == 2}
               leftSection={<IconUser size={16} />}
