@@ -11,13 +11,14 @@ import { IconCalendar } from "@tabler/icons-react";
 const Dashboard = () => {
   const { user } = UserAuth();
   const { loading, consumirAPI, productos, parametricas,ingresos,pedidos,sucursales} = DataApp();
-  const colores = ['violet.6','blue.6','teal.6','indigo.6'];
+  const colores = ['violet.5','blue.5','teal.5','indigo.5','cyan.5','grape.5','pink.5','red.5','orange.5','yellow.5','lime.5','green.5'];
   const [f1, setF1] = useState(dayjs().startOf('month'))
   const [f2, setF2] = useState(dayjs().endOf('month'))
 
   const [listaProductos, setListaProductos] = useState([])
   const [listaPedidos, setListaPedidos] = useState([])
   const [pedidosDia, setPedidosDia] = useState([])
+  const [prodVendidos, setProdVendidos] = useState([])
 
   useEffect(() => {
     cargarData()
@@ -79,6 +80,11 @@ const Dashboard = () => {
       },
     ];
     setPedidosDia(data2)
+
+    const data3 = [
+      { month: 'January', Smartphones: 1200, Laptops: 900, Tablets: 200 },
+    ];
+    setProdVendidos(data3);
   }
 
   const obtenerReporte = async (tipo,data) =>{
@@ -162,30 +168,98 @@ const Dashboard = () => {
           <Grid.Col span={{ base: 12, lg: 3 }}><Button color='blue.2' variant='light' fullWidth onClick={()=>cargarData()} size='sm'>Cargar Transacciones</Button></Grid.Col>
           <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('DOS',pedidos)} size='sm'> Histórico Pedidos</Button></Grid.Col>
         </Grid>
-        <Box style={{display:'flex', gap:'1rem',gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))'}}>
-          {listaProductos.length>0 && <BarChart
-            h={300}
-            data={listaProductos}
-            dataKey="month"
-            series={[
-              { name: 'Efectivo', color: colores[0] },
-              { name: 'QR', color: colores[1] },
-              { name: 'Tarjeta', color: colores[2] },
-            ]}
-            tickLine="y"
-          />}
-          {listaPedidos.length>0 && <BarChart
-            h={300}
-            data={listaPedidos}
-            dataKey="month"
-            series={[
-              { name: 'Efectivo', color: colores[0] },
-              { name: 'QR', color: colores[1] },
-              { name: 'Tarjeta', color: colores[2] },
-            ]}
-            tickLine="y"
-          />}
+        <Box className="metrics-grid">
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Branches</div>
+              <div className="metric-icon">
+                  <i className="fas fa-code-branch"></i>
+              </div>
+            </div>
+            <div className="metric-value">1/10</div>
+            <div className="metric-description">
+              <i className="fas fa-info-circle"></i>
+              <span>Active repositories</span>
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Compute</div>
+              <div className="metric-icon">
+                  <i className="fas fa-server"></i>
+              </div>
+            </div>
+            <div className="metric-value">0/50 hours</div>
+            <div className="metric-description">
+              <i className="fas fa-info-circle"></i>
+              <span>Monthly usage</span>
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Storage</div>
+              <div className="metric-icon">
+                  <i className="fas fa-database"></i>
+              </div>
+            </div>
+            <div className="metric-value">0/5GB</div>
+            <div className="metric-description">
+              <i className="fas fa-info-circle"></i>
+              <span>Storage used</span>
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Network Transfer</div>
+              <div className="metric-icon">
+                  <i className="fas fa-wifi"></i>
+              </div>
+            </div>
+            <div className="metric-value">0/500GB</div>
+            <div className="metric-description">
+              <i className="fas fa-info-circle"></i>
+              <span>Monthly transfer</span>
+            </div>
+          </div>
         </Box>
+        <Box className="grid-dashboard">
+          <Box>
+            <Text size='lg' weight={500} mb={5}>Ventas por mes</Text>
+            {listaProductos.length>0 && <BarChart
+              h={300}
+              data={listaProductos}
+              dataKey="month"
+              withLegend
+              title="Productos más vendidos"
+              series={[
+                { name: 'Efectivo', color: colores[0] },
+                { name: 'QR', color: colores[1] },
+                { name: 'Tarjeta', color: colores[2] },
+              ]}
+              tickLine="y"
+            />}
+          </Box>
+          <Box>
+            <Text size='lg' weight={500} mb={5}>Pedidos por mes</Text>
+            {listaPedidos.length>0 && <BarChart
+              h={300}
+              data={listaPedidos}
+              dataKey="month"
+              title="Pedidos por mes"
+              series={[
+                { name: 'Efectivo', color: colores[0] },
+                { name: 'QR', color: colores[1] },
+                { name: 'Tarjeta', color: colores[2] },
+              ]}
+              withLegend
+              tickLine="y"
+            />}
+          </Box>
+        </Box>
+        <Text size='lg' weight={500} mt={40} mb={5}>Flujo de ventas</Text>
         {pedidosDia.length>0 && <LineChart
           style={{marginTop:'1rem'}}
           h={400}
@@ -202,6 +276,22 @@ const Dashboard = () => {
           connectNulls
           withLegend='true'
         />}
+      </Box>
+      <Box className="grid-dashboard" mt={40}>
+        <Box>
+          <Text size='lg' weight={500} mt={40} mb={5}>Productos más vendidos</Text>
+          <BarChart
+            h={300}
+            data={prodVendidos}
+            dataKey="month"
+            orientation="vertical"
+            withBarValueLabel
+            valueLabelProps={{ position: 'inside', fill: 'white',fontSize:'16px' }}
+            series={[{ name: 'Smartphones', color: colores[0] }, { name: 'Laptops', color: colores[1] }, { name: 'Tablets', color: colores[2] }]}
+            withLegend
+            withYAxis={false}
+          />
+        </Box>
       </Box>
     </div>
   )
