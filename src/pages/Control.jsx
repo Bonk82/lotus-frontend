@@ -5,16 +5,17 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Select, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconAlignLeft, IconBottle, IconBuilding, IconCashBanknote, IconCashMinus, IconCategoryPlus, IconDeviceFloppy, IconDialpad, IconEdit, IconHours24, IconMatrix, IconSquarePlus, IconTimeDuration15, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconAlignLeft, IconBottle, IconBuilding, IconCashBanknote, IconCashMinus, IconCategoryPlus, IconDeviceFloppy, IconDialpad, IconEdit, IconHours24, IconMatrix, IconPhoto, IconSquarePlus, IconTimeDuration15, IconTrash, IconUpload, IconUser, IconX } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import dayjs from 'dayjs';
+import { Dropzone, DropzoneProps, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
 const Control = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,promociones,sucursales,productos,parametricas,precios } = DataApp();
+  const { loading,consumirAPI,promociones,sucursales,productos,parametricas,precios,subirArchivo } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [openedPrecio, { open:openPrecio, close:closePrecio }] = useDisclosure(false);
 
@@ -256,6 +257,13 @@ const Control = () => {
     localization:MRT_Localization_ES
   });
 
+  const subirImagen = async (files) =>{
+    console.log('Archivos',files);
+    if(files.length == 0) return;
+    const formData = new FormData();
+    formData.append('archivo', files[0]);
+    await subirArchivo('/subirImagen', formData);
+  }
 
   return (
     <div>
@@ -436,6 +444,37 @@ const Control = () => {
           </form>
         </Modal>
         <MantineReactTable table={tablePrecio} />
+      </Box>
+      <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} my={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
+        Cargar imagen para pagos QR
+      </Text>
+      <Box pos="relative" mt={50}>
+        <Dropzone
+          onDrop={(files) => subirImagen(files)}
+          onReject={(files) => console.log('rejected files', files)}
+          maxSize={5 * 1024 ** 2}
+          accept={IMAGE_MIME_TYPE}
+        >
+          <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
+            <Dropzone.Accept>
+              <IconUpload size={52} color="var(--mantine-color-violet-6)" stroke={1.5} />
+            </Dropzone.Accept>
+            <Dropzone.Reject>
+              <IconX size={52} color="var(--mantine-color-cyan-6)" stroke={1.5} />
+            </Dropzone.Reject>
+            <Dropzone.Idle>
+              <IconPhoto size={52} color="var(--mantine-color-dimmed)" stroke={1.5} />
+            </Dropzone.Idle>
+            <div>
+              <Text size="xl" inline>
+                Arrastra la imagen aquí o haz clic para seleccionar el archivo
+              </Text>
+              <Text size="sm" c="dimmed" inline mt={7}>
+                El archivo no debe pesar mas de 1 MB
+              </Text>
+            </div>
+          </Group>
+        </Dropzone>
       </Box>
     </div>
   )

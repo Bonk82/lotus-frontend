@@ -76,8 +76,22 @@ export const DataProvider = ({ children }) => {
     }
   }
 
+  const subirArchivo = async(ruta,formData) =>{
+    setLoading(true);
+    try {
+      const resp = await apiClient.post(ruta, formData);
+      toast('Archivo subido', resp.message, 'success');
+      return resp;
+    } catch (error) {
+      console.error('Error al subir archivo:', error);
+      toast('Error al subir archivo:', error.message || error, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI,toast,parametricas,usuarios,precios }}>
+    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI,toast,parametricas,usuarios,precios,subirArchivo }}>
       {children}
     </DataContext.Provider>
   );
