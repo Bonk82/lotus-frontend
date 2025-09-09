@@ -171,73 +171,72 @@ const Dashboard = () => {
         <Box className="metrics-grid">
           <div className="metric-card">
             <div className="metric-header">
-              <div className="metric-title">Branches</div>
+              <div className="metric-title">Compras</div>
               <div className="metric-icon">
-                  <i className="fas fa-code-branch"></i>
+                  <i className="fas fa-cart-flatbed"></i>
               </div>
             </div>
-            <div className="metric-value">1/10</div>
+            <div className="metric-value">Bs. 5,325.45</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
-              <span>Active repositories</span>
+              <span>Detalle de compras</span>
             </div>
           </div>
 
           <div className="metric-card">
             <div className="metric-header">
-              <div className="metric-title">Compute</div>
+              <div className="metric-title">Pedidos</div>
               <div className="metric-icon">
-                  <i className="fas fa-server"></i>
+                  <i className="fas fa-cart-plus"></i>
               </div>
             </div>
-            <div className="metric-value">0/50 hours</div>
+            <div className="metric-value">324</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
-              <span>Monthly usage</span>
+              <span>Detalle de pedidos</span>
             </div>
           </div>
 
           <div className="metric-card">
             <div className="metric-header">
-              <div className="metric-title">Storage</div>
+              <div className="metric-title">Ventas</div>
               <div className="metric-icon">
-                  <i className="fas fa-database"></i>
+                  <i className="fas fa-sack-dollar"></i>
               </div>
             </div>
-            <div className="metric-value">0/5GB</div>
+            <div className="metric-value">Bs. 45,784.00</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
-              <span>Storage used</span>
+              <span>Detalle de ventas</span>
             </div>
           </div>
 
           <div className="metric-card">
             <div className="metric-header">
-              <div className="metric-title">Network Transfer</div>
+              <div className="metric-title">Ingreso Neto</div>
               <div className="metric-icon">
-                  <i className="fas fa-wifi"></i>
+                  <i className="fas fa-money-bill-trend-up"></i>
               </div>
             </div>
-            <div className="metric-value">0/500GB</div>
+            <div className="metric-value">Bs. 35,7845.41</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
-              <span>Monthly transfer</span>
+              <span>Balance</span>
             </div>
           </div>
         </Box>
         <Box className="grid-dashboard">
           <Box>
-            <Text size='lg' weight={500} mb={5}>Ventas por mes</Text>
+            <Text size='lg' weight={500} mb={5}>Ventas por sucursal</Text>
             {listaProductos.length>0 && <BarChart
               h={300}
               data={listaProductos}
-              dataKey="month"
+              dataKey="sucursal"
               withLegend
               title="Productos más vendidos"
               series={[
                 { name: 'Efectivo', color: colores[0] },
                 { name: 'QR', color: colores[1] },
-                { name: 'Tarjeta', color: colores[2] },
               ]}
               tickLine="y"
             />}
