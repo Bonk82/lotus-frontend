@@ -11,7 +11,7 @@ import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import dayjs from 'dayjs';
-import { Dropzone, DropzoneProps, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
 const Control = () => {
   const { user } = UserAuth();
@@ -261,7 +261,9 @@ const Control = () => {
     console.log('Archivos',files);
     if(files.length == 0) return;
     const formData = new FormData();
-    formData.append('archivo', files[0]);
+    files[0].nuevo = 'LOTUS001'; // Renombrar el archivo
+    formData.append('image', files[0]);
+    formData.append("customName", "LOTUS001");
     await subirArchivo('/subirImagen', formData);
   }
 

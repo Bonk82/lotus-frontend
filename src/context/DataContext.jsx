@@ -79,7 +79,7 @@ export const DataProvider = ({ children }) => {
   const subirArchivo = async(ruta,formData) =>{
     setLoading(true);
     try {
-      const resp = await apiClient.post(ruta, formData);
+      const resp = await apiClient.post(ruta, formData,{ headers: { 'Content-Type': 'multipart/form-data' } });
       toast('Archivo subido', resp.message, 'success');
       return resp;
     } catch (error) {
