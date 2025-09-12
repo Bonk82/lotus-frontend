@@ -261,8 +261,9 @@ const Control = () => {
     console.log('Archivos',files);
     if(files.length == 0) return;
     const formData = new FormData();
-    files[0].nuevo = 'LOTUS001'; // Renombrar el archivo
-    formData.append('image', files[0]);
+    // files[0].nuevo = 'LOTUS001.jpg'; // Renombrar el archivo
+    // console.log('el file',files[0]);
+    formData.append("image", files[0]);
     formData.append("customName", "LOTUS001");
     await subirArchivo('/subirImagen', formData);
   }
