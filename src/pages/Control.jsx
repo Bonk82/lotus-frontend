@@ -470,7 +470,7 @@ const Control = () => {
             </Dropzone.Idle>
             <div>
               <Text size="xl" inline>
-                Arrastra la imagen aquí o haz clic para seleccionar el archivo
+                Arrastra la imagen QR aquí o haz clic para seleccionar el archivo
               </Text>
               <Text size="sm" c="dimmed" inline mt={7}>
                 El archivo no debe pesar mas de 1 MB

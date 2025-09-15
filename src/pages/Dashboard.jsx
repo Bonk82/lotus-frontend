@@ -10,7 +10,7 @@ import { IconCalendar } from "@tabler/icons-react";
 
 const Dashboard = () => {
   const { user } = UserAuth();
-  const { loading, consumirAPI, productos, parametricas,ingresos,pedidos,sucursales} = DataApp();
+  const { loading, consumirAPI, parametricas} = DataApp();
   const colores = ['violet.5','blue.5','teal.5','indigo.5','cyan.5','grape.5','pink.5','red.5','orange.5','yellow.5','lime.5','green.5'];
   const [f1, setF1] = useState(dayjs().startOf('month'))
   const [f2, setF2] = useState(dayjs().endOf('month'))
@@ -20,22 +20,35 @@ const Dashboard = () => {
   const [pedidosDia, setPedidosDia] = useState([])
   const [prodVendidos, setProdVendidos] = useState([])
 
+
+  const [chart1, setChart1] = useState([])
+  const [chart2, setChart2] = useState([])
+  const [chart3, setChart3] = useState([])
+  const [chart4, setChart4] = useState([])
+  const [cards, setCards] = useState([])
+
   useEffect(() => {
     cargarData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const cargarData = async (opcion) => {
+  const cargarData = async () => {
     if (parametricas.length === 0) consumirAPI("/listarClasificador", { opcion: "T" });
-    if (["T", "PR"].includes(opcion)) await consumirAPI("/listarProductos", { opcion: "T" });
-    if (["T", "I"].includes(opcion)) await consumirAPI("/listarIngresos", { opcion: "T" });
-    if (["T", "P"].includes(opcion)) await consumirAPI("/listarPedidos", { opcion: "T" });
-    if (["T", "S"].includes(opcion))  await consumirAPI("/listarSucursales", { opcion: "T" });
+    const data1 = await consumirAPI("/listarDashboard", { opcion: "VXSXG",f1:dayjs(f1).format('YYYY-MM-DD'),f2:dayjs(f2).format('YYYY-MM-DD') });
+    const data2 = await consumirAPI("/listarDashboard", { opcion: "PXSXH",f1:dayjs(f1).format('YYYY-MM-DD'),f2:dayjs(f2).format('YYYY-MM-DD') });
+    const data3 = await consumirAPI("/listarDashboard", { opcion: "VXSXD",f1:dayjs(f1).format('YYYY-MM-DD'),f2:dayjs(f2).format('YYYY-MM-DD') });
+    const data4 = await consumirAPI("/listarDashboard", { opcion: "PMV",f1:dayjs(f1).format('YYYY-MM-DD'),f2:dayjs(f2).format('YYYY-MM-DD') });
+    const data5 = await consumirAPI("/listarDashboard", { opcion: "CARDS",f1:dayjs(f1).format('YYYY-MM-DD'),f2:dayjs(f2).format('YYYY-MM-DD') });
+    setChart1(data1);
+    setChart2(data2);
+    setChart3(data3);
+    setChart4(data4);
+    setCards(data5);
     armarData();
   };
 
   const armarData= async (ped,prod,tran)=>{
-    console.log('armar data',productos,ingresos,pedidos,sucursales);
+    console.log('armar data',chart1,chart2,chart3,chart4,cards);
     const data = [
       { month: 'Enero', Efectivo: 1200, QR: 900, Tarjeta: 200 },
       { month: 'Febrero', Efectivo: 1900, QR: 1200, Tarjeta: 400 },
@@ -165,8 +178,8 @@ const Dashboard = () => {
               valueFormat='DD MMM YYYY'
             />
           </Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='blue.2' variant='light' fullWidth onClick={()=>cargarData()} size='sm'>Cargar Transacciones</Button></Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('DOS',pedidos)} size='sm'> Histórico Pedidos</Button></Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='blue.2' variant='light' fullWidth onClick={()=>cargarData()} size='sm'>Cargar Datos</Button></Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('DOS',parametricas)} size='sm'> Histórico Pedidos</Button></Grid.Col>
         </Grid>
         <Box className="metrics-grid">
           <div className="metric-card">
@@ -176,7 +189,7 @@ const Dashboard = () => {
                   <i className="fas fa-cart-flatbed"></i>
               </div>
             </div>
-            <div className="metric-value">Bs. 5,325.45</div>
+            <div className="metric-value">Bs. {cards[0].compras}</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Detalle de compras</span>
@@ -190,7 +203,7 @@ const Dashboard = () => {
                   <i className="fas fa-cart-plus"></i>
               </div>
             </div>
-            <div className="metric-value">324</div>
+            <div className="metric-value">{cards[0].pedidos}</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Detalle de pedidos</span>
@@ -204,7 +217,7 @@ const Dashboard = () => {
                   <i className="fas fa-sack-dollar"></i>
               </div>
             </div>
-            <div className="metric-value">Bs. 45,784.00</div>
+            <div className="metric-value">Bs. {cards[0].ventas}</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Detalle de ventas</span>
@@ -218,7 +231,7 @@ const Dashboard = () => {
                   <i className="fas fa-money-bill-trend-up"></i>
               </div>
             </div>
-            <div className="metric-value">Bs. 35,7845.41</div>
+            <div className="metric-value">Bs. {cards[0].neto}</div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Balance</span>

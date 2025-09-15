@@ -4,8 +4,8 @@ import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { ActionIcon, Alert, Box, Button, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
-import { IconAlertCircle, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDeviceFloppy, IconEdit, IconLock, IconMoneybag, IconSettings, IconSquarePlus, IconUser } from '@tabler/icons-react';
+import { ActionIcon, Alert, Box, Button, Grid, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Select, Table, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
+import { IconAlertCircle, IconBottle, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconLock, IconMoneybag, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -14,12 +14,15 @@ import dayjs from 'dayjs';
 
 const Caja = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,cajas,sucursales,parametricas,usuarios,pedidos,toast } = DataApp();
+  const { loading,consumirAPI,cajas,sucursales,parametricas,usuarios,pedidos,toast,productos } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [openedPedido, { open:openPedido, close:closePedido }] = useDisclosure(false);
+  const [openedFaltantes, { open:openFaltantes, close:closeFaltantes }] = useDisclosure(false);
   const [idApertura, setIdApertura] = useState(null)
   const [desface, setDesface] = useState(null)
   const [cambio, setCambio] = useState(0)
+  const [motivo, setMotivo] = useState('')
+  const [faltantes, setFaltantes] = useState([])
 
   useEffect(() => {
     if(user) cargarData()
@@ -34,12 +37,12 @@ const Caja = () => {
     await consumirAPI('/listarControlCajas', { opcion: 'cc.fid_sucursal',id:user.sucursal });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T'});
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
+    if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
     await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura || id[0]?.id_control_caja});
     const f1 = dayjs(`${id[0]?.inicio}`);
     const horas_apertura = dayjs().diff(f1,'h')
     horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
-    
   }
 
   const form = useForm({
@@ -147,6 +150,14 @@ const Caja = () => {
             </ActionIcon>
           </Box>
         </Tooltip>}
+        <Tooltip label="Descontar Productos" position="bottom" withArrow>
+          <Box>
+            <Button onClick={()=>openedFaltantes()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Descontar</Button>
+            <ActionIcon variant="gradient" size="xl" gradient={{ from: '#43ffff', to: '#005375', deg: 180 }} hiddenFrom="md" onClick={()=>openFaltantes()}>
+              <IconLock />
+            </ActionIcon>
+          </Box>
+        </Tooltip>
       </Box>
     ),
     mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
@@ -205,6 +216,71 @@ const Caja = () => {
     setCambio(dif)
   }
 
+  const descontarProductos = async () => {
+    //todo: registrar el ingreso
+    //todo: registrar el detalle con numeros negativos
+    let newIngreso = {
+      operacion: 'I',
+      id_ingreso: 0,
+      fid_proveedor: null,
+      fid_sucursal: user.sucursal,
+      motivo,
+      fecha_ingreso: dayjs().format('YYYY-MM-DD'),
+      usuario_registro: user.usuario
+    };
+    const idIngreso = await consumirAPI('/crudIngreso', newIngreso);
+    console.log('el id del ingreso:', idIngreso);
+    faltantes.forEach(element => {
+      let detalle = {
+        operacion: 'I',
+        id_ingreso_detalle: 0,
+        fid_ingreso: idIngreso.split('|')[1],
+        fid_producto: element.id_producto,
+        cantidad: -element.cantidad,
+        precio_compra: 0,
+        usuario_registro: user.usuario
+      };
+      consumirAPI('/crudIngresoDetalle', detalle);
+    });
+    closeFaltantes();
+  }
+
+  const detalleFaltantes = (c) => {
+      const rows = c.map((row) => (
+        <Table.Tr key={row.id_producto}>
+          <Table.Td>{row.producto}</Table.Td>
+          <Table.Td>{row.cantidad}</Table.Td>
+          <Table.Td>
+            <Box style={{ gap: "0.8rem", display: "flex" }}>
+              <ActionIcon variant="subtle" onClick={console.log(row)}>
+                <IconTrash color="crimson" />
+              </ActionIcon>
+            </Box>
+          </Table.Td>
+        </Table.Tr>
+      ));
+      const ths = (
+        <Table.Tr>
+          <Table.Th>Producto</Table.Th>
+          <Table.Th>Cantidad</Table.Th>
+          <Table.Th>Cancelar</Table.Th>
+        </Table.Tr>
+      );
+      return (
+        <>
+        {c.length >0 &&
+          <Table captionSide="top" width={50} striped highlightOnHover>
+            <Table.Caption style={{ backgroundColor: "transparent",fontSize:'1.5rem' }}>
+              Productos para Descontar
+            </Table.Caption>
+            <Table.Thead style={{lineHeight:'0.6rem',marginTop:'0.7rem'}}>{ths}</Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
+          </Table>
+        }
+        </>
+      );
+    };
+
   return (
     <div>
       {pedidos.length>0 &&
@@ -227,6 +303,51 @@ const Caja = () => {
         </Box>
         </>
       }
+      <Modal opened={openedFaltantes} onClose={closeFaltantes} title={'Descontar Productos'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'>
+        <Box>
+          <Grid my={12} display='flex' align='start'>
+            <Grid.Col span={{ base: 12, lg: 12 }}>
+              <Textarea value={motivo} onChange={(event) => setMotivo(event.currentTarget.value)}/>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, lg: 2 }}>
+              <NumberInput
+                label="Cantidad:"
+                placeholder="Cantiad del mismo producto"
+                allowDecimal={false}
+                min={1}
+                max={100}
+                leftSection={<IconDatabase size={16} />}
+                id='laCantidad'
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, lg: 10 }}>
+              <Select
+                label="Producto:"
+                data={productos.filter(f=> f.pedido_minimo >0).map((e) => {return{label:e.descripcion,value:e.id_producto.toString()}})}
+                limit={5}
+                searchable
+                onChange={(value) => {
+                  if(value){
+                    const prod = productos.find(f=>f.id_producto == value);
+                    if(!faltantes.find(f=>f.id_producto == value)){
+                      const cant = document.getElementById('laCantidad').value;
+                      setFaltantes([...faltantes,{id_producto:prod.id_producto,producto:prod.descripcion,cantidad:cant?Number(cant):1}]);
+                      document.getElementById('laCantidad').value = 1;
+                    }
+                  }
+                }}
+                leftSection={<IconBottle size={16} />}
+              />
+            </Grid.Col>
+          </Grid>
+          {/* <MultiSelect data={[]} value={faltantes} onChange={setFaltantes} /> */}
+          
+          {detalleFaltantes(faltantes)}
+          <Button fullWidth leftSection={<IconDeviceFloppy/>} style={{marginTop:'1rem'}}>Descontar Productos
+            onClick={descontarProductos()}
+          </Button>
+        </Box>
+      </Modal>
       <Modal opened={openedPedido} onClose={closePedido} title={'Cerrar Pedido'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'> 
         <form onSubmit={formPedido.onSubmit((values) => cerrarPedido(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
           <NumberInput
