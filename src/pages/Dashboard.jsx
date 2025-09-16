@@ -1,4 +1,4 @@
-import { Box, Button, Center, Chip, Flex, Grid, LoadingOverlay, Text } from "@mantine/core"
+import { Box, Button, Center, Chip, Flex, Grid, LoadingOverlay, NumberFormatter, Text } from "@mantine/core"
 import { UserAuth } from '../context/AuthContext';
 import { DataApp } from "../context/DataContext";
 import dayjs from "dayjs";
@@ -42,7 +42,7 @@ const Dashboard = () => {
     setChart1(data1);
     setChart2(data2);
     setChart3(data3);
-    setChart4(data4);
+    setChart4([data4[0].productos]);
     setCards(data5);
     armarData();
   };
@@ -189,7 +189,7 @@ const Dashboard = () => {
                   <i className="fas fa-cart-flatbed"></i>
               </div>
             </div>
-            <div className="metric-value">Bs. {cards[0].compras}</div>
+            <div className="metric-value"><NumberFormatter prefix="Bs. " value={cards[0]?.compras} thousandSeparator /></div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Detalle de compras</span>
@@ -203,7 +203,7 @@ const Dashboard = () => {
                   <i className="fas fa-cart-plus"></i>
               </div>
             </div>
-            <div className="metric-value">{cards[0].pedidos}</div>
+            <div className="metric-value"><NumberFormatter prefix="Bs. " value={cards[0]?.pedidos} thousandSeparator /></div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Detalle de pedidos</span>
@@ -217,7 +217,7 @@ const Dashboard = () => {
                   <i className="fas fa-sack-dollar"></i>
               </div>
             </div>
-            <div className="metric-value">Bs. {cards[0].ventas}</div>
+            <div className="metric-value"><NumberFormatter prefix="Bs. " value={cards[0]?.ventas} thousandSeparator /></div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Detalle de ventas</span>
@@ -231,7 +231,7 @@ const Dashboard = () => {
                   <i className="fas fa-money-bill-trend-up"></i>
               </div>
             </div>
-            <div className="metric-value">Bs. {cards[0].neto}</div>
+            <div className="metric-value"><NumberFormatter prefix="Bs. " value={cards[0]?.neto} thousandSeparator /></div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Balance</span>
@@ -241,68 +241,98 @@ const Dashboard = () => {
         <Box className="grid-dashboard">
           <Box>
             <Text size='lg' weight={500} mb={5}>Ventas por sucursal</Text>
-            {listaProductos.length>0 && <BarChart
+            {chart1.length>0 && <BarChart
               h={300}
-              data={listaProductos}
-              dataKey="sucursal"
+              data={chart1}
+              dataKey="nombre"
               withLegend
               title="Productos más vendidos"
               series={[
-                { name: 'Efectivo', color: colores[0] },
-                { name: 'QR', color: colores[1] },
+                { name: 'cigarrillos', color: colores[0] },
+                { name: 'cervezas', color: colores[1] },
+                { name: 'ginebras', color: colores[2] },
+                { name: 'jarras', color: colores[3] },
+                { name: 'licores', color: colores[4] },
+                { name: 'refrescos', color: colores[5] },
+                { name: 'rones', color: colores[6] },
+                { name: 'shots', color: colores[7] },
+                { name: 'singanis', color: colores[8] },
+                { name: 'tequilas', color: colores[9] },
+                { name: 'trica', color: colores[0] },
+                { name: 'vodkas', color: colores[1] },
+                { name: 'whiskies', color: colores[2] },
               ]}
               tickLine="y"
+              type="stacked"
             />}
           </Box>
           <Box>
-            <Text size='lg' weight={500} mb={5}>Pedidos por mes</Text>
-            {listaPedidos.length>0 && <BarChart
+            <Text size='lg' weight={500} mb={5}>Pedidos por Horarios</Text>
+            {chart2.length>0 && <BarChart
               h={300}
-              data={listaPedidos}
-              dataKey="month"
-              title="Pedidos por mes"
+              data={chart2}
+              dataKey="nombre"
+              title="Pedidos por Horarios"
               series={[
-                { name: 'Efectivo', color: colores[0] },
-                { name: 'QR', color: colores[1] },
-                { name: 'Tarjeta', color: colores[2] },
+                { name: 'h1', color: colores[0] },
+                { name: 'h2', color: colores[1] },
+                { name: 'h3', color: colores[2] },
+                { name: 'h4', color: colores[3] },
+                { name: 'h5', color: colores[4] },
+                { name: 'h6', color: colores[5] },
               ]}
               withLegend
               tickLine="y"
+              type="stacked"
             />}
           </Box>
         </Box>
         <Text size='lg' weight={500} mt={40} mb={5}>Flujo de ventas</Text>
-        {pedidosDia.length>0 && <LineChart
+        {chart3.length>0 && <LineChart
           style={{marginTop:'1rem'}}
           h={400}
-          data={pedidosDia}
+          data={chart3}
           // dataKey="fecha_entrega"
-          dataKey="date"
+          dataKey="dia"
           // series={[{ name: 'cantidad_entregada', color: 'indigo.4' }]}
           series={[
-            { name: 'Lotus Club Prado', color: colores[0] },
-            { name: 'Lotus Bar', color: colores[1] },
-            { name: 'The Jungle Club', color: colores[2] },
+            { name: Object.keys(chart3[0]).filter(key => key !== 'dia')[0], color: colores[0] },
+            { name: Object.keys(chart3[0]).filter(key => key !== 'dia')[1], color: colores[1] },
+            { name: Object.keys(chart3[0]).filter(key => key !== 'dia')[2], color: colores[2] },
+            { name: Object.keys(chart3[0]).filter(key => key !== 'dia')[3], color: colores[3] },
+            { name: Object.keys(chart3[0]).filter(key => key !== 'dia')[4], color: colores[4] },
+            { name: Object.keys(chart3[0]).filter(key => key !== 'dia')[5], color: colores[5] },
+            { name: Object.keys(chart3[0]).filter(key => key !== 'dia')[6], color: colores[6] },
           ]}
           curveType="bump"
-          connectNulls
+          yAxisProps={{ tickMargin: -35,domain: [500, 10000] }}
           withLegend='true'
+          connectNulls
+          xAxisLabel="Fecha"
+          yAxisLabel="Monto (Bs.)"
         />}
       </Box>
       <Box className="grid-dashboard" mt={40}>
         <Box>
           <Text size='lg' weight={500} mt={40} mb={5}>Productos más vendidos</Text>
-          <BarChart
+          {Object.keys(chart4[0] || {}).length > 1 && <BarChart
             h={300}
-            data={prodVendidos}
-            dataKey="month"
+            data={chart4}
+            dataKey="sucursal"
             orientation="vertical"
             withBarValueLabel
             valueLabelProps={{ position: 'inside', fill: 'white',fontSize:'16px' }}
-            series={[{ name: 'Smartphones', color: colores[0] }, { name: 'Laptops', color: colores[1] }, { name: 'Tablets', color: colores[2] }]}
+            series={[
+              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[0], color: colores[0] },
+              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[1], color: colores[1] },
+              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[2], color: colores[2] },
+              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[3], color: colores[3] },
+              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[4], color: colores[4] },
+              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[5], color: colores[5] },
+            ]}
             withLegend
             withYAxis={false}
-          />
+          />}
         </Box>
       </Box>
     </div>
