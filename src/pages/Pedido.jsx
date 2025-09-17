@@ -18,6 +18,7 @@ const Pedido = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [grupo, setGrupo] = useState('')
   const [idPedido, setIdPedido] = useState(null)
+  const [tipoPago, setTipoPago] = useState('')
   const [idCaja, setIdCaja] = useState(0)
   const [detalle, setDetalle] = useState([])
 
@@ -124,7 +125,8 @@ const Pedido = () => {
     }
     if (eliminar) newPedido.operacion = 'D';
     const id = await consumirAPI('/crudPedido', newPedido);
-    setIdPedido(id[0]?.message.split('|')[1]);
+    setTipoPago(newPedido.metodo_pago);
+    setIdPedido(id[0]?.message?.split('|')[1]);
     close();
     // form.reset(); resetear el carrito
     await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
@@ -196,6 +198,8 @@ const Pedido = () => {
           </Button>
           {/* TOTAL : <Space w="lg" />{detalle.reduce((ac,el)=>ac+Number(el.precio),0).toFixed(2)} */}
         </Box>
+        <Text size='sm' color='dimmed'>Método de Pago: {tipoPago}</Text>
+        {tipoPago == 'QR' && <img style={{maxWidth:'250px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>}
       </Box>}
       {idPedido>0 && <Box pos={"relative"} mb={10}>
         <Box className="grid-pedido">
@@ -238,7 +242,7 @@ const Pedido = () => {
               label="Estado del Pedido:"
               data={[...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO').map(e=>e.nombre)]}
               required
-              disabled={user?.rol == 2}
+              // disabled={user?.rol == 2}
               leftSection={<IconUser size={16} />}
               key={form.key('estado')}
               {...form.getInputProps('estado')}

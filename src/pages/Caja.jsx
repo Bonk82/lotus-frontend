@@ -45,6 +45,10 @@ const Caja = () => {
     horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
   }
 
+  const refrescarPedidos = async () =>{
+    await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura });
+  }
+
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
@@ -150,10 +154,18 @@ const Caja = () => {
             </ActionIcon>
           </Box>
         </Tooltip>}
+        <Tooltip label="Refrescar Pedidos" position="bottom" withArrow>
+          <Box>
+            <Button onClick={refrescarPedidos} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Refrescar</Button>
+            <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ffc343ff', to: '#755000ff', deg: 180 }} hiddenFrom="md" onClick={refrescarPedidos}>
+              <IconLock />
+            </ActionIcon>
+          </Box>
+        </Tooltip>
         <Tooltip label="Descontar Productos" position="bottom" withArrow>
           <Box>
-            <Button onClick={()=>openedFaltantes()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Descontar</Button>
-            <ActionIcon variant="gradient" size="xl" gradient={{ from: '#43ffff', to: '#005375', deg: 180 }} hiddenFrom="md" onClick={()=>openFaltantes()}>
+            <Button onClick={()=>openFaltantes()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Descontar</Button>
+            <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ff6f43ff', to: '#750e00ff', deg: 180 }} hiddenFrom="md" onClick={()=>openFaltantes()}>
               <IconLock />
             </ActionIcon>
           </Box>
@@ -234,7 +246,7 @@ const Caja = () => {
       let detalle = {
         operacion: 'I',
         id_ingreso_detalle: 0,
-        fid_ingreso: idIngreso.split('|')[1],
+        fid_ingreso: idIngreso[0]?.message?.split('|')[1],
         fid_producto: element.id_producto,
         cantidad: -element.cantidad,
         precio_compra: 0,
