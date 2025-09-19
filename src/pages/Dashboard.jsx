@@ -274,12 +274,12 @@ const Dashboard = () => {
               dataKey="nombre"
               title="Pedidos por Horarios"
               series={[
-                { name: 'h1', color: colores[0] },
-                { name: 'h2', color: colores[1] },
-                { name: 'h3', color: colores[2] },
-                { name: 'h4', color: colores[3] },
-                { name: 'h5', color: colores[4] },
-                { name: 'h6', color: colores[5] },
+                { name: '17:00 a 20:00', color: colores[0] },
+                { name: '20:01 a 22:00', color: colores[1] },
+                { name: '22:01 a 00:00', color: colores[2] },
+                { name: '00:01 a 02:00', color: colores[3] },
+                { name: '02:01 a 04:00', color: colores[4] },
+                { name: '04:01 a 09:00', color: colores[5] },
               ]}
               withLegend
               tickLine="y"

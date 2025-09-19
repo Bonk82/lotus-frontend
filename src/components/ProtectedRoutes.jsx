@@ -3,10 +3,12 @@ import { Navigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
 import {jwtDecode} from "jwt-decode";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children,allowedRoles }) => {
   const { user,logout } = UserAuth();
   // console.log('el user en protected',user);
   let storedUser;
+  let userRole;
+
   if(!user){
     storedUser = localStorage.getItem('token');
     if (storedUser) {
@@ -23,10 +25,18 @@ const ProtectedRoute = ({ children }) => {
         return <Navigate to="/login" replace />; // Redirige a la página de login
       }
     }
+  }else{
+    userRole = user.id_rol;
   }
 
   if (!user && !storedUser) {
     return <Navigate to="/login" replace />; // Redirige a la página de login
+  }
+
+  // Verifica si el rol del usuario está permitido
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    logout()
+    return <Navigate to="/login" replace />;
   }
 
   // if (!user) {

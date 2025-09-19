@@ -32,7 +32,7 @@ const Login = () => {
     
   return (
     <div className='main-login'>
-      <h1>Login Lotus Pub</h1>
+      <h1>Login Lotus Club</h1>
       <form onSubmit={iniciarSesion}>
         <TextInput leftSection={<IconUser size={16} />} autoFocus required {...form.getInputProps('user')} label="Usuario" placeholder="Usuario" />
         {/* <TextInput leftSection={<IconPassword size={16} />} required type="password" {...form.getInputProps('pass')} mt="md" label="Contraseña" placeholder="Contraseña" /> */}

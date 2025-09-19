@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { ActionIcon, Box, Button, Chip, Group, LoadingOverlay, Modal, NativeSelect, Space, Text, TextInput, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Button, Chip, Group, LoadingOverlay, Modal, NativeSelect, NumberFormatter, NumberInput, Space, Text, TextInput, Tooltip } from "@mantine/core";
 import { UserAuth } from "../context/AuthContext";
 import { DataApp } from "../context/DataContext";
 import { useEffect } from "react";
@@ -20,7 +20,9 @@ const Pedido = () => {
   const [idPedido, setIdPedido] = useState(null)
   const [tipoPago, setTipoPago] = useState('')
   const [idCaja, setIdCaja] = useState(0)
+  const [totalConciliar, setTotalConciliar] = useState(0)
   const [detalle, setDetalle] = useState([])
+  const [cambio, setCambio] = useState(0)
 
   useEffect(() => {
     if(user?.sucursal) cargarData()
@@ -29,12 +31,17 @@ const Pedido = () => {
 
   const cargarData = async () =>{
     await consumirAPI('/listarProductos', { opcion: 'PEDIDO',id:user.sucursal });
-    await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
+    const pivot = await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
     if(sucursales.length==0) await consumirAPI('/listarSucursales', { opcion: 'T',id:0 })
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T',id:0 })
     const id = await consumirAPI('/listarControlCajas', { opcion: 'ACTIVA',id:user.sucursal });
     setIdCaja(id[0]?.id_control_caja);
     if(promociones.length == 0) await consumirAPI('/listarPromociones', { opcion: 'SUCURSAL',id:user.sucursal });
+    let total = 0;
+    pivot.forEach(p=>{
+      if(p.estado != 'CONCILIADO') total += Number(p.total)
+    })
+    setTotalConciliar(total);
   }
   const form = useForm({
       mode: 'uncontrolled',
@@ -54,11 +61,16 @@ const Pedido = () => {
 
   const columns = useMemo(
     () => [
+      { accessorKey: 'estado',header: 'Estado',},
+      { accessorKey: 'total',header: 'Total Bs.',},
       { accessorKey: 'mesa',header: 'Mesa',},
       { accessorKey: 'metodo_pago',header: 'Método Pago',},
-      { accessorKey: 'estado',header: 'Estado',},
       { accessorKey: 'consumo',header: 'Consumo',Cell:({cell})=>(
-                <div>{cell.getValue()?.map(c => <div key={nanoid(5)}>{c.producto || c.promocion}</div>)}</div>
+                <div>
+                  <ul>
+                    {cell.getValue()?.map(c => <li key={nanoid(5)}>{c.producto || c.promocion}</li>)}
+                  </ul>
+                </div>
               )},
     ],
     [],
@@ -87,29 +99,39 @@ const Pedido = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box style={{gap:'0.8rem',display:'flex'}}>
+        {!['CONCILIADO'].includes(row.original.estado) &&
+        <>
         <Tooltip label="Editar Pedido" position="bottom" withArrow>
           <ActionIcon variant="subtle" onClick={() => mostrarRegistro(row.original)}>
             <IconEdit color="orange" />
           </ActionIcon>
         </Tooltip>
-        {['PENDIENTE','CONFIRMADO'].includes(row.original.estado) &&
         <Tooltip label="Revisar Consumo" position="bottom" withArrow>
           <ActionIcon variant="subtle" onClick={() => cargarDetalle(row.original)}>
             <IconBottle color="cyan" />
           </ActionIcon>
         </Tooltip>
+        </>
         }
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
-      <Tooltip label="Realizar Pedido" position="bottom" withArrow>
-        <Box>
-          <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} >Nuevo Pedido</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
-            <IconSquarePlus />
-          </ActionIcon>
+      <>
+        <Box style={{display:'flex',width:'100%',justifyContent:'start',alignItems:'start',gap:'1rem'}} visibleFrom="md">
+          <Tooltip label="Realizar Pedido" position="bottom" withArrow>
+            <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} >Nuevo Pedido</Button>
+          </Tooltip>
+          <Text size="lg" fs="italic" c="cyan" fw={700} visibleFrom="md">Monto por Conciliar: <NumberFormatter prefix="Bs. " value={totalConciliar} thousandSeparator /></Text>
         </Box>
-      </Tooltip>
+        <Box style={{display:'flex',flexDirection:'column',width:'100%',justifyContent:'start',alignItems:'start',gap:'1rem'}} hiddenFrom="md">
+          <Tooltip label="Realizar Pedido" position="bottom" withArrow>
+            <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} onClick={()=>mostrarRegistro()}>
+              <IconSquarePlus />
+            </ActionIcon>
+          </Tooltip>
+          <Text size="md" fs="italic" c="cyan" fw={700}><NumberFormatter prefix="Bs. " value={totalConciliar} thousandSeparator /></Text>
+        </Box>
+      </>
     ),
     mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},
     mantineTableProps:{striped: true,},
@@ -129,12 +151,19 @@ const Pedido = () => {
     setIdPedido(id[0]?.message?.split('|')[1]);
     close();
     // form.reset(); resetear el carrito
-    await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
+    const pivot = await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
+    let total = 0;
+    pivot.forEach(p=>{
+      if(p.estado != 'CONCILIADO') total += Number(p.total)
+    })
+    setTotalConciliar(total);
   }
 
   const cargarDetalle = async (data)=>{
-    setIdPedido(data.id_pedido)
-    setDetalle(data.consumo)
+    setIdPedido(data.id_pedido);
+    setDetalle(data.consumo);
+    setTipoPago(data.metodo_pago);
+    setCambio(0);
   }
 
   const eliminarDetalle = async(item)=>{
@@ -174,10 +203,23 @@ const Pedido = () => {
       if(i == detalle.length - 1){
         setIdPedido(null);
         setDetalle([]);
-        await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
+        const pivot = await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
+        let total = 0;
+        pivot.forEach(p=>{
+        if(p.estado != 'CONCILIADO') total += Number(p.total)
+    })
+    setTotalConciliar(total);
       }
     });
+  }
+
+  const calcularCambio = (event)=>{
+    console.log(event);
     
+    // console.log(formPedido.getValues().monto_total,formPedido.getValues().monto_efectivo);
+    const total = detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0) 
+    const dif = Number(event.target.defaultValue.replace('Bs. ','').replace(',','')) - Number(total)
+    setCambio(dif)
   }
 
   return (
@@ -199,7 +241,21 @@ const Pedido = () => {
           {/* TOTAL : <Space w="lg" />{detalle.reduce((ac,el)=>ac+Number(el.precio),0).toFixed(2)} */}
         </Box>
         <Text size='sm' color='dimmed'>Método de Pago: {tipoPago}</Text>
-        {tipoPago == 'QR' && <img style={{maxWidth:'250px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>}
+        {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>}
+        {tipoPago == 'EFECTIVO' && <Box style={{textAlign:'right'}}>
+            <NumberInput
+              label="Monto Efectivo:"
+              placeholder="Monto dado en efectivo" 
+              allowDecimal={false}
+              min={10}
+              max={10000}
+              prefix='Bs. '
+              onKeyUpCapture={(event)=>calcularCambio(event)}
+              leftSection={<IconCash size={16} />}
+              width={'250px'}
+              />
+            <Text size="xl" c="cyan.3">Monto Devolución: {cambio}</Text>
+          </Box>}
       </Box>}
       {idPedido>0 && <Box pos={"relative"} mb={10}>
         <Box className="grid-pedido">
@@ -240,9 +296,9 @@ const Pedido = () => {
             />
             <NativeSelect
               label="Estado del Pedido:"
-              data={[...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO').map(e=>e.nombre)]}
+              data={[...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO' && f.nombre != 'CONCILIADO').map(e=>e.nombre)]}
               required
-              // disabled={user?.rol == 2}
+              disabled={!form.getValues().id_pedido}
               leftSection={<IconUser size={16} />}
               key={form.key('estado')}
               {...form.getInputProps('estado')}

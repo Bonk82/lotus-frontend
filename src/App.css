@@ -112,6 +112,14 @@ tr{
   background-color: var(--primary-backgrounbd-color) !important;
 }
 
+.mantine-DatePickerInput-weekdaysRow th{
+  background-color: rgba(123, 44, 191, 0.15) !important;
+  color: gainsboro;
+}
+
+table tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
 
 /* cards productos */
 .card-prod {

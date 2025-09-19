@@ -156,7 +156,7 @@ const Caja = () => {
         </Tooltip>}
         <Tooltip label="Refrescar Pedidos" position="bottom" withArrow>
           <Box>
-            <Button onClick={refrescarPedidos} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Refrescar</Button>
+            <Button onClick={refrescarPedidos} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='light' color='violet'>Refrescar</Button>
             <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ffc343ff', to: '#755000ff', deg: 180 }} hiddenFrom="md" onClick={refrescarPedidos}>
               <IconLock />
             </ActionIcon>
@@ -164,7 +164,7 @@ const Caja = () => {
         </Tooltip>
         <Tooltip label="Descontar Productos" position="bottom" withArrow>
           <Box>
-            <Button onClick={()=>openFaltantes()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "#40c9ff", to: "#115e7cff", deg: 180 }}>Descontar</Button>
+            <Button onClick={()=>openFaltantes()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='light' color='cyan'>Descontar</Button>
             <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ff6f43ff', to: '#750e00ff', deg: 180 }} hiddenFrom="md" onClick={()=>openFaltantes()}>
               <IconLock />
             </ActionIcon>
@@ -356,7 +356,7 @@ const Caja = () => {
           
           {detalleFaltantes(faltantes)}
           <Button fullWidth leftSection={<IconDeviceFloppy/>} style={{marginTop:'1rem'}}>Descontar Productos
-            onClick={descontarProductos()}
+            onClick={descontarProductos}
           </Button>
         </Box>
       </Modal>
