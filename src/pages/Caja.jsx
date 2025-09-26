@@ -355,8 +355,8 @@ const Caja = () => {
           {/* <MultiSelect data={[]} value={faltantes} onChange={setFaltantes} /> */}
           
           {detalleFaltantes(faltantes)}
-          <Button fullWidth leftSection={<IconDeviceFloppy/>} style={{marginTop:'1rem'}}>Descontar Productos
-            onClick={descontarProductos}
+          <Button fullWidth leftSection={<IconDeviceFloppy/>} style={{marginTop:'1rem'}} onClick={descontarProductos}>
+            Descontar Productos
           </Button>
         </Box>
       </Modal>

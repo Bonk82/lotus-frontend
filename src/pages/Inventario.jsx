@@ -432,7 +432,7 @@ const Inventario = () => {
       <Button variant="gradient" size="xs" pos={'absolute'} left={'1.5rem'} onClick={()=>mostrarComponente({fid_producto_main:c.id_producto})}>Agregar Componente</Button>
       {c.componentes?.length >0 &&
         <Table captionSide="top" width={50} striped highlightOnHover>
-          <Table.Caption style={{ backgroundColor: "transparent",fontSize:'1.5rem' }}>
+          <Table.Caption style={{ backgroundColor: "transparent",fontSize:'1.5rem',marginLeft:'2rem' }}>
             {c.componentes?.find(f=>f.unidad == 'ML') ? 'Composición del Producto':'Mezcladores'}
           </Table.Caption>
           <Table.Thead style={{lineHeight:'0.6rem',marginTop:'0.7rem'}}>{ths}</Table.Thead>
