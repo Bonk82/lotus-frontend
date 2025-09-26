@@ -15,11 +15,6 @@ const Dashboard = () => {
   const [f1, setF1] = useState(dayjs().startOf('month'))
   const [f2, setF2] = useState(dayjs().endOf('month'))
 
-  const [listaProductos, setListaProductos] = useState([])
-  const [listaPedidos, setListaPedidos] = useState([])
-  const [pedidosDia, setPedidosDia] = useState([])
-  const [prodVendidos, setProdVendidos] = useState([])
-
 
   const [chart1, setChart1] = useState([])
   const [chart2, setChart2] = useState([])
@@ -44,61 +39,8 @@ const Dashboard = () => {
     setChart3(data3);
     setChart4([data4[0].productos]);
     setCards(data5);
-    armarData();
   };
 
-  const armarData= async (ped,prod,tran)=>{
-    console.log('armar data',chart1,chart2,chart3,chart4,cards);
-    const data = [
-      { month: 'Enero', Efectivo: 1200, QR: 900, Tarjeta: 200 },
-      { month: 'Febrero', Efectivo: 1900, QR: 1200, Tarjeta: 400 },
-      { month: 'Marzo', Efectivo: 400, QR: 1000, Tarjeta: 200 },
-      { month: 'Abril', Efectivo: 1000, QR: 200, Tarjeta: 800 },
-      { month: 'Mayo', Efectivo: 800, QR: 1400, Tarjeta: 1200 },
-      { month: 'Junio', Efectivo: 750, QR: 600, Tarjeta: 1000 },
-    ];
-    setListaProductos(data)
-    setListaPedidos(data)
-
-    const data2 = [
-      {
-        date: 'Agosto 12',
-        'Lotus Club Prado': 2890,
-        'Lotus Bar': 2338,
-        'The Jungle Club': 2452,
-      },
-      {
-        date: 'Agosto 13',
-        'Lotus Club Prado': 2756,
-        'Lotus Bar': 2103,
-        'The Jungle Club': 2402,
-      },
-      {
-        date: 'Agosto 14',
-        'Lotus Club Prado': 3322,
-        'Lotus Bar': 986,
-        'The Jungle Club': 1821,
-      },
-      {
-        date: 'Agosto 15',
-        'Lotus Club Prado': 3470,
-        'Lotus Bar': 2108,
-        'The Jungle Club': 2809,
-      },
-      {
-        date: 'Agosto 16',
-        'Lotus Club Prado': 3129,
-        'Lotus Bar': 1726,
-        'The Jungle Club': 2290,
-      },
-    ];
-    setPedidosDia(data2)
-
-    const data3 = [
-      { month: 'January', Smartphones: 1200, Laptops: 900, Tablets: 200 },
-    ];
-    setProdVendidos(data3);
-  }
 
   const obtenerReporte = async (tipo,data) =>{
     console.log('obteneinedo report',tipo,data);

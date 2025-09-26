@@ -113,7 +113,7 @@ const Proveedor = () => {
       <Tooltip label="Registrar Nuevo Producto" position="bottom" withArrow>
         <Box>
           <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md">Nuevo Proveedor</Button>
-          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 90 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
+          <ActionIcon variant="gradient" size="xl" gradient={{ from: 'violet', to: '#2c0d57', deg: 180 }} hiddenFrom="md" onClick={()=>mostrarRegistro()}>
             <IconSquarePlus />
           </ActionIcon>
         </Box>

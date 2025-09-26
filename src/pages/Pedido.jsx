@@ -87,10 +87,6 @@ const Pedido = () => {
     if (!data) form.setValues({'estado':'PENDIENTE','metodo_pago':'EFECTIVO'})
   }
 
-  //?:cuando se haga un nueov pedido, ocultar el gridtable de pedidos y mostrar un grid de los pedidos que haga, 🧴🧴🧴🚬 y elimianr del listado con doble clic, y un boton de confirmar para ajustar las cantidades si hay repetidos y mandar en loop el crud detalle
-
-  //? igual hay que definir la logica de promociones, cuando haya algunas promociones que el precio del producto cambie dinamicamnete
-
   const table = useMantineReactTable({
     columns,
     data: pedidos,

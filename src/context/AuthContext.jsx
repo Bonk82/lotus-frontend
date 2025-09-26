@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-   console.log('en el efect authcontet',user);
+  //  console.log('en el efect authcontet',user);
    if(!user){
     const storedUser = localStorage.getItem('token');
     if (storedUser) {

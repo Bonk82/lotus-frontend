@@ -4,8 +4,8 @@ import { DataApp } from '../context/DataContext';
 import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { ActionIcon, Alert, Box, Button, Grid, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Select, Table, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
-import { IconAlertCircle, IconBottle, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconLock, IconMoneybag, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
+import { ActionIcon, Alert, Box, Button, Grid, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Select, Table, Text, Textarea, Tooltip } from '@mantine/core';
+import { IconAlertCircle, IconBottle, IconBottleOff, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconLock, IconMoneybag, IconRefreshAlert, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -137,7 +137,7 @@ const Caja = () => {
       </Box>
     ),
     renderTopToolbarCustomActions: () => (
-      <Box style={{display:"flex", gap:"1rem"}}>
+      <Box style={{display:"flex", gap:"0.5rem"}}>
         <Tooltip label="Aperturar Nueva Caja" position="bottom" withArrow>
           <Box>
             <Button onClick={()=>mostrarRegistro()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant="gradient" gradient={{ from: "violet", to: "#2c0d57", deg: 180 }}>Aperturar Caja</Button>
@@ -154,22 +154,28 @@ const Caja = () => {
             </ActionIcon>
           </Box>
         </Tooltip>}
-        <Tooltip label="Refrescar Pedidos" position="bottom" withArrow>
+        {idApertura && <Tooltip label="Refrescar Pedidos" position="bottom" withArrow>
           <Box>
             <Button onClick={refrescarPedidos} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='light' color='violet'>Refrescar</Button>
-            <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ffc343ff', to: '#755000ff', deg: 180 }} hiddenFrom="md" onClick={refrescarPedidos}>
+            {/* <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ffc343ff', to: '#755000ff', deg: 180 }} hiddenFrom="md" onClick={refrescarPedidos}>
               <IconLock />
+            </ActionIcon> */}
+            <ActionIcon variant="light" size="xl" hiddenFrom="md" onClick={refrescarPedidos}>
+              <IconRefreshAlert />
             </ActionIcon>
           </Box>
-        </Tooltip>
-        <Tooltip label="Descontar Productos" position="bottom" withArrow>
+        </Tooltip>}
+        {idApertura && <Tooltip label="Descontar Productos" position="bottom" withArrow>
           <Box>
             <Button onClick={()=>openFaltantes()} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='light' color='cyan'>Descontar</Button>
-            <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ff6f43ff', to: '#750e00ff', deg: 180 }} hiddenFrom="md" onClick={()=>openFaltantes()}>
+            {/* <ActionIcon variant="gradient" size="xl" gradient={{ from: '#ff6f43ff', to: '#750e00ff', deg: 180 }} hiddenFrom="md" onClick={()=>openFaltantes()}>
               <IconLock />
+            </ActionIcon> */}
+            <ActionIcon variant="light" color='cyan' size="xl" hiddenFrom="md" onClick={()=>openFaltantes()}>
+              <IconBottleOff />
             </ActionIcon>
           </Box>
-        </Tooltip>
+        </Tooltip>}
       </Box>
     ),
     mantineTableHeadCellProps:{style: { fontWeight: 'bold', fontSize: '1.1rem'},},

@@ -11,7 +11,7 @@ import { UserAuth } from './AuthContext';
 export const DataContext = createContext();
 // eslint-disable-next-line react/prop-types
 export const DataProvider = ({ children }) => {
-  const { user } = UserAuth();
+  const { user, logout} = UserAuth();
   const [loading, setLoading] = useState(false);
   const [productos, setProductos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
@@ -67,6 +67,7 @@ export const DataProvider = ({ children }) => {
       if(ruta.startsWith('/crud')) {
         toast(`Control ${ruta.replace('/crud','')}`, resp[0].message, 'success');
       }
+      if([401,402,403].includes(resp.status)) logout();
       return resp;
     } catch (error) {
       console.error('Error al consumir data:', error);

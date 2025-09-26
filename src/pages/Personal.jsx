@@ -351,7 +351,7 @@ const Personal = () => {
                 <strong>{u.cuenta}</strong>
                 <p>{u.rol}</p>
               </div>
-              <div className="icon"><IconUser size={60}/></div>
+              {/* <div className="icon"><IconUser size={60}/></div> */}
               <div className="card-box-footer">{u.estado}</div>
             </div>
           ))}
@@ -431,7 +431,7 @@ const Personal = () => {
                 <strong>{s.nombre}</strong>
                 <p>{s.direccion}</p>
               </div>
-              <div className="icon"><IconBuilding size={60}/></div>
+              {/* <div className="icon"><IconBuilding size={60}/></div> */}
               <div className="card-box-footer">{s.codigo}</div>
             </div>
           ))}

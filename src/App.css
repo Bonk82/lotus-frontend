@@ -364,7 +364,7 @@ table tr:nth-child(even) {
 .card-box strong {
   display: block;
   width: 100%;
-  font-size: clamp(1rem,5vw,3rem);
+  font-size: clamp(1rem,6vw,3rem);
   font-weight: bold;
   white-space: nowrap;
   padding: 0;
@@ -378,10 +378,10 @@ table tr:nth-child(even) {
   letter-spacing: 0.2rem;
 }
 .bg-violet p{
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 .bg-blue p{
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }
 .card-box .icon {
   position: absolute;
