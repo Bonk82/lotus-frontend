@@ -37,6 +37,8 @@ export const AuthProvider = ({ children }) => {
     console.log({userData});
     const { user, pass } = userData;
     try {
+      console.log({baseURL: import.meta.env.VITE_API_URL});
+      console.log({apiClient});
       const resp = await apiClient.get('/login',{params:{operacion:'V', user, pass }});
       // const deco = decodificar_token(resp);
       console.log('la resp',resp);
