@@ -64,7 +64,9 @@ export const DataProvider = ({ children }) => {
       if(ruta === '/listarSucursalProductos') setPrecios(resp);
       if(ruta === '/listarClasificador') setParametricas(resp);
       if(ruta === '/listarUsuarios') setUsuarios(resp);
-      if(ruta.startsWith('/crud')) {
+      console.log('API Response:', ruta, resp);
+      
+      if(ruta.startsWith('/crud') && resp[0]?.message) {
         toast(`Control ${ruta.replace('/crud','')}`, resp[0].message, 'success');
       }
       if([401,402,403].includes(resp.status)) logout();

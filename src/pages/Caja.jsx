@@ -5,12 +5,13 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Alert, Box, Button, Grid, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Select, Table, Text, Textarea, Tooltip } from '@mantine/core';
-import { IconAlertCircle, IconBottle, IconBottleOff, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconLock, IconMoneybag, IconRefreshAlert, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconAlertCircle, IconBottle, IconBottleOff, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconLibraryPlus, IconLock, IconMoneybag, IconNumber, IconRefreshAlert, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import { modals } from '@mantine/modals';
 
 const Caja = () => {
   const { user } = UserAuth();
@@ -19,6 +20,7 @@ const Caja = () => {
   const [openedPedido, { open:openPedido, close:closePedido }] = useDisclosure(false);
   const [openedFaltantes, { open:openFaltantes, close:closeFaltantes }] = useDisclosure(false);
   const [idApertura, setIdApertura] = useState(null)
+  const [idEmpleado, setIdEmpleado] = useState(null)
   const [desface, setDesface] = useState(null)
   const [cambio, setCambio] = useState(0)
   const [motivo, setMotivo] = useState('')
@@ -111,6 +113,10 @@ const Caja = () => {
 
   const mostrarRegistro = (data) => {
     if(data == 'CERRAR'){
+      if(pedidos.filter(f=>!['CONCILIADO','ANULADO'].includes(f.estado)).length > 0){
+        toast(`Control Caja`, `Aún cuenta con pedidos por CONCILIAR.`, 'warning');
+        return false;
+      }
       data = cajas.find(f=>f.id_control_caja == idApertura);
       data.estado = 'CIERRE';
       data.fid_usuario_cierre = user.usuario;
@@ -264,40 +270,71 @@ const Caja = () => {
   }
 
   const detalleFaltantes = (c) => {
-      const rows = c.map((row) => (
-        <Table.Tr key={row.id_producto}>
-          <Table.Td>{row.producto}</Table.Td>
-          <Table.Td>{row.cantidad}</Table.Td>
-          <Table.Td>
-            <Box style={{ gap: "0.8rem", display: "flex" }}>
-              <ActionIcon variant="subtle" onClick={console.log(row)}>
-                <IconTrash color="crimson" />
-              </ActionIcon>
-            </Box>
-          </Table.Td>
-        </Table.Tr>
-      ));
-      const ths = (
-        <Table.Tr>
-          <Table.Th>Producto</Table.Th>
-          <Table.Th>Cantidad</Table.Th>
-          <Table.Th>Cancelar</Table.Th>
-        </Table.Tr>
-      );
-      return (
-        <>
-        {c.length >0 &&
-          <Table captionSide="top" width={50} striped highlightOnHover>
-            <Table.Caption style={{ backgroundColor: "transparent",fontSize:'1.5rem' }}>
-              Productos para Descontar
-            </Table.Caption>
-            <Table.Thead style={{lineHeight:'0.6rem',marginTop:'0.7rem'}}>{ths}</Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-        }
-        </>
-      );
+    const rows = c.map((row) => (
+      <Table.Tr key={row.id_producto}>
+        <Table.Td>{row.producto}</Table.Td>
+        <Table.Td>{row.cantidad}</Table.Td>
+        <Table.Td>
+          <Box style={{ gap: "0.8rem", display: "flex" }}>
+            <ActionIcon variant="subtle" onClick={console.log(row)}>
+              <IconTrash color="crimson" />
+            </ActionIcon>
+          </Box>
+        </Table.Td>
+      </Table.Tr>
+    ));
+    const ths = (
+      <Table.Tr>
+        <Table.Th>Producto</Table.Th>
+        <Table.Th>Cantidad</Table.Th>
+        <Table.Th>Cancelar</Table.Th>
+      </Table.Tr>
+    );
+    return (
+      <>
+      {c.length >0 &&
+        <Table captionSide="top" width={50} striped highlightOnHover>
+          <Table.Caption style={{ backgroundColor: "transparent",fontSize:'1.5rem' }}>
+            Productos para Descontar
+          </Table.Caption>
+          <Table.Thead style={{lineHeight:'0.6rem',marginTop:'0.7rem'}}>{ths}</Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      }
+      </>
+    );
+  };
+
+  const confirmarConciliacion = (idEmpleado)=>{
+      modals.openConfirmModal({
+        title: 'Confirmar Conciliación',
+        centered: true,
+        children: (
+          <Text size="sm">Está seguro de CONCILIAR los pedidos</Text>
+        ),
+        labels: { confirm: 'Conciliar Pedidos', cancel: "Cancelar" },
+        confirmProps: { color: 'violet' },
+        cancelProps:{ style: { backgroundColor: '#240846' } },
+        overlayProps:{backgroundOpacity: 0.55, blur: 3,},
+        onCancel: () => console.log('Cancel'),
+        onConfirm: () => conciliarPedidos(pedidos.filter(f=>f.fid_usuario == idEmpleado)),
+      });
+    }
+
+  const conciliarPedidos = async (porConciliar) => {
+    let pedidosJoin = porConciliar.map(p=>p.id_pedido).join(',');
+    let elPedido = { 
+      operacion: 'CONCILIAR',
+      id_pedido: pedidosJoin,
+      fid_control_caja: idApertura,
+      estado: 'CONCILIADO',
+      usuario_registro: user.usuario
     };
+    const r = await consumirAPI('/crudPedido', elPedido);
+    if(r) toast('Conciliación de Pedidos', `Se han conciliado ${porConciliar.length} pedido(s) del usuario ${porConciliar[0]?.cuenta}`, 'success');
+    setIdEmpleado(null);
+    await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
+  }
 
   return (
     <div>
@@ -306,8 +343,27 @@ const Caja = () => {
         <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
           Control Pedidos 
         </Text>
+        <Button onClick={()=>setIdEmpleado(null)} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='light' color='violet'>Ver pedidos por usuario</Button>
         <Box className="cards-pedidos">
-          {pedidos.map(p=>(
+          {!idEmpleado &&  pedidos.reduce((agrupador, objetoActual) => {
+              const clave = objetoActual.cuenta;
+              const grupoExistente = agrupador.find(grupo => grupo.cuenta === clave);
+              if (grupoExistente) {
+                grupoExistente.detalle.push(objetoActual);
+              } else {
+                agrupador.push({cuenta: clave,detalle: [objetoActual] });
+              }
+              console.log('agrupador:', agrupador);
+              return agrupador;
+            }, []).map(c=>(
+            <Box className="card red" key={c.cuenta} onClick={()=>setIdEmpleado(pedidos.find(f=>f.cuenta == c.cuenta).fid_usuario)}>
+              <strong className="tip">{c.cuenta}</strong>
+              <p className="second-text"><IconLibraryPlus size={'14px'}/> {c.detalle?.length} Pedido(s)</p>
+              <p className="total"> TOTAL: {c.detalle?.reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2)}</p>
+            </Box>
+            ))
+          }
+          {idEmpleado > 0 && pedidos.filter(f=>f.fid_usuario == idEmpleado).map(p=>(
             <Box className="card red" key={p.id_pedido} onClick={()=>mostrarPedido(p)}>
               <strong className="tip">{p.id_pedido} - {p.mesa}</strong>
               {p.consumo?.map(c=>(
@@ -319,6 +375,7 @@ const Caja = () => {
             ))
           }
         </Box>
+        {idEmpleado > 0 && (<Button onClick={()=>confirmarConciliacion(idEmpleado)} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='outline' color='cyan'>Conciliar pedidos de {pedidos.find(f=>f.fid_usuario == idEmpleado)?.cuenta}</Button>)}
         </>
       }
       <Modal opened={openedFaltantes} onClose={closeFaltantes} title={'Descontar Productos'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'>
