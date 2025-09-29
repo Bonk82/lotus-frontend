@@ -41,14 +41,14 @@ const Caja = () => {
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
     if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
-    await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura || id[0]?.id_control_caja});
+    await consumirAPI('/listarPedidos', { opcion: 'CONTROL_CAJA',id:idApertura || id[0]?.id_control_caja});
     const f1 = dayjs(`${id[0]?.inicio}`);
     const horas_apertura = dayjs().diff(f1,'h')
     horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
   }
 
   const refrescarPedidos = async () =>{
-    await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura });
+    await consumirAPI('/listarPedidos', { opcion: 'CONTROL_CAJA',id:idApertura });
   }
 
   const form = useForm({
@@ -120,6 +120,9 @@ const Caja = () => {
       data = cajas.find(f=>f.id_control_caja == idApertura);
       data.estado = 'CIERRE';
       data.fid_usuario_cierre = user.usuario;
+      data.monto_cierre_efectivo = pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),Number(data.monto_inicio))),0).toFixed(2);
+      data.monto_cierre_tarjeta = pedidos.filter(f=>f.metodo_pago == 'TARJETA').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
+      data.monto_cierre_qr = pedidos.filter(f=>f.metodo_pago == 'QR').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
     } 
     open();
     form.reset();
@@ -219,6 +222,7 @@ const Caja = () => {
   });
 
   const mostrarPedido = (data) => {
+    if(data.estado == 'CONCILIADO') return false;
     data.monto_total = data.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2);
     console.log('Mostrar registro:', data);
     openPedido();
@@ -226,12 +230,16 @@ const Caja = () => {
   }
 
   const cerrarPedido = async (data) => {
+    if((Number(data.monto_cierre_efectivo) + Number(data.monto_inicio)) < Number(pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0)) && !data.observaciones){
+      toast('Control Caja', `El monto de cierre efectivo es menor al monto total de pedidos en efectivo, debe justificar en observaciones`, 'warning');
+      return false;
+    }
     let elPedido = { ...data };
     elPedido = { ...data, operacion: 'U', usuario_registro: user.usuario };
     elPedido.estado = 'PAGADO'
     await consumirAPI('/crudPedido', elPedido);
     closePedido();
-    await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
+    await consumirAPI('/listarPedidos', {  opcion: 'CONTROL_CAJA',id:idApertura });
   }
 
   const calcularCambio = ()=>{
@@ -306,20 +314,33 @@ const Caja = () => {
   };
 
   const confirmarConciliacion = (idEmpleado)=>{
-      modals.openConfirmModal({
-        title: 'Confirmar Conciliación',
-        centered: true,
-        children: (
-          <Text size="sm">Está seguro de CONCILIAR los pedidos</Text>
-        ),
-        labels: { confirm: 'Conciliar Pedidos', cancel: "Cancelar" },
-        confirmProps: { color: 'violet' },
-        cancelProps:{ style: { backgroundColor: '#240846' } },
-        overlayProps:{backgroundOpacity: 0.55, blur: 3,},
-        onCancel: () => console.log('Cancel'),
-        onConfirm: () => conciliarPedidos(pedidos.filter(f=>f.fid_usuario == idEmpleado)),
-      });
+    const filtrados = pedidos.filter(f=>f.fid_usuario == idEmpleado && !['CONCILIADO','ANULADO'].includes(f.estado));
+    if(filtrados.find(f=>f.estado == 'PENDIENTE')){
+      toast('Conciliación de Pedidos', `Existen pedidos pendientes para el usuario`, 'warning');
+      return false;
     }
+    const total_qr = filtrados.filter(f=>f.metodo_pago == 'QR').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
+    const total_trj = filtrados.filter(f=>f.metodo_pago == 'TARJETA').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
+    const total_efe = filtrados.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
+    modals.openConfirmModal({
+      title: 'Confirmar Conciliación',
+      centered: true,
+      children: (
+        <>
+        <Text size="sm">Está seguro de CONCILIAR {filtrados.length} pedidos</Text>
+        <Text size="sm">Total QR (Bs.): {total_qr}</Text>
+        <Text size="sm">Total Tarjeta (Bs.): {total_trj}</Text>
+        <Text size="sm">Total Efectivo (Bs.): {total_efe}</Text>
+        </>
+      ),
+      labels: { confirm: 'Conciliar Pedidos', cancel: "Cancelar" },
+      confirmProps: { color: 'violet' },
+      cancelProps:{ style: { backgroundColor: '#240846' } },
+      overlayProps:{backgroundOpacity: 0.55, blur: 3,},
+      onCancel: () => console.log('Cancel'),
+      onConfirm: () => conciliarPedidos(filtrados),
+    });
+  }
 
   const conciliarPedidos = async (porConciliar) => {
     let pedidosJoin = porConciliar.map(p=>p.id_pedido).join(',');
@@ -333,7 +354,7 @@ const Caja = () => {
     const r = await consumirAPI('/crudPedido', elPedido);
     if(r) toast('Conciliación de Pedidos', `Se han conciliado ${porConciliar.length} pedido(s) del usuario ${porConciliar[0]?.cuenta}`, 'success');
     setIdEmpleado(null);
-    await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
+    await consumirAPI('/listarPedidos', {  opcion: 'CONTROL_CAJA',id:idApertura });
   }
 
   return (
@@ -345,7 +366,7 @@ const Caja = () => {
         </Text>
         <Button onClick={()=>setIdEmpleado(null)} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='light' color='violet'>Ver pedidos por usuario</Button>
         <Box className="cards-pedidos">
-          {!idEmpleado &&  pedidos.reduce((agrupador, objetoActual) => {
+          {!idEmpleado && pedidos.reduce((agrupador, objetoActual) => {
               const clave = objetoActual.cuenta;
               const grupoExistente = agrupador.find(grupo => grupo.cuenta === clave);
               if (grupoExistente) {
@@ -356,26 +377,26 @@ const Caja = () => {
               console.log('agrupador:', agrupador);
               return agrupador;
             }, []).map(c=>(
-            <Box className="card red" key={c.cuenta} onClick={()=>setIdEmpleado(pedidos.find(f=>f.cuenta == c.cuenta).fid_usuario)}>
+            <Box className={`card ${c.detalle?.every(f=>f.estado=='CONCILIADO') ? 'ok' : 'bad'}`} key={c.cuenta} onClick={()=>setIdEmpleado(pedidos.find(f=>f.cuenta == c.cuenta).fid_usuario)}>
               <strong className="tip">{c.cuenta}</strong>
               <p className="second-text"><IconLibraryPlus size={'14px'}/> {c.detalle?.length} Pedido(s)</p>
-              <p className="total"> TOTAL: {c.detalle?.reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2)}</p>
+              <p className="total"> TOTAL x CONCILIAR : {c.detalle?.filter(f=>f.estado!='CONCILIADO')?.reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0) || 0),0).toFixed(2)}</p>
             </Box>
             ))
           }
           {idEmpleado > 0 && pedidos.filter(f=>f.fid_usuario == idEmpleado).map(p=>(
-            <Box className="card red" key={p.id_pedido} onClick={()=>mostrarPedido(p)}>
+            <Box className={`card ${p.estado == 'CONCILIADO' ? 'ok' : 'bad'}`} key={p.id_pedido} onClick={()=>mostrarPedido(p)}>
               <strong className="tip">{p.id_pedido} - {p.mesa}</strong>
               {p.consumo?.map(c=>(
                 <p className="second-text" key={c.id_pedido_detalle}><IconCheck size={'14px'}/> {c.nombre}</p>
                 ))
               }
-              <p className="total"> TOTAL: {p.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2)}</p>
+              <p className="total"><i>{p.metodo_pago}</i> TOTAL : {p.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2) || 0.00}</p>
             </Box>
             ))
           }
         </Box>
-        {idEmpleado > 0 && (<Button onClick={()=>confirmarConciliacion(idEmpleado)} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='outline' color='cyan'>Conciliar pedidos de {pedidos.find(f=>f.fid_usuario == idEmpleado)?.cuenta}</Button>)}
+        {(idEmpleado > 0 && pedidos.some(f=>f.fid_usuario == idEmpleado && f.estado != 'CONCILIADO'))  && (<Button onClick={()=>confirmarConciliacion(idEmpleado)} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='outline' color='cyan'>Conciliar pedidos de {pedidos.find(f=>f.fid_usuario == idEmpleado)?.cuenta}</Button>)}
         </>
       }
       <Modal opened={openedFaltantes} onClose={closeFaltantes} title={'Descontar Productos'} size='lg' zIndex={20} overlayProps={{backgroundOpacity: 0.55,blur: 3,}} yOffset='10dvh'>

@@ -37,7 +37,7 @@ export const DataProvider = ({ children }) => {
     if(type == 'success') color = 'violet.9';
     if(type == 'info') color = 'blue.9';
     if(type == 'warning') color = 'cyan.9';
-    if(type == 'error') color = 'red.9';
+    if(type == 'error') color = 'rgba(143, 0, 0, 1)';
     notifications.show({
       title,
       message,
