@@ -8,14 +8,14 @@ import { useMemo } from "react";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { IconArrowBackUpDouble, IconBottle, IconCash, IconDeviceFloppy, IconEdit, IconSquarePlus, IconTrash, IconUser } from "@tabler/icons-react";
+import { IconArrowBackUpDouble, IconBottle, IconCash, IconDeviceFloppy, IconEdit, IconSquarePlus, IconUser } from "@tabler/icons-react";
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { nanoid } from "nanoid";
 import { modals } from "@mantine/modals";
 
 const Pedido = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast,promociones } = DataApp();
+  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast,promociones,usuarios } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [grupo, setGrupo] = useState('')
   const [idPedido, setIdPedido] = useState(null)
@@ -82,6 +82,9 @@ const Pedido = () => {
     console.log('Mostrar registro:', data,idCaja);
     if(!idCaja){
       return toast(`Control Pedidos`, `Sucursal ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre} sin CAJA aperturada`, 'warning');
+    }
+    if(usuarios.find(f=>f.id_usuario == user.usuario)?.estado != 'ASIGNADO'){
+      return toast(`Control Pedidos`, `Usted no fue asignado a ninguna caja para realizar pedidos`, 'warning');
     }
     open();
     form.reset();
@@ -259,10 +262,10 @@ const Pedido = () => {
           <Button variant="gradient" leftSection={<IconCash size={14}/>} onClick={insertarDetalles}>
             Confirmar<Space w="lg"/>Bs. {detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0)}
           </Button>
-          {/* TOTAL : <Space w="lg" />{detalle.reduce((ac,el)=>ac+Number(el.precio),0).toFixed(2)} */}
         </Box>
-        <Text size='sm' color='dimmed'>Método de Pago: {tipoPago}</Text>
-        {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>}
+        <Text size='sm'>Método de Pago: {tipoPago}</Text>
+        {/* {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>} */}
+        {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="https://lotus-api.simikapp.vip/uploads/qr-pagos.jpg" alt="QR de Pago"/>}
         {tipoPago == 'EFECTIVO' && <Box style={{textAlign:'right'}}>
             <NumberInput
               label="Monto Efectivo:"

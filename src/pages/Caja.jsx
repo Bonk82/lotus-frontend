@@ -35,16 +35,22 @@ const Caja = () => {
 
   const cargarData = async () =>{
     const id = await consumirAPI('/listarControlCajas', { opcion: 'ACTIVA',id:user.sucursal});
-    if(id) setIdApertura(id[0]?.id_control_caja);
+    if(id[0]){
+      setIdApertura(id[0]?.id_control_caja);
+      const f1 = dayjs(`${id[0]?.inicio}`);
+      const horas_apertura = dayjs().diff(f1,'h')
+      horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
+    } else{
+      setIdApertura(null);
+      setDesface(null);
+    }
     await consumirAPI('/listarControlCajas', { opcion: 'cc.fid_sucursal',id:user.sucursal });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T'});
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
     if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
     await consumirAPI('/listarPedidos', { opcion: 'CONTROL_CAJA',id:idApertura || id[0]?.id_control_caja});
-    const f1 = dayjs(`${id[0]?.inicio}`);
-    const horas_apertura = dayjs().diff(f1,'h')
-    horas_apertura>16 ? setDesface(dayjs(id[0]?.fecha).format('DD/MM/YYYY')):null;
+    
   }
 
   const refrescarPedidos = async () =>{
@@ -71,6 +77,12 @@ const Caja = () => {
   });
 
   const crudCaja = async (data,eliminar) => {
+    const min_efectivo = pedidos.length > 0 ? Number(pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0)) + Number(data.monto_inicio) : cajas.filter(f=>f.id_control_caja == data.id_control_caja)[0]?.monto_cierre_efectivo || 0;
+
+    if(Number(data.monto_cierre_efectivo) < min_efectivo && !data.observaciones){
+      toast('Control Caja', `El monto de cierre efectivo es menor al monto total de pedidos en efectivo, debe justificar en observaciones`, 'warning');
+      return false;
+    }
     let newCaja = { ...data };
     if (data.id_control_caja) {
       newCaja = { ...data, operacion: 'U' };
@@ -120,7 +132,7 @@ const Caja = () => {
       data = cajas.find(f=>f.id_control_caja == idApertura);
       data.estado = 'CIERRE';
       data.fid_usuario_cierre = user.usuario;
-      data.monto_cierre_efectivo = pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),Number(data.monto_inicio))),0).toFixed(2);
+      data.monto_cierre_efectivo = pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),Number(data.monto_inicio)).toFixed(2);
       data.monto_cierre_tarjeta = pedidos.filter(f=>f.metodo_pago == 'TARJETA').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
       data.monto_cierre_qr = pedidos.filter(f=>f.metodo_pago == 'QR').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
     } 
@@ -230,10 +242,6 @@ const Caja = () => {
   }
 
   const cerrarPedido = async (data) => {
-    if((Number(data.monto_cierre_efectivo) + Number(data.monto_inicio)) < Number(pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0)) && !data.observaciones){
-      toast('Control Caja', `El monto de cierre efectivo es menor al monto total de pedidos en efectivo, debe justificar en observaciones`, 'warning');
-      return false;
-    }
     let elPedido = { ...data };
     elPedido = { ...data, operacion: 'U', usuario_registro: user.usuario };
     elPedido.estado = 'PAGADO'
@@ -315,23 +323,25 @@ const Caja = () => {
 
   const confirmarConciliacion = (idEmpleado)=>{
     const filtrados = pedidos.filter(f=>f.fid_usuario == idEmpleado && !['CONCILIADO','ANULADO'].includes(f.estado));
-    if(filtrados.find(f=>f.estado == 'PENDIENTE')){
+    if(filtrados.some(f=>f.estado == 'PENDIENTE')){
       toast('Conciliación de Pedidos', `Existen pedidos pendientes para el usuario`, 'warning');
       return false;
     }
     const total_qr = filtrados.filter(f=>f.metodo_pago == 'QR').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
     const total_trj = filtrados.filter(f=>f.metodo_pago == 'TARJETA').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
     const total_efe = filtrados.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
+
+    const monto_inicio = Number(cajas.find(f=>f.id_control_caja == idApertura)?.monto_inicio) || 0;
     modals.openConfirmModal({
       title: 'Confirmar Conciliación',
       centered: true,
       children: (
-        <>
+        <Box py={10} style={{display:'flex',flexDirection:'column',gap:'0.8rem'}}>
         <Text size="sm">Está seguro de CONCILIAR {filtrados.length} pedidos</Text>
         <Text size="sm">Total QR (Bs.): {total_qr}</Text>
         <Text size="sm">Total Tarjeta (Bs.): {total_trj}</Text>
-        <Text size="sm">Total Efectivo (Bs.): {total_efe}</Text>
-        </>
+        <Text size="sm">Total Efectivo (Bs.): {Number(total_efe)+Number(monto_inicio)}</Text>
+        </Box>
       ),
       labels: { confirm: 'Conciliar Pedidos', cancel: "Cancelar" },
       confirmProps: { color: 'violet' },
@@ -525,6 +535,7 @@ const Caja = () => {
               max={100000}
               prefix='Bs. '
               required
+              thousandSeparator=","
               leftSection={<IconMoneybag size={16} />}
               key={form.key('monto_inicio')}
               {...form.getInputProps('monto_inicio')}
@@ -548,6 +559,7 @@ const Caja = () => {
                   max={100000}
                   required
                   prefix='Bs. '
+                  thousandSeparator=","
                   leftSection={<IconCashBanknote size={16} />}
                   key={form.key('monto_cierre_qr')}
                   {...form.getInputProps('monto_cierre_qr')}
@@ -561,6 +573,7 @@ const Caja = () => {
                   max={100000}
                   required
                   prefix='Bs. '
+                  thousandSeparator=","
                   leftSection={<IconCashBanknote size={16} />}
                   key={form.key('monto_cierre_tarjeta')}
                   {...form.getInputProps('monto_cierre_tarjeta')}
@@ -574,6 +587,7 @@ const Caja = () => {
                   max={100000}
                   required
                   prefix='Bs. '
+                  thousandSeparator=","
                   leftSection={<IconCashBanknote size={16} />}
                   key={form.key('monto_cierre_efectivo')}
                   {...form.getInputProps('monto_cierre_efectivo')}
