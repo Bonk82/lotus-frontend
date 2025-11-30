@@ -285,9 +285,12 @@ table tr:nth-child(even) {
   padding: 0 30px;
 }
 
-.cards-pedidos .red {
-  /* background-color: #522963; */
+.cards-pedidos .bad {
   background: linear-gradient(180deg, #40c9ff 0%, #115e7cff 80%);
+}
+
+.cards-pedidos .ok {
+  background: linear-gradient(180deg, #a340ff 0%, #5a117c 80%);
 }
 
 .cards-pedidos .card {
@@ -328,6 +331,15 @@ table tr:nth-child(even) {
   border-top: 1px solid gainsboro;
   align-self: flex-end;
   font-size: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content:space-between;
+  align-items: center;
+}
+.card .total i{
+  font-size: 0.8rem;
+  color: rgba(245, 245, 245, 0.6);
+
 }
 
 /***cards*******/

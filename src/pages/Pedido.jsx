@@ -8,13 +8,14 @@ import { useMemo } from "react";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { IconBottle, IconCash, IconDeviceFloppy, IconEdit, IconSquarePlus, IconUser } from "@tabler/icons-react";
+import { IconArrowBackUpDouble, IconBottle, IconCash, IconDeviceFloppy, IconEdit, IconSquarePlus, IconUser } from "@tabler/icons-react";
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { nanoid } from "nanoid";
+import { modals } from "@mantine/modals";
 
 const Pedido = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast,promociones } = DataApp();
+  const { loading,consumirAPI,productos,sucursales,parametricas,pedidos,toast,promociones,usuarios } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [grupo, setGrupo] = useState('')
   const [idPedido, setIdPedido] = useState(null)
@@ -61,7 +62,8 @@ const Pedido = () => {
 
   const columns = useMemo(
     () => [
-      { accessorKey: 'estado',header: 'Estado',},
+      // { accessorKey: 'estado',header: 'ID - Estado',},
+      { accessorFn: (row) => `${row.id_pedido} - ${row.estado}`,header: 'ID - Estado',id:'estado',},
       { accessorKey: 'total',header: 'Total Bs.',},
       { accessorKey: 'mesa',header: 'Mesa',},
       { accessorKey: 'metodo_pago',header: 'Método Pago',},
@@ -80,6 +82,9 @@ const Pedido = () => {
     console.log('Mostrar registro:', data,idCaja);
     if(!idCaja){
       return toast(`Control Pedidos`, `Sucursal ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre} sin CAJA aperturada`, 'warning');
+    }
+    if(usuarios.find(f=>f.id_usuario == user.usuario)?.estado != 'ASIGNADO'){
+      return toast(`Control Pedidos`, `Usted no fue asignado a ninguna caja para realizar pedidos`, 'warning');
     }
     open();
     form.reset();
@@ -105,6 +110,11 @@ const Pedido = () => {
         <Tooltip label="Revisar Consumo" position="bottom" withArrow>
           <ActionIcon variant="subtle" onClick={() => cargarDetalle(row.original)}>
             <IconBottle color="cyan" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Anular Pedido" position="bottom" withArrow>
+          <ActionIcon variant="subtle" onClick={() => confirmarAnular(row.original)}>
+            <IconArrowBackUpDouble color="red" />
           </ActionIcon>
         </Tooltip>
         </>
@@ -141,11 +151,13 @@ const Pedido = () => {
     } else {
       newPedido = { ...data, operacion: 'I', usuario_registro: user.usuario, fid_usuario:user.usuario,fid_control_caja:idCaja};
     }
-    if (eliminar) newPedido.operacion = 'D';
+    if (eliminar) newPedido.operacion = 'A';
     const id = await consumirAPI('/crudPedido', newPedido);
-    setTipoPago(newPedido.metodo_pago);
-    setIdPedido(id[0]?.message?.split('|')[1]);
-    close();
+    if(!eliminar){
+      setTipoPago(newPedido.metodo_pago);
+      setIdPedido(id[0]?.message?.split('|')[1]);
+      close();
+    }
     // form.reset(); resetear el carrito
     const pivot = await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
     let total = 0;
@@ -218,6 +230,22 @@ const Pedido = () => {
     setCambio(dif)
   }
 
+  const confirmarAnular = (e)=>{
+    modals.openConfirmModal({
+      title: 'Confirmar Anulación',
+      centered: true,
+      children: (
+        <Text size="sm">Está seguro de ANULAR el pedido</Text>
+      ),
+      labels: { confirm: 'Anular Pedido', cancel: "Cancelar" },
+      confirmProps: { color: 'violet' },
+      cancelProps:{ style: { backgroundColor: '#240846' } },
+      overlayProps:{backgroundOpacity: 0.55, blur: 3,},
+      onCancel: () => console.log('Cancel'),
+      onConfirm: () => crudPedido(e,true),
+    });
+  }
+
   return (
     <div>
       <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
@@ -234,10 +262,10 @@ const Pedido = () => {
           <Button variant="gradient" leftSection={<IconCash size={14}/>} onClick={insertarDetalles}>
             Confirmar<Space w="lg"/>Bs. {detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0)}
           </Button>
-          {/* TOTAL : <Space w="lg" />{detalle.reduce((ac,el)=>ac+Number(el.precio),0).toFixed(2)} */}
         </Box>
-        <Text size='sm' color='dimmed'>Método de Pago: {tipoPago}</Text>
-        {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>}
+        <Text size='sm'>Método de Pago: {tipoPago}</Text>
+        {/* {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>} */}
+        {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="https://lotus-api.simikapp.vip/uploads/qr-pagos.jpg" alt="QR de Pago"/>}
         {tipoPago == 'EFECTIVO' && <Box style={{textAlign:'right'}}>
             <NumberInput
               label="Monto Efectivo:"
@@ -292,7 +320,7 @@ const Pedido = () => {
             />
             <NativeSelect
               label="Estado del Pedido:"
-              data={[...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO' && f.nombre != 'CONCILIADO').map(e=>e.nombre)]}
+              data={[...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO' && !['CONCILIADO','ANULADO'].includes(f.nombre)).map(e=>e.nombre)]}
               required
               disabled={!form.getValues().id_pedido}
               leftSection={<IconUser size={16} />}

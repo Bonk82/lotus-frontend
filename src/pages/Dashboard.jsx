@@ -37,7 +37,7 @@ const Dashboard = () => {
     setChart1(data1);
     setChart2(data2);
     setChart3(data3);
-    setChart4([data4[0].productos]);
+    if(data4[0]) setChart4([data4[0].productos]);
     setCards(data5);
   };
 

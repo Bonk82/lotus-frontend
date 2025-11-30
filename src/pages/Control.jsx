@@ -272,7 +272,7 @@ const Control = () => {
     // files[0].nuevo = 'LOTUS001.jpg'; // Renombrar el archivo
     // console.log('el file',files[0]);
     formData.append("image", files[0]);
-    formData.append("customName", "qr01");
+    formData.append("customName", "qr-pagos");
     await subirArchivo('/subirImagen', formData);
   }
 
