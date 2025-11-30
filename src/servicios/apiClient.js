@@ -1,5 +1,6 @@
 // services/apiClient.js
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL, // Variable en .env
@@ -22,9 +23,12 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) =>response.data, 
   (error) => {
+    console.log('interceptor',error);
     if (error.response?.status === 401 && window.location.pathname !== '/login') {
       // Redirigir a login si el token expira
-      window.location.href = '/login';
+      const navigate = useNavigate();
+      navigate('/login');
+      // window.location.href = '/login';
     }
     return Promise.reject(error.response?.data || error.message);
   }

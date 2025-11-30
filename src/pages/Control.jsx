@@ -5,7 +5,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Box, Button, Group, LoadingOverlay, Modal, MultiSelect, NativeSelect, NumberInput, Select, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconAlignLeft, IconBottle, IconBuilding, IconCashBanknote, IconCashMinus, IconCategoryPlus, IconDeviceFloppy, IconDialpad, IconEdit, IconHours24, IconMatrix, IconPhoto, IconSquarePlus, IconTimeDuration15, IconTrash, IconUpload, IconUser, IconX } from '@tabler/icons-react';
+import { IconAlignLeft, IconBottle, IconBuilding, IconCashBanknote, IconCashMinus, IconCategoryPlus, IconDeviceFloppy, IconDialpad, IconEdit, IconHours24, IconMatrix, IconPhoto, IconSquarePlus, IconTimeDuration15, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -15,7 +15,7 @@ import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
 const Control = () => {
   const { user } = UserAuth();
-  const { loading,consumirAPI,promociones,sucursales,productos,parametricas,precios,subirArchivo } = DataApp();
+  const { loading,consumirAPI,promociones,sucursales,productos,parametricas,precios,subirArchivo,toast } = DataApp();
   const [opened, { open, close }] = useDisclosure(false);
   const [openedPrecio, { open:openPrecio, close:closePrecio }] = useDisclosure(false);
 
@@ -196,6 +196,10 @@ const Control = () => {
   });
 
   const crudPrecio = async (data,eliminar) => {
+    if(!data.fid_sucursal || !data.fid_producto){
+      toast('Control Sistema','Debe seleccionar Sucursal y Producto','warning');
+      return;
+    }
     let newPrecio = { ...data };
     if (data.id_sucursal_producto) {
       newPrecio = { ...data, operacion: 'U',};
@@ -224,7 +228,11 @@ const Control = () => {
     console.log('Mostrar precio:', data);
     openPrecio();
     formPrecio.reset();
-    if (data) formPrecio.setValues(data);
+    if (data){
+      data.fid_producto = data.fid_producto.toString();
+      formPrecio.setValues(data);
+    } 
+    console.log('form ahora',formPrecio.getValues());
   }
 
   const tablePrecio = useMantineReactTable({
@@ -391,7 +399,7 @@ const Control = () => {
           <form onSubmit={formPrecio.onSubmit((values) => crudPrecio(values))} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
             <NativeSelect
               label="Sucursal:"
-              data={[...sucursales.filter(f=>f.nombre != 'TODAS').map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
+              data={[{label:'SELECCIONE...',value:null},...sucursales.filter(f=>f.nombre != 'TODAS').map((e) => {return{label:e.nombre,value:e.id_sucursal}}),]}
               required
               leftSection={<IconBuilding size={16} />}
               key={formPrecio.key("fid_sucursal")}
@@ -413,6 +421,7 @@ const Control = () => {
               allowDecimal={false}
               min={0}
               max={9000}
+              required
               leftSection={<IconMatrix size={16} />}
               key={formPrecio.key('existencia')}
               {...formPrecio.getInputProps('existencia')}
@@ -424,6 +433,7 @@ const Control = () => {
               decimalScale={2}
               min={0}
               max={9000}
+              required
               prefix='Bs. '
               leftSection={<IconCashBanknote size={16} />}
               key={formPrecio.key('precio')}
