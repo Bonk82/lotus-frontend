@@ -407,7 +407,7 @@ const Control = () => {
             />
             <Select
               label="Producto:"
-              data={[...productos.filter(f=>f.pedido_minimo>0).map((e) => {return{label:`${e.descripcion} - ${e.unidad}`,value:e.id_producto.toString()}}),]}
+              data={[...productos.filter(f=>f.tipo_producto == 'VENTA').map((e) => {return{label:`${e.descripcion} - ${e.unidad}`,value:e.id_producto.toString()}}),]}
               required
               searchable
               limit={5}

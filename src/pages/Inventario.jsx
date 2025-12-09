@@ -647,7 +647,7 @@ const Inventario = () => {
               placeholder="10"
               allowDecimal={false}
               max={1000}
-              min={1}
+              min={0}
               required
               leftSection={<IconDatabaseExclamation size={16} />}
               key={formProducto.key("pedido_minimo")}

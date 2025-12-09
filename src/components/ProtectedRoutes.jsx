@@ -16,8 +16,11 @@ const ProtectedRoute = ({ children,allowedRoles }) => {
         const decoded = jwtDecode(storedUser);
         // console.log('Token decodificado Protected:', decoded);
         if (decoded.exp * 1000 < Date.now()) {
+          // console.log('token expirado');
           logout(); // Token expirado
           return <Navigate to="/login" replace />; // Redirige a la página de login
+        }else{
+          userRole = decoded.id_rol
         }
       } catch (error) {
         console.error('Error al verificar el token:', error);
@@ -30,11 +33,14 @@ const ProtectedRoute = ({ children,allowedRoles }) => {
   }
 
   if (!user && !storedUser) {
+    // console.log('sin user',user,storedUser);
+    logout()
     return <Navigate to="/login" replace />; // Redirige a la página de login
   }
 
   // Verifica si el rol del usuario está permitido
   if (allowedRoles && !allowedRoles.includes(userRole)) {
+    // console.log('allowed',allowedRoles,userRole,user)
     logout()
     return <Navigate to="/login" replace />;
   }
