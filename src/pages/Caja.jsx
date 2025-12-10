@@ -342,7 +342,8 @@ const Caja = () => {
         <Text size="sm">Está seguro de CONCILIAR {filtrados.length} pedidos</Text>
         <Text size="sm">Total QR (Bs.): {total_qr}</Text>
         <Text size="sm">Total Tarjeta (Bs.): {total_trj}</Text>
-        <Text size="sm">Total Efectivo (Bs.): {Number(total_efe)+Number(monto_inicio)}</Text>
+        {/* <Text size="sm">Total Efectivo (Bs.): {Number(total_efe)+Number(monto_inicio)}</Text> */}
+        <Text size="sm">Total Efectivo (Bs.): {Number(total_efe)}</Text>
         </Box>
       ),
       labels: { confirm: 'Conciliar Pedidos', cancel: "Cancelar" },

@@ -55,38 +55,38 @@ const Dashboard = () => {
 
   const obtenerReporte = async (tipo,data) =>{
     console.log('obteneinedo report',tipo,data);
-    // setLoading(true)
-    try {
-      const templateData = {
-        filename: 'report-template.docx', // Cambia el nombre de la plantilla según tu caso
-      };
-      await data.map(e => {
-        e.f1 = f1;
-        e.f2 = f2;
-        return e;
-      });
-      const response2 = await consumirAPI('/api/reports', { templateData, data }, {
-        responseType: 'blob',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    // // setLoading(true)
+    // try {
+    //   const templateData = {
+    //     filename: 'report-template.docx', // Cambia el nombre de la plantilla según tu caso
+    //   };
+    //   await data.map(e => {
+    //     e.f1 = f1;
+    //     e.f2 = f2;
+    //     return e;
+    //   });
+    //   const response2 = await consumirAPI('/api/reports', { templateData, data }, {
+    //     responseType: 'blob',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //   });
 
-      // Crear un enlace para descargar el archivo
-      const url = window.URL.createObjectURL(new Blob([response2.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'report.docx'); // Ajusta el nombre del archivo según tu caso
-      document.body.appendChild(link);
-      link.click();
-      // setMessage(response.data.message);
-      console.log('la respuesta API',response2);
-    } catch (error) {
-      // setError('Error fetching data');
-      console.error('Error fetching data:', error);
-    } finally {
-      // setLoading(false);
-    }
+    //   // Crear un enlace para descargar el archivo
+    //   const url = window.URL.createObjectURL(new Blob([response2.data]));
+    //   const link = document.createElement('a');
+    //   link.href = url;
+    //   link.setAttribute('download', 'report.docx'); // Ajusta el nombre del archivo según tu caso
+    //   document.body.appendChild(link);
+    //   link.click();
+    //   // setMessage(response.data.message);
+    //   console.log('la respuesta API',response2);
+    // } catch (error) {
+    //   // setError('Error fetching data');
+    //   console.error('Error fetching data:', error);
+    // } finally {
+    //   // setLoading(false);
+    // }
   }
 
   return (
