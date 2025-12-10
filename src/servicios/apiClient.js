@@ -24,12 +24,12 @@ apiClient.interceptors.response.use(
   (response) =>response.data, 
   (error) => {
     console.log('interceptor',error);
-    if (error.response?.status === 401 && window.location.pathname !== '/login') {
-      // Redirigir a login si el token expira
-      const navigate = useNavigate();
-      navigate('/login');
-      // window.location.href = '/login';
-    }
+    // if (error.response?.status === 401 && window.location.pathname !== '/login') {
+    //   // Redirigir a login si el token expira
+    //   const navigate = useNavigate();
+    //   navigate('/login');
+    //   // window.location.href = '/login';
+    // }
     return Promise.reject(error.response?.data || error.message);
   }
 );

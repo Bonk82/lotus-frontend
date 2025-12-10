@@ -73,7 +73,11 @@ export const DataProvider = ({ children }) => {
       return resp;
     } catch (error) {
       console.error('Error al consumir data:', error);
-      toast('Error API:',error.message || error,'error')
+      if(error.message?.includes('Token') || error.includes('Token')){
+        logout();
+      }else{
+        toast('Error API:',error.message || error,'error')
+      }
     }finally {
       setLoading(false);
     }

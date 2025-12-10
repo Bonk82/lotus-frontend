@@ -37,7 +37,10 @@ const Dashboard = () => {
     setChart1(data1);
     setChart2(data2);
     setChart3(data3);
-    if(data4[0]) setChart4([data4[0].productos]);
+    if(data4[0].productos){
+      data4[0].productos.suucursal = 'todas';
+      setChart4([data4[0].productos]);
+    } 
     setCards(data5);
   };
 
@@ -257,7 +260,8 @@ const Dashboard = () => {
       <Box className="grid-dashboard" mt={40}>
         <Box>
           <Text size='lg' weight={500} mt={40} mb={5}>Productos más vendidos</Text>
-          {Object.keys(chart4[0] || {}).length > 1 && <BarChart
+          {console.log('pinche',chart4)}
+          {Object.keys(chart4[0] || {}).length > 50 && <BarChart
             h={300}
             data={chart4}
             dataKey="sucursal"

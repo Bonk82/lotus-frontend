@@ -15,22 +15,22 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
   //  console.log('en el efect authcontet',user);
-   if(!user){
-    const storedUser = localStorage.getItem('token');
-    if (storedUser) {
-      try {
-        const decoded = jwtDecode(storedUser);
-        console.log('revisando en auth',decoded.exp * 1000 < Date.now(),decoded,user);
-      
-        decoded.exp * 1000 > Date.now() ? setUser(decoded) : logout(); // Verifica si el token no ha expirado
-      } catch (error) {
-        console.error('Error al verificar el token:', error);
-        logout(); // Token inválido
+    if(!user){
+      const storedUser = localStorage.getItem('token');
+      if (storedUser) {
+        try {
+          const decoded = jwtDecode(storedUser);
+          console.log('revisando en auth',decoded.exp * 1000 < Date.now(),decoded,user);
+        
+          decoded.exp * 1000 > Date.now() ? setUser(decoded) : logout(); // Verifica si el token no ha expirado
+        } catch (error) {
+          console.error('Error al verificar el token:', error);
+          logout(); // Token inválido
+        }
       }
     }
-   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [user])
   
 
   const login = async (userData) => {

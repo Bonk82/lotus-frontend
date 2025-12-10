@@ -5,7 +5,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Alert, Box, Button, Grid, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Select, Table, Text, Textarea, Tooltip } from '@mantine/core';
-import { IconAlertCircle, IconBottle, IconBottleOff, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconLibraryPlus, IconLock, IconMoneybag, IconNumber, IconRefreshAlert, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconAlertCircle, IconBottle, IconBottleOff, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconInvoice, IconLibraryPlus, IconLock, IconMoneybag, IconNumber, IconRefreshAlert, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -598,7 +598,7 @@ const Caja = () => {
                   maxLength={1000}
                   minRows={2}
                   autosize
-                  leftSection={<IconUser size={16} />}
+                  leftSection={<IconInvoice size={16} />}
                   key={form.key('observaciones')}
                   {...form.getInputProps('observaciones')}
                 />
