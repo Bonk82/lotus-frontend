@@ -333,7 +333,7 @@ const Caja = () => {
     const total_trj = filtrados.filter(f=>f.metodo_pago == 'TARJETA').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
     const total_efe = filtrados.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
 
-    const monto_inicio = Number(cajas.find(f=>f.id_control_caja == idApertura)?.monto_inicio) || 0;
+    // const monto_inicio = Number(cajas.find(f=>f.id_control_caja == idApertura)?.monto_inicio) || 0;
     modals.openConfirmModal({
       title: 'Confirmar Conciliación',
       centered: true,
