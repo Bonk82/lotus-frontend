@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [chart3, setChart3] = useState([])
   const [chart4, setChart4] = useState([])
   const [cards, setCards] = useState([])
+  const [series4, setSeries4] = useState([])
 
   useEffect(() => {
     cargarData()
@@ -38,8 +39,15 @@ const Dashboard = () => {
     setChart2(data2);
     setChart3(data3);
     if(data4[0].productos){
-      data4[0].productos.suucursal = 'todas';
+      data4[0].productos.sucursal = 'Prodcutos';
+      const armado = Object.keys(data4[0].productos)
+        .filter(key => key !== 'sucursal')
+        .map((key, index) => ({
+          name: key,
+          color: colores[index] || '#000000' // color por defecto si no hay suficientes
+        }));
       setChart4([data4[0].productos]);
+      setSeries4(armado)
     } 
     setCards(data5);
   };
@@ -260,22 +268,15 @@ const Dashboard = () => {
       <Box className="grid-dashboard" mt={40}>
         <Box>
           <Text size='lg' weight={500} mt={40} mb={5}>Productos más vendidos</Text>
-          {console.log('pinche',chart4)}
-          {Object.keys(chart4[0] || {}).length > 50 && <BarChart
+          {console.log('pinche',chart4,series4)}
+          {Object.keys(chart4[0] || {}).length > 1 && <BarChart
             h={300}
             data={chart4}
             dataKey="sucursal"
             orientation="vertical"
             withBarValueLabel
             valueLabelProps={{ position: 'inside', fill: 'white',fontSize:'16px' }}
-            series={[
-              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[0], color: colores[0] },
-              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[1], color: colores[1] },
-              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[2], color: colores[2] },
-              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[3], color: colores[3] },
-              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[4], color: colores[4] },
-              { name: Object.keys(chart4[0]).filter(key => key !== 'sucursal')[5], color: colores[5] },
-            ]}
+            series={series4}
             withLegend
             withYAxis={false}
           />}

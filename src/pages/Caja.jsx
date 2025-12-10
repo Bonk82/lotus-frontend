@@ -49,12 +49,12 @@ const Caja = () => {
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T'});
     if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
-    await consumirAPI('/listarPedidos', { opcion: 'CONTROL_CAJA',id:idApertura || id[0]?.id_control_caja});
+    await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura || id[0]?.id_control_caja});
     
   }
 
   const refrescarPedidos = async () =>{
-    await consumirAPI('/listarPedidos', { opcion: 'CONTROL_CAJA',id:idApertura });
+    await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura });
   }
 
   const form = useForm({
@@ -247,7 +247,7 @@ const Caja = () => {
     elPedido.estado = 'PAGADO'
     await consumirAPI('/crudPedido', elPedido);
     closePedido();
-    await consumirAPI('/listarPedidos', {  opcion: 'CONTROL_CAJA',id:idApertura });
+    await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
   }
 
   const calcularCambio = ()=>{
@@ -322,6 +322,8 @@ const Caja = () => {
   };
 
   const confirmarConciliacion = (idEmpleado)=>{
+    console.log('el idempleado',idEmpleado,pedidos);
+    
     const filtrados = pedidos.filter(f=>f.fid_usuario == idEmpleado && !['CONCILIADO','ANULADO'].includes(f.estado));
     if(filtrados.some(f=>f.estado == 'PENDIENTE')){
       toast('Conciliación de Pedidos', `Existen pedidos pendientes para el usuario`, 'warning');
@@ -364,7 +366,7 @@ const Caja = () => {
     const r = await consumirAPI('/crudPedido', elPedido);
     if(r) toast('Conciliación de Pedidos', `Se han conciliado ${porConciliar.length} pedido(s) del usuario ${porConciliar[0]?.cuenta}`, 'success');
     setIdEmpleado(null);
-    await consumirAPI('/listarPedidos', {  opcion: 'CONTROL_CAJA',id:idApertura });
+    await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
   }
 
   return (

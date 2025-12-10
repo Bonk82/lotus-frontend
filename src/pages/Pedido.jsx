@@ -32,6 +32,7 @@ const Pedido = () => {
 
   const cargarData = async () =>{
     await consumirAPI('/listarProductos', { opcion: 'PEDIDO',id:user.sucursal });
+    await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal });
     const pivot = await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
     if(sucursales.length==0) await consumirAPI('/listarSucursales', { opcion: 'T',id:0 })
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T',id:0 })
@@ -79,7 +80,7 @@ const Pedido = () => {
   );
 
   const mostrarRegistro = (data) => {
-    console.log('Mostrar registro:', data,idCaja);
+    console.log('Mostrar registro:', data,idCaja,usuarios);
     if(!idCaja){
       return toast(`Control Pedidos`, `Sucursal ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre} sin CAJA aperturada`, 'warning');
     }
