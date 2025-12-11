@@ -30,7 +30,19 @@ apiClient.interceptors.response.use(
     //   navigate('/login');
     //   // window.location.href = '/login';
     // }
-    return Promise.reject(error.response?.data || error.message);
+    let respuesta;
+    let data = error.response?.data;
+    if (Array.isArray(data)) {
+      respuesta = data[0];
+    } else if (typeof data === "object") {
+      respuesta = data.message || JSON.stringify(data)
+    } else if (typeof data === 'string'){
+      respuesta = data
+    } else {
+      console.log('Error Inesperado',data)
+      respuesta = 'Error Inesperado'
+    }
+    return Promise.reject(respuesta || error.message);
   }
 );
 

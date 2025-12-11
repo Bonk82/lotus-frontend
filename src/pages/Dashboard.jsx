@@ -38,7 +38,7 @@ const Dashboard = () => {
     setChart1(data1);
     setChart2(data2);
     setChart3(data3);
-    if(data4[0].productos){
+    if(data4[0]?.productos){
       data4[0].productos.sucursal = 'Prodcutos';
       const armado = Object.keys(data4[0].productos)
         .filter(key => key !== 'sucursal')
@@ -156,7 +156,7 @@ const Dashboard = () => {
                   <i className="fas fa-cart-plus"></i>
               </div>
             </div>
-            <div className="metric-value"><NumberFormatter prefix="Bs. " value={cards[0]?.pedidos} thousandSeparator /></div>
+            <div className="metric-value"><NumberFormatter prefix="Nº " value={cards[0]?.pedidos} thousandSeparator /></div>
             <div className="metric-description">
               <i className="fas fa-info-circle"></i>
               <span>Detalle de pedidos</span>

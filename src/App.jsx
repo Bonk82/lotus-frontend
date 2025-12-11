@@ -6,7 +6,6 @@ import '@mantine/dates/styles.css';
 import 'mantine-react-table/styles.css';
 import '@mantine/charts/styles.css';
 import './App.css'
-import { AuthProvider } from './context/AuthContext'
 import { Burger, createTheme, em, Group, Image, MantineProvider, Text } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from "@mantine/modals";
@@ -62,7 +61,6 @@ function App() {
   }
   
   return (
-    <AuthProvider>
     <DataProvider>
       <MantineProvider defaultColorScheme="dark" forceColorScheme="dark" theme={myTheme}>
         <Notifications position="top-right" zIndex={400}/>
@@ -112,7 +110,6 @@ function App() {
         </ModalsProvider>
       </MantineProvider>
     </DataProvider>
-    </AuthProvider>
   )
 }
 
