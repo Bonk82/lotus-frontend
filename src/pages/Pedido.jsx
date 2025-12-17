@@ -8,7 +8,7 @@ import { useMemo } from "react";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { IconArrowBackUpDouble, IconBottle, IconCash, IconDeviceFloppy, IconEdit, IconSquarePlus, IconUser } from "@tabler/icons-react";
+import { IconArrowBackUpDouble, IconBottle, IconCash, IconCreditCard, IconDeviceFloppy, IconEdit, IconQrcode, IconSquarePlus, IconTicketOff, IconUser } from "@tabler/icons-react";
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { nanoid } from "nanoid";
 import { modals } from "@mantine/modals";
@@ -19,7 +19,6 @@ const Pedido = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [grupo, setGrupo] = useState('')
   const [idPedido, setIdPedido] = useState(null)
-  const [tipoPago, setTipoPago] = useState('')
   const [idCaja, setIdCaja] = useState(0)
   const [totalConciliar, setTotalConciliar] = useState(0)
   const [detalle, setDetalle] = useState([])
@@ -52,7 +51,10 @@ const Pedido = () => {
         fid_usuario:0,
         fid_control_caja:0,
         mesa:'',
-        metodo_pago:'',
+        monto_qr:0,
+        monto_efectivo:0,
+        monto_tarjeta:0,
+        monto_vale:0,
         estado:'PENDIENTE',
         consumo:[],
       },
@@ -67,14 +69,17 @@ const Pedido = () => {
       { accessorFn: (row) => `${row.id_pedido} - ${row.estado}`,header: 'ID - Estado',id:'estado',},
       { accessorKey: 'total',header: 'Total Bs.',},
       { accessorKey: 'mesa',header: 'Mesa',},
-      { accessorKey: 'metodo_pago',header: 'Método Pago',},
+      { accessorKey: 'monto_qr',header: 'Monto QR',},
+      { accessorKey: 'monto_efectivo',header: 'Monto Efectivo',},
+      { accessorKey: 'monto_tarjeta',header: 'Monto Tarjeta',},
+      { accessorKey: 'monto_vale',header: 'Monto Vale',},
       { accessorKey: 'consumo',header: 'Consumo',Cell:({cell})=>(
-                <div>
-                  <ul>
-                    {cell.getValue()?.map(c => <li key={nanoid(5)}>{c.producto || c.promocion}</li>)}
-                  </ul>
-                </div>
-              )},
+          <div>
+            <ul>
+              {cell.getValue()?.map(c => <li key={nanoid(5)}>{c.producto || c.promocion}</li>)}
+            </ul>
+          </div>
+        )},
     ],
     [],
   );
@@ -90,7 +95,7 @@ const Pedido = () => {
     open();
     form.reset();
     if (data) form.setValues(data);
-    if (!data) form.setValues({'estado':'PENDIENTE','metodo_pago':'EFECTIVO'})
+    if (!data) form.setValues({'estado':'PENDIENTE'})
   }
 
   const table = useMantineReactTable({
@@ -155,7 +160,6 @@ const Pedido = () => {
     if (eliminar) newPedido.operacion = 'A';
     const id = await consumirAPI('/crudPedido', newPedido);
     if(!eliminar){
-      setTipoPago(newPedido.metodo_pago);
       setIdPedido(id[0]?.message?.split('|')[1]);
       close();
     }
@@ -171,13 +175,26 @@ const Pedido = () => {
   const cargarDetalle = async (data)=>{
     setIdPedido(data.id_pedido);
     setDetalle(data.consumo);
-    setTipoPago(data.metodo_pago);
     setCambio(0);
   }
 
   const eliminarDetalle = async(item)=>{
-    console.log('rev',item);
+    console.log('rev',item,detalle);
     let pivot = []
+    if(item.fid_mezclador){
+      pivot = [...detalle];
+      pivot.map(p=>{
+        if(p.id == item.id && p.precio_venta == 0){
+          p.fid_mezclador = p.fid_mezclador == 58 ? 59 : p.fid_mezclador == 59 ? 67 : 58;
+          p.nombre = productos.find(f=>f.id_producto==p.fid_mezclador).descripcion
+        } 
+        return p;
+      })
+      console.log('dentro',pivot);
+      
+      setDetalle(pivot)
+      return true;
+    }
     if(item.id) pivot = detalle.filter(f=>f.id != item.id)
     if(item.id_pedido_detalle){
       item.operacion = 'DF';
@@ -190,17 +207,32 @@ const Pedido = () => {
   const agregarDetalle = (data)=>{
     console.log('el prodcuto',data,detalle);
     const newDetalle = {
+      id: nanoid(10),
+      operacion : 'I',
+      fid_pedido: idPedido,
+      fid_producto:data.id_producto,
+      fid_promocion:data.id_promocion,
+      nombre:data.id_producto ? productos.find(f=>f.id_producto == data.id_producto)?.descripcion:promociones.find(f=>f.id_promocion == data.id_promocion)?.nombre,
+      cantidad: 1,
+      descuento: 0,//?revisar a ca como sacr el valor de descuento
+      precio_venta:data.precio,//? data.precio - (calculo de descauento) a este valor hacer el calculo con el monto de descuento
+    }
+    setDetalle([...(detalle || []),newDetalle])
+    if(data.mezclador){
+      const newMezclador = {
         id: nanoid(10),
         operacion : 'I',
         fid_pedido: idPedido,
         fid_producto:data.id_producto,
-        fid_promocion:data.id_promocion,
-        nombre:data.id_producto ? productos.find(f=>f.id_producto == data.id_producto)?.descripcion:promociones.find(f=>f.id_promocion == data.id_promocion)?.nombre,
-        cantidad: 1,
-        descuento: 0,//?revisar a ca como sacr el valor de descuento
-        precio_venta:data.precio,//? data.precio - (calculo de descauento) a este valor hacer el calculo con el monto de descuento
+        fid_mezclador:data.id_pc,
+        fid_promocion:null,
+        nombre:data.mezclador,
+        cantidad: data.cantidad,
+        descuento: 0,
+        precio_venta:0 //es mezclador
       }
-    setDetalle([...(detalle || []),newDetalle])
+      setDetalle([...(detalle || []),newDetalle,newMezclador])
+    }
     setGrupo('')
     console.log('el detalle',detalle);
   }
@@ -215,14 +247,23 @@ const Pedido = () => {
         const pivot = await consumirAPI('/listarPedidos', { opcion: 'PEDIDOS',id:user.usuario ,id_sucursal:user.sucursal });
         let total = 0;
         pivot.forEach(p=>{
-        if(p.estado != 'CONCILIADO') total += Number(p.total)
-    })
-    setTotalConciliar(total);
+          if(p.estado != 'CONCILIADO') total += Number(p.total)
+        })
+        setTotalConciliar(total);
       }
     });
   }
 
-  const calcularCambio = (event)=>{
+  // const calcularCambio = (event)=>{
+  //   console.log(event);
+    
+  //   // console.log(formPedido.getValues().monto_total,formPedido.getValues().monto_efectivo);
+  //   const total = detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0) 
+  //   const dif = Number(event.target.defaultValue.replace('Bs. ','').replace(',','')) - Number(total)
+  //   setCambio(dif)
+  // }
+
+   const calcularMonto = (event)=>{
     console.log(event);
     
     // console.log(formPedido.getValues().monto_total,formPedido.getValues().monto_efectivo);
@@ -256,7 +297,7 @@ const Pedido = () => {
       {idPedido && detalle?.length>0 &&
       <Box className="grid-detalle">
         {detalle.map(i=>(
-          <Chip defaultChecked variant="light" size="md" radius={"lg"} key={(i.id || i.id_pedido_detalle)} onClick={()=>eliminarDetalle(i)}>{i.nombre} - Bs. {Number(i.precio_venta).toFixed(0)}</Chip>
+          <Chip checked variant="light" size="md" radius={"lg"} key={(i.id || i.id_pedido_detalle)} onClick={()=>eliminarDetalle(i)}>{i.nombre} - Bs. {Number(i.precio_venta).toFixed(0)}</Chip>
         ))
         }
         <Box className="total">
@@ -264,23 +305,54 @@ const Pedido = () => {
             Confirmar<Space w="lg"/>Bs. {detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0)}
           </Button>
         </Box>
-        <Text size='sm'>Método de Pago: {tipoPago}</Text>
-        {/* {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="../assets/qr01.jpeg" alt="QR de Pago"/>} */}
-        {tipoPago == 'QR' && <img style={{maxWidth:'350px'}} src="https://lotus-api.simikapp.vip/uploads/qr-pagos.jpg" alt="QR de Pago"/>}
-        {tipoPago == 'EFECTIVO' && <Box style={{textAlign:'right'}}>
-            <NumberInput
-              label="Monto Efectivo:"
-              placeholder="Monto dado en efectivo" 
-              allowDecimal={false}
-              min={10}
-              max={10000}
-              prefix='Bs. '
-              onKeyUpCapture={(event)=>calcularCambio(event)}
-              leftSection={<IconCash size={16} />}
-              width={'250px'}
-              />
-            <Text size="xl" c="cyan.3">Monto Devolución: {cambio}</Text>
-          </Box>}
+        <Box style={{textAlign:'right'}}>
+          <Text size='sm'>Métodos de Pago:</Text>
+          <NumberInput
+            label="Monto QR:"
+            placeholder="Monto de pago mediante QR" 
+            allowDecimal={false}
+            min={10}
+            max={10000}
+            prefix='Bs. '
+            onKeyUpCapture={(event)=>calcularMonto(event)}
+            leftSection={<IconQrcode size={16} />}
+            width={'250px'}
+          />
+          <NumberInput
+            label="Monto Efectivo:"
+            placeholder="Monto de pago en Efectivo" 
+            allowDecimal={false}
+            min={10}
+            max={10000}
+            prefix='Bs. '
+            onKeyUpCapture={(event)=>calcularMonto(event)}
+            leftSection={<IconCash size={16} />}
+            width={'250px'}
+          />
+          <NumberInput
+            label="Monto Tarjeta:"
+            placeholder="Monto de pago con Tarjeta" 
+            allowDecimal={false}
+            min={10}
+            max={10000}
+            prefix='Bs. '
+            onKeyUpCapture={(event)=>calcularMonto(event)}
+            leftSection={<IconCreditCard size={16} />}
+            width={'250px'}
+          />
+          <NumberInput
+            label="Monto Vale:"
+            placeholder="Monto de pago mediante Vales" 
+            allowDecimal={false}
+            min={10}
+            max={10000}
+            prefix='Bs. '
+            onKeyUpCapture={(event)=>calcularMonto(event)}
+            leftSection={<IconTicketOff size={16} />}
+            width={'250px'}
+          />
+          <img style={{maxWidth:'350px'}} src="https://lotus-api.simikapp.vip/uploads/qr-pagos.jpg" alt="QR de Pago"/>
+        </Box>
       </Box>}
       {idPedido>0 && <Box pos={"relative"} mb={10}>
         <Box className="grid-pedido">
@@ -311,14 +383,14 @@ const Pedido = () => {
               key={form.key('mesa')}
               {...form.getInputProps('mesa')}
             />
-            <NativeSelect
+            {/* <NativeSelect
               label="Método Pago:"
               data={[...parametricas.filter(f=>f.grupo == 'METODO_PAGO').map(e=>e.nombre)]}
               required
               leftSection={<IconUser size={16} />}
               key={form.key('metodo_pago')}
               {...form.getInputProps('metodo_pago')}
-            />
+            /> */}
             <NativeSelect
               label="Estado del Pedido:"
               data={[...parametricas.filter(f=>f.grupo == 'ESTADO_PEDIDO' && !['CONCILIADO','ANULADO'].includes(f.nombre)).map(e=>e.nombre)]}
