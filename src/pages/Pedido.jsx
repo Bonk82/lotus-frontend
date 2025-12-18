@@ -8,7 +8,7 @@ import { useMemo } from "react";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { IconArrowBackUpDouble, IconBottle, IconCash, IconCreditCard, IconDeviceFloppy, IconEdit, IconQrcode, IconSquarePlus, IconTicketOff, IconUser } from "@tabler/icons-react";
+import { IconArrowBackUpDouble, IconBottle, IconCash, IconCreditCard, IconDeviceFloppy, IconEdit, IconQrcode, IconSquarePlus, IconTicket, IconUser } from "@tabler/icons-react";
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { nanoid } from "nanoid";
 import { modals } from "@mantine/modals";
@@ -22,7 +22,8 @@ const Pedido = () => {
   const [idCaja, setIdCaja] = useState(0)
   const [totalConciliar, setTotalConciliar] = useState(0)
   const [detalle, setDetalle] = useState([])
-  const [cambio, setCambio] = useState(0)
+  const [errorMontos, setErrorMontos] = useState('');
+
 
   useEffect(() => {
     if(user?.sucursal) cargarData()
@@ -157,7 +158,7 @@ const Pedido = () => {
     } else {
       newPedido = { ...data, operacion: 'I', usuario_registro: user.usuario, fid_usuario:user.usuario,fid_control_caja:idCaja};
     }
-    if (eliminar) newPedido.operacion = 'A';
+    if (eliminar) newPedido.operacion = 'D';
     const id = await consumirAPI('/crudPedido', newPedido);
     if(!eliminar){
       setIdPedido(id[0]?.message?.split('|')[1]);
@@ -169,13 +170,14 @@ const Pedido = () => {
     pivot.forEach(p=>{
       if(p.estado != 'CONCILIADO') total += Number(p.total)
     })
+    form.setValues(pivot.find(f=>f.id_pedido == idPedido))
     setTotalConciliar(total);
   }
 
   const cargarDetalle = async (data)=>{
+    form.setValues(data)
     setIdPedido(data.id_pedido);
     setDetalle(data.consumo);
-    setCambio(0);
   }
 
   const eliminarDetalle = async(item)=>{
@@ -223,8 +225,8 @@ const Pedido = () => {
         id: nanoid(10),
         operacion : 'I',
         fid_pedido: idPedido,
-        fid_producto:data.id_producto,
-        fid_mezclador:data.id_pc,
+        fid_producto:data.id_pc,
+        fid_mezclador:data.id_producto,
         fid_promocion:null,
         nombre:data.mezclador,
         cantidad: data.cantidad,
@@ -237,8 +239,18 @@ const Pedido = () => {
     console.log('el detalle',detalle);
   }
 
-  const insertarDetalles = () =>{
+  const insertarDetalles = async () =>{
     console.log('el detalle',detalle);
+    const totalPedido = detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0)
+    if((Number(form.getValues().monto_qr) + Number(form.getValues().monto_efectivo) + Number(form.getValues().monto_tarjeta) + Number(form.getValues().monto_vale)) != totalPedido){
+      setErrorMontos('Montos Incorrectos')
+      toast(`Control Pedido`,`Montos de pago NO cuadran con monto pedido`,'error');
+      return false;
+    }
+    const pedidoActivo = form.getValues();
+    pedidoActivo.usuario_registro = user.usuario
+    pedidoActivo.operacion = 'U'
+    await consumirAPI('/crudPedido', pedidoActivo);
     detalle.forEach(async (d,i) => {
       if(d.id) await consumirAPI('/crudPedidoDetalle', d)
       if(i == detalle.length - 1){
@@ -254,22 +266,15 @@ const Pedido = () => {
     });
   }
 
-  // const calcularCambio = (event)=>{
-  //   console.log(event);
-    
-  //   // console.log(formPedido.getValues().monto_total,formPedido.getValues().monto_efectivo);
-  //   const total = detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0) 
-  //   const dif = Number(event.target.defaultValue.replace('Bs. ','').replace(',','')) - Number(total)
-  //   setCambio(dif)
-  // }
-
-   const calcularMonto = (event)=>{
-    console.log(event);
-    
-    // console.log(formPedido.getValues().monto_total,formPedido.getValues().monto_efectivo);
-    const total = detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(0) 
-    const dif = Number(event.target.defaultValue.replace('Bs. ','').replace(',','')) - Number(total)
-    setCambio(dif)
+  const calcularMonto = (event)=>{
+    const totalPedido = detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0)
+    console.log(event,totalPedido);
+    console.log(form.getValues());
+    if((Number(form.getValues().monto_qr) + Number(form.getValues().monto_efectivo) + Number(form.getValues().monto_tarjeta) + Number(form.getValues().monto_vale)) != totalPedido){
+      setErrorMontos('Montos Incorrectos')
+    } else{
+      setErrorMontos('')
+    }
   }
 
   const confirmarAnular = (e)=>{
@@ -313,10 +318,16 @@ const Pedido = () => {
             allowDecimal={false}
             min={10}
             max={10000}
+            // clampBehavior="strict"
             prefix='Bs. '
+            // value={montoQR}
+            // onChange={(event)=>calcularMonto(event)}
+            key={form.key('monto_qr')}
+            {...form.getInputProps('monto_qr')}
             onKeyUpCapture={(event)=>calcularMonto(event)}
             leftSection={<IconQrcode size={16} />}
             width={'250px'}
+            error={errorMontos}
           />
           <NumberInput
             label="Monto Efectivo:"
@@ -324,10 +335,15 @@ const Pedido = () => {
             allowDecimal={false}
             min={10}
             max={10000}
+            // clampBehavior="strict"
             prefix='Bs. '
+            // value={montoEfectivo} onChange={setMontoEfectivo}
+            key={form.key('monto_efectivo')}
+            {...form.getInputProps('monto_efectivo')}
             onKeyUpCapture={(event)=>calcularMonto(event)}
             leftSection={<IconCash size={16} />}
             width={'250px'}
+            error={errorMontos}
           />
           <NumberInput
             label="Monto Tarjeta:"
@@ -335,10 +351,15 @@ const Pedido = () => {
             allowDecimal={false}
             min={10}
             max={10000}
+            // clampBehavior="strict"
             prefix='Bs. '
+            // value={montoTarjeta} onChange={setMontoTarjeta}
+            key={form.key('monto_tarjeta')}
+            {...form.getInputProps('monto_tarjeta')}
             onKeyUpCapture={(event)=>calcularMonto(event)}
             leftSection={<IconCreditCard size={16} />}
             width={'250px'}
+            error={errorMontos}
           />
           <NumberInput
             label="Monto Vale:"
@@ -346,10 +367,15 @@ const Pedido = () => {
             allowDecimal={false}
             min={10}
             max={10000}
+            // clampBehavior="strict"
             prefix='Bs. '
+            // value={montoVale} onChange={setMontoVale}
+            key={form.key('monto_vale')}
+            {...form.getInputProps('monto_vale')}
             onKeyUpCapture={(event)=>calcularMonto(event)}
-            leftSection={<IconTicketOff size={16} />}
+            leftSection={<IconTicket size={16} />}
             width={'250px'}
+            error={errorMontos}
           />
           <img style={{maxWidth:'350px'}} src="https://lotus-api.simikapp.vip/uploads/qr-pagos.jpg" alt="QR de Pago"/>
         </Box>
