@@ -70,10 +70,34 @@ const Pedido = () => {
       { accessorFn: (row) => `${row.id_pedido} - ${row.estado}`,header: 'ID - Estado',id:'estado',},
       { accessorKey: 'total',header: 'Total Bs.',},
       { accessorKey: 'mesa',header: 'Mesa',},
-      { accessorKey: 'monto_qr',header: 'Monto QR',},
-      { accessorKey: 'monto_efectivo',header: 'Monto Efectivo',},
-      { accessorKey: 'monto_tarjeta',header: 'Monto Tarjeta',},
-      { accessorKey: 'monto_vale',header: 'Monto Vale',},
+      { accessorKey: 'montos_pago',header: 'Montos Pago',Cell:({row})=>{
+        const { monto_qr, monto_efectivo, monto_tarjeta,monto_vale } = row.original;
+        return (
+            <div style={{ listStyle: 'none', padding: 0, margin: 0,textAlign:"right" }}>
+              {monto_qr > 0 && (
+                <li style={{ marginBottom: '4px' }}>
+                  <strong>QR:</strong>&nbsp;&nbsp; {monto_qr.toLocaleString()}
+                </li>
+              )}
+              {monto_efectivo > 0 && (
+                <li style={{ marginBottom: '4px' }}>
+                  <strong>Efectivo:</strong>&nbsp;&nbsp; {monto_efectivo.toLocaleString()}
+                </li>
+              )}
+              {monto_tarjeta > 0 && (
+                <li style={{ marginBottom: '4px' }}>
+                  <strong>Tarjeta:</strong>&nbsp;&nbsp; {monto_tarjeta.toLocaleString()}
+                </li>
+              )}
+              {monto_vale > 0 && (
+                <li style={{ marginBottom: '4px' }}>
+                  <strong>Vale:</strong>&nbsp;&nbsp; {monto_vale.toLocaleString()}
+                </li>
+              )}
+            </div>
+          );
+        }
+      },
       { accessorKey: 'consumo',header: 'Consumo',Cell:({cell})=>(
           <div>
             <ul>
@@ -170,7 +194,7 @@ const Pedido = () => {
     pivot.forEach(p=>{
       if(p.estado != 'CONCILIADO') total += Number(p.total)
     })
-    form.setValues(pivot.find(f=>f.id_pedido == idPedido))
+    form.setValues(pivot.find(f=>f.id_pedido == id[0]?.message?.split('|')[1]))
     setTotalConciliar(total);
   }
 
@@ -187,8 +211,8 @@ const Pedido = () => {
       pivot = [...detalle];
       pivot.map(p=>{
         if(p.id == item.id && p.precio_venta == 0){
-          p.fid_mezclador = p.fid_mezclador == 58 ? 59 : p.fid_mezclador == 59 ? 67 : 58;
-          p.nombre = productos.find(f=>f.id_producto==p.fid_mezclador).descripcion
+          p.fid_producto = p.fid_producto == 58 ? 59 : p.fid_producto == 59 ? 67 : 58;
+          p.nombre = productos.find(f=>f.id_producto==p.fid_producto).descripcion
         } 
         return p;
       })
@@ -316,7 +340,7 @@ const Pedido = () => {
             label="Monto QR:"
             placeholder="Monto de pago mediante QR" 
             allowDecimal={false}
-            min={10}
+            min={0}
             max={10000}
             // clampBehavior="strict"
             prefix='Bs. '
@@ -333,7 +357,7 @@ const Pedido = () => {
             label="Monto Efectivo:"
             placeholder="Monto de pago en Efectivo" 
             allowDecimal={false}
-            min={10}
+            min={0}
             max={10000}
             // clampBehavior="strict"
             prefix='Bs. '
@@ -349,7 +373,7 @@ const Pedido = () => {
             label="Monto Tarjeta:"
             placeholder="Monto de pago con Tarjeta" 
             allowDecimal={false}
-            min={10}
+            min={0}
             max={10000}
             // clampBehavior="strict"
             prefix='Bs. '
@@ -365,7 +389,7 @@ const Pedido = () => {
             label="Monto Vale:"
             placeholder="Monto de pago mediante Vales" 
             allowDecimal={false}
-            min={10}
+            min={0}
             max={10000}
             // clampBehavior="strict"
             prefix='Bs. '

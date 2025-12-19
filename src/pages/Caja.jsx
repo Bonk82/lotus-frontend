@@ -5,7 +5,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useMemo } from 'react';
 import { MantineReactTable, useMantineReactTable } from 'mantine-react-table';
 import { ActionIcon, Alert, Box, Button, Grid, Group, LoadingOverlay, Modal, NativeSelect, NumberInput, Select, Table, Text, Textarea, Tooltip } from '@mantine/core';
-import { IconAlertCircle, IconBottle, IconBottleOff, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconCreditCard, IconDatabase, IconDeviceFloppy, IconEdit, IconInvoice, IconLibraryPlus, IconLock, IconMoneybag, IconRefreshAlert, IconSettings, IconSquarePlus, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconAlertCircle, IconBottle, IconBottleOff, IconBuilding, IconCash, IconCashBanknote, IconCheck, IconDatabase, IconDeviceFloppy, IconEdit, IconInvoice, IconLibraryPlus, IconLock, IconMoneybag, IconQrcode, IconRefreshAlert, IconSettings, IconSquarePlus, IconTicket, IconTrash, IconUser } from '@tabler/icons-react';
 import { MRT_Localization_ES } from 'mantine-react-table/locales/es/index.esm.mjs';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -22,7 +22,6 @@ const Caja = () => {
   const [idApertura, setIdApertura] = useState(null)
   const [idEmpleado, setIdEmpleado] = useState(null)
   const [desface, setDesface] = useState(null)
-  const [cambio, setCambio] = useState(0)
   const [motivo, setMotivo] = useState('')
   const [faltantes, setFaltantes] = useState([])
 
@@ -68,6 +67,7 @@ const Caja = () => {
       monto_cierre_qr:0,
       monto_cierre_tarjeta:0,
       monto_cierre_efectivo:0,
+      monto_cierre_vale:0,
       observaciones:'',
       estado:'APERTURA',
     },
@@ -77,7 +77,7 @@ const Caja = () => {
   });
 
   const crudCaja = async (data,eliminar) => {
-    const min_efectivo = pedidos.length > 0 ? Number(pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0)) + Number(data.monto_inicio) : cajas.filter(f=>f.id_control_caja == data.id_control_caja)[0]?.monto_cierre_efectivo || 0;
+    const min_efectivo = pedidos.length > 0 ? Number(pedidos.reduce((ac,el)=>ac+Number(el.monto_efectivo),0)) + Number(data.monto_inicio) : cajas.filter(f=>f.id_control_caja == data.id_control_caja)[0]?.monto_cierre_efectivo || 0;
 
     if(Number(data.monto_cierre_efectivo) < min_efectivo && !data.observaciones){
       toast('Control Caja', `El monto de cierre efectivo es menor al monto total de pedidos en efectivo, debe justificar en observaciones`, 'warning');
@@ -117,6 +117,7 @@ const Caja = () => {
       { accessorKey: 'monto_cierre_qr',header: 'Cierre QR',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_tarjeta',header: 'Cierre TRJ',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_efectivo',header: 'Cierre EFE',mantineTableBodyCellProps: {align: 'right'}},
+      { accessorKey: 'monto_cierre_vale',header: 'Cierre VALE',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'observaciones',header: 'Observaciones',size:150},
       { accessorKey: 'estado',header: 'Estado Caja'},
     ],
@@ -132,9 +133,10 @@ const Caja = () => {
       data = cajas.find(f=>f.id_control_caja == idApertura);
       data.estado = 'CIERRE';
       data.fid_usuario_cierre = user.usuario;
-      data.monto_cierre_efectivo = pedidos.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),Number(data.monto_inicio)).toFixed(2);
-      data.monto_cierre_tarjeta = pedidos.filter(f=>f.metodo_pago == 'TARJETA').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
-      data.monto_cierre_qr = pedidos.filter(f=>f.metodo_pago == 'QR').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
+      data.monto_cierre_efectivo = pedidos.reduce((ac,el)=>ac+Number(el.monto_efectivo),Number(data.monto_inicio)).toFixed(2);
+      data.monto_cierre_tarjeta = pedidos.reduce((ac,el)=>ac+Number(el.monto_tarjeta),0).toFixed(2);
+      data.monto_cierre_qr = pedidos.reduce((ac,el)=>ac+Number(el.monto_qr),0).toFixed(2);
+      data.monto_cierre_vale = pedidos.reduce((ac,el)=>ac+Number(el.monto_vale),0).toFixed(2);
     } 
     open();
     form.reset();
@@ -225,11 +227,12 @@ const Caja = () => {
       fid_usuario:0,
       fid_control_caja:0,
       mesa:'',
-      metodo_pago:'',
       estado:'',
       monto_total:0,
+      monto_qr:0,
       monto_efectivo:0,
-      cambio:0,
+      monto_tarjeta:0,
+      monto_vale:0,
     }
   });
 
@@ -248,12 +251,6 @@ const Caja = () => {
     await consumirAPI('/crudPedido', elPedido);
     closePedido();
     await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
-  }
-
-  const calcularCambio = ()=>{
-    // console.log(formPedido.getValues().monto_total,formPedido.getValues().monto_efectivo);
-    const dif = Number(formPedido.getValues().monto_efectivo) - Number(formPedido.getValues().monto_total)
-    setCambio(dif)
   }
 
   const descontarProductos = async () => {
@@ -329,9 +326,10 @@ const Caja = () => {
       toast('Conciliación de Pedidos', `Existen pedidos pendientes para el usuario`, 'warning');
       return false;
     }
-    const total_qr = filtrados.filter(f=>f.metodo_pago == 'QR').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
-    const total_trj = filtrados.filter(f=>f.metodo_pago == 'TARJETA').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
-    const total_efe = filtrados.filter(f=>f.metodo_pago == 'EFECTIVO').reduce((ac,el)=>ac+Number(el.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0)),0).toFixed(2);
+    const total_qr = filtrados.reduce((ac,el)=>ac+Number(el.monto_qr),0).toFixed(2);
+    const total_trj = filtrados.reduce((ac,el)=>ac+Number(el.monto_tarjeta),0).toFixed(2);
+    const total_efe = filtrados.reduce((ac,el)=>ac+Number(el.monto_efectivo),0).toFixed(2);
+    const total_vale = filtrados.reduce((ac,el)=>ac+Number(el.monto_vale),0).toFixed(2);
 
     // const monto_inicio = Number(cajas.find(f=>f.id_control_caja == idApertura)?.monto_inicio) || 0;
     modals.openConfirmModal({
@@ -342,8 +340,8 @@ const Caja = () => {
         <Text size="sm">Está seguro de CONCILIAR {filtrados.length} pedidos</Text>
         <Text size="sm">Total QR (Bs.): {total_qr}</Text>
         <Text size="sm">Total Tarjeta (Bs.): {total_trj}</Text>
-        {/* <Text size="sm">Total Efectivo (Bs.): {Number(total_efe)+Number(monto_inicio)}</Text> */}
         <Text size="sm">Total Efectivo (Bs.): {Number(total_efe)}</Text>
+        <Text size="sm">Total Vale (Bs.): {Number(total_vale)}</Text>
         </Box>
       ),
       labels: { confirm: 'Conciliar Pedidos', cancel: "Cancelar" },
@@ -404,7 +402,7 @@ const Caja = () => {
                 <p className="second-text" key={c.id_pedido_detalle}><IconCheck size={'14px'}/> {c.nombre}</p>
                 ))
               }
-              <p className="total"><i>{p.metodo_pago}</i> TOTAL : {p.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2) || 0.00}</p>
+              <p className="total"><i>{p.monto_qr >0 ? 'QR':''} {p.monto_efectivo >0 ? 'EFECTIVO':''} {p.monto_tarjeta >0 ? 'TARJETA':''} {p.monto_vale >0 ? 'VALE':''}</i> TOTAL : {p.consumo?.reduce((ac,el)=>ac+Number(el.precio_venta),0).toFixed(2) || 0.00}</p>
             </Box>
             ))
           }
@@ -471,32 +469,46 @@ const Caja = () => {
             key={formPedido.key('monto_total')}
             {...formPedido.getInputProps('monto_total')}
           />
-          <NativeSelect
-            label="Método Pago:"
-            data={[...parametricas.filter(f=>f.grupo == 'METODO_PAGO').map((e) => e.nombre)]}
-            disabled
-            leftSection={<IconCreditCard size={16} />}
-            key={formPedido.key("metodo_pago")}
-            {...formPedido.getInputProps("metodo_pago")}
-          />
-          {formPedido.getValues().metodo_pago == 'EFECTIVO' &&
-           <>
-            <NumberInput
-            label="Monto Efectivo:"
-            placeholder="Monto dado en efectivo" 
-            allowDecimal={false}
-            min={10}
-            max={10000}
+          {formPedido.getValues().monto_qr>0 && <NumberInput
+            label="Monto QR:"
+            allowDecimal={true}
+            decimalScale={2}
             prefix='Bs. '
-            required
-            onKeyUpCapture={calcularCambio}
+            readOnly
+            leftSection={<IconQrcode size={16} />}
+            key={formPedido.key('monto_qr')}
+            {...formPedido.getInputProps('monto_qr')}
+          />}
+          {formPedido.getValues().monto_efectivo>0 && <NumberInput
+            label="Monto Efectivo:"
+            allowDecimal={true}
+            decimalScale={2}
+            prefix='Bs. '
+            readOnly
             leftSection={<IconCash size={16} />}
             key={formPedido.key('monto_efectivo')}
             {...formPedido.getInputProps('monto_efectivo')}
-            />
-            <Text size="xl" c="cyan.3">Monto Devolución: {cambio}</Text>
-           </>
-          }
+          />}
+          {formPedido.getValues().monto_tarjeta>0 && <NumberInput
+            label="Monto Tarjeta:"
+            allowDecimal={true}
+            decimalScale={2}
+            prefix='Bs. '
+            readOnly
+            leftSection={<IconQrcode size={16} />}
+            key={formPedido.key('monto_tarjeta')}
+            {...formPedido.getInputProps('monto_tarjeta')}
+          />}
+          {formPedido.getValues().monto_vale>0 && <NumberInput
+            label="Monto Vale:"
+            allowDecimal={true}
+            decimalScale={2}
+            prefix='Bs. '
+            readOnly
+            leftSection={<IconQrcode size={16} />}
+            key={formPedido.key('monto_vale')}
+            {...formPedido.getInputProps('monto_vale')}
+          />}
           <Group justify="flex-end" mt="md">
             <Button fullWidth leftSection={<IconDeviceFloppy/>} type='submit'>Cerrar Pedido</Button>
           </Group>
@@ -594,6 +606,20 @@ const Caja = () => {
                   leftSection={<IconCashBanknote size={16} />}
                   key={form.key('monto_cierre_efectivo')}
                   {...form.getInputProps('monto_cierre_efectivo')}
+                />
+                <NumberInput
+                  label="Monto Cierre Vale:"
+                  placeholder="1000"
+                  allowDecimal={true}
+                  decimalScale={2}
+                  min={0}
+                  max={100000}
+                  required
+                  prefix='Bs. '
+                  thousandSeparator=","
+                  leftSection={<IconTicket size={16} />}
+                  key={form.key('monto_cierre_vale')}
+                  {...form.getInputProps('monto_cierre_vale')}
                 />
                 <Textarea
                   label="Observaciones:"
