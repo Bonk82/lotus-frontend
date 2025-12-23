@@ -132,8 +132,9 @@ const Dashboard = () => {
               valueFormat='DD MMM YYYY'
             />
           </Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='blue.2' variant='light' fullWidth onClick={()=>cargarData()} size='sm'>Cargar Datos</Button></Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('/reportesVentas/',{tipo:'01'})} size='sm'> Histórico Pedidos</Button></Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 2 }}><Button color='blue.2' variant='light' fullWidth onClick={()=>cargarData()} size='sm'>Cargar Datos</Button></Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 2 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('/reportesVentas/',{tipo:'listadoProductos.ods'})} size='sm'> Histórico Pedidos</Button></Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 2 }}><Button color='red.5' variant='light' fullWidth onClick={()=>obtenerReporte('/reportesVentas/',{tipo:'comandaPedido.docx'})} size='sm'> Comanda Pedido</Button></Grid.Col>
         </Grid>
         <Box className="metrics-grid">
           <div className="metric-card">

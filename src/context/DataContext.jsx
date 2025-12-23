@@ -85,6 +85,7 @@ export const DataProvider = ({ children }) => {
 
   const generarReporte = async (ruta,parametros) =>{
     setLoading(true)
+    // const nombreReporte = parametros.tipo == 1 ? 'catalogo_productos.ods' : 'comanda.pdf'
     try {
       const resp = await apiClient.get(ruta,{
         params: { ...parametros },
@@ -98,7 +99,7 @@ export const DataProvider = ({ children }) => {
       const url = window.URL.createObjectURL(new Blob([resp]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'catalogo_productos.ods'); 
+      link.setAttribute('download', parametros.tipo.replace('docx','pdf').replace('ods','xlsx')); 
       document.body.appendChild(link);
       link.click();
       console.log('la respuesta API',resp);
