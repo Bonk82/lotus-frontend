@@ -83,6 +83,35 @@ export const DataProvider = ({ children }) => {
     }
   }
 
+  const generarReporte = async (ruta,parametros) =>{
+    setLoading(true)
+    try {
+      const resp = await apiClient.get(ruta,{
+        params: { ...parametros },
+        timeout: 300000,
+        responseType: 'blob',
+        headers: { 'Content-Type': 'application/json', } 
+      });
+
+      console.log('resp',resp);
+      
+      const url = window.URL.createObjectURL(new Blob([resp]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'catalogo_productos.xlsx'); 
+      document.body.appendChild(link);
+      link.click();
+      console.log('la respuesta API',resp);
+      toast('Reporte Descargado', resp.message, 'success');
+      return resp;
+    } catch (error) {
+      console.error('Error al generar reporte:', error);
+      toast('Error al generar el reporte:', error.message || error, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const subirArchivo = async(ruta,formData) =>{
     setLoading(true);
     try {
@@ -98,7 +127,7 @@ export const DataProvider = ({ children }) => {
   }
 
   return (
-    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI,toast,parametricas,usuarios,precios,subirArchivo }}>
+    <DataContext.Provider value={{ loading,productos, proveedores, sucursales, roles, componentes, cajas, ingresos, ingresoDetalles, pedidos, promociones, consumirAPI,toast,parametricas,usuarios,precios,subirArchivo,generarReporte }}>
       {children}
     </DataContext.Provider>
   );

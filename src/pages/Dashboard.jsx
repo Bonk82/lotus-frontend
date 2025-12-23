@@ -10,7 +10,7 @@ import { IconCalendar } from "@tabler/icons-react";
 
 const Dashboard = () => {
   const { user } = UserAuth();
-  const { loading, consumirAPI, parametricas} = DataApp();
+  const { loading, consumirAPI, parametricas, generarReporte} = DataApp();
   const colores = ['violet.5','blue.5','teal.5','indigo.5','cyan.5','grape.5','pink.5','red.5','orange.5','yellow.5','lime.5','green.5'];
   const [f1, setF1] = useState(dayjs().startOf('month'))
   const [f2, setF2] = useState(dayjs().endOf('month'))
@@ -53,8 +53,9 @@ const Dashboard = () => {
   };
 
 
-  const obtenerReporte = async (tipo,data) =>{
-    console.log('obteneinedo report',tipo,data);
+  const obtenerReporte = async (ruta,data) =>{
+    console.log('obteneinedo report',ruta,data);
+    await generarReporte(ruta,data)
     // // setLoading(true)
     // try {
     //   const templateData = {
@@ -132,7 +133,7 @@ const Dashboard = () => {
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, lg: 3 }}><Button color='blue.2' variant='light' fullWidth onClick={()=>cargarData()} size='sm'>Cargar Datos</Button></Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('DOS',parametricas)} size='sm'> Histórico Pedidos</Button></Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 3 }}><Button color='green.5' variant='light' fullWidth onClick={()=>obtenerReporte('/reportesVentas/',{tipo:'01'})} size='sm'> Histórico Pedidos</Button></Grid.Col>
         </Grid>
         <Box className="metrics-grid">
           <div className="metric-card">
