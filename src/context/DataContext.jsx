@@ -98,7 +98,7 @@ export const DataProvider = ({ children }) => {
       const url = window.URL.createObjectURL(new Blob([resp]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'catalogo_productos.xlsx'); 
+      link.setAttribute('download', 'catalogo_productos.ods'); 
       document.body.appendChild(link);
       link.click();
       console.log('la respuesta API',resp);
