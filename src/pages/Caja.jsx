@@ -68,6 +68,8 @@ const Caja = () => {
       monto_cierre_tarjeta:0,
       monto_cierre_efectivo:0,
       monto_cierre_vale:0,
+      sueldos:0,
+      monto_caja:0,
       observaciones:'',
       estado:'APERTURA',
     },
@@ -118,6 +120,8 @@ const Caja = () => {
       { accessorKey: 'monto_cierre_tarjeta',header: 'Cierre TRJ',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_efectivo',header: 'Cierre EFE',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'monto_cierre_vale',header: 'Cierre VALE',mantineTableBodyCellProps: {align: 'right'}},
+      { accessorKey: 'sueldos',header: 'Sueldos',mantineTableBodyCellProps: {align: 'right'}},
+      { accessorKey: 'monto_caja',header: 'Monto Caja',mantineTableBodyCellProps: {align: 'right'}},
       { accessorKey: 'observaciones',header: 'Observaciones',size:150},
       { accessorKey: 'estado',header: 'Estado Caja'},
     ],
@@ -620,6 +624,32 @@ const Caja = () => {
                   leftSection={<IconTicket size={16} />}
                   key={form.key('monto_cierre_vale')}
                   {...form.getInputProps('monto_cierre_vale')}
+                />
+                <NumberInput
+                  label="Monto Pago Sueldos:"
+                  placeholder="2000"
+                  allowDecimal={false}
+                  min={0}
+                  max={10000}
+                  required
+                  prefix='Bs. '
+                  thousandSeparator=","
+                  leftSection={<IconCash size={16} />}
+                  key={form.key('sueldos')}
+                  {...form.getInputProps('sueldos')}
+                />
+                <NumberInput
+                  label="Monto Caja Chica:"
+                  placeholder="500"
+                  allowDecimal={false}
+                  min={0}
+                  max={5000}
+                  required
+                  prefix='Bs. '
+                  thousandSeparator=","
+                  leftSection={<IconCash size={16} />}
+                  key={form.key('monto_caja')}
+                  {...form.getInputProps('monto_caja')}
                 />
                 <Textarea
                   label="Observaciones:"

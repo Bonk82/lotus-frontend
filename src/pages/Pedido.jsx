@@ -207,11 +207,27 @@ const Pedido = () => {
   const eliminarDetalle = async(item)=>{
     console.log('rev',item,detalle);
     let pivot = []
-    if(item.fid_mezclador){
+    //si es un mezclador, cambiar el producto del mezclador
+    if(item.fid_mezclador && !item.fid_promocion){
       pivot = [...detalle];
       pivot.map(p=>{
-        if(p.id == item.id && p.precio_venta == 0){
+        if(p.id == item.id && p.precio_venta == 0 && p.fid_producto){
           p.fid_producto = p.fid_producto == 58 ? 59 : p.fid_producto == 59 ? 67 : 58;
+          p.nombre = productos.find(f=>f.id_producto==p.fid_producto).descripcion
+        } 
+        return p;
+      })
+      console.log('dentro',pivot);
+      
+      setDetalle(pivot)
+      return true;
+    }
+    //si es una promocion cambiar los prodcutos dentro de la promoción
+    if(item.fid_mezclador && item.fid_promocion){
+      pivot = [...detalle];
+      pivot.map(p=>{
+        if(p.id == item.id && p.fid_promocion){
+          p.fid_producto = p.fid_producto == 36 ? 37 : p.fid_producto == 37 ? 38 : 36;
           p.nombre = productos.find(f=>f.id_producto==p.fid_producto).descripcion
         } 
         return p;
@@ -231,33 +247,56 @@ const Pedido = () => {
   }
 
   const agregarDetalle = (data)=>{
-    console.log('el prodcuto',data,detalle);
-    const newDetalle = {
-      id: nanoid(10),
-      operacion : 'I',
-      fid_pedido: idPedido,
-      fid_producto:data.id_producto,
-      fid_promocion:data.id_promocion,
-      nombre:data.id_producto ? productos.find(f=>f.id_producto == data.id_producto)?.descripcion:promociones.find(f=>f.id_promocion == data.id_promocion)?.nombre,
-      cantidad: 1,
-      descuento: 0,//?revisar a ca como sacr el valor de descuento
-      precio_venta:data.precio,//? data.precio - (calculo de descauento) a este valor hacer el calculo con el monto de descuento
-    }
-    setDetalle([...(detalle || []),newDetalle])
-    if(data.mezclador){
-      const newMezclador = {
+    console.log('el producto',data,detalle);
+    if(data.id_producto){
+      const newDetalle = {
         id: nanoid(10),
         operacion : 'I',
         fid_pedido: idPedido,
-        fid_producto:data.id_pc,
-        fid_mezclador:data.id_producto,
-        fid_promocion:null,
-        nombre:data.mezclador,
-        cantidad: data.cantidad,
-        descuento: 0,
-        precio_venta:0 //es mezclador
+        fid_producto:data.id_producto,
+        fid_promocion:data.id_promocion,
+        nombre:data.id_producto ? productos.find(f=>f.id_producto == data.id_producto)?.descripcion:promociones.find(f=>f.id_promocion == data.id_promocion)?.nombre,
+        cantidad: 1,
+        descuento: 0,//?revisar a ca como sacr el valor de descuento
+        precio_venta:data.precio,//? data.precio - (calculo de descauento) a este valor hacer el calculo con el monto de descuento
       }
-      setDetalle([...(detalle || []),newDetalle,newMezclador])
+      setDetalle([...(detalle || []),newDetalle])
+      if(data.mezclador){
+        const newMezclador = {
+          id: nanoid(10),
+          operacion : 'I',
+          fid_pedido: idPedido,
+          fid_producto:data.id_pc,
+          fid_mezclador:data.id_producto,
+          fid_promocion:null,
+          nombre:data.mezclador,
+          cantidad: data.cantidad,
+          descuento: 0,
+          precio_venta:0 //es mezclador
+        }
+        setDetalle([...(detalle || []),newDetalle,newMezclador])
+      }
+    }
+    if(data.id_promocion){
+      let combinacion = data.productos;
+      console.log('las combis',combinacion);
+      let combis = [...(detalle || [])];
+      combinacion.forEach((c,i)=>{
+        const newCombo = {
+          id: nanoid(10),
+          operacion : 'I',
+          fid_pedido: idPedido,
+          fid_producto:c.id_producto,
+          fid_mezclador:c.id_producto,
+          fid_promocion:data.id_promocion,
+          nombre:productos.find(f=>f.id_producto == c.id_producto)?.descripcion,
+          cantidad: 1,
+          descuento: 0,
+          precio_venta: i==0 ? promociones.find(f=>f.id_promocion == data.id_promocion)?.precio : 0,
+        }
+        combis.push(newCombo);
+      });
+      setDetalle(combis);
     }
     setGrupo('')
     console.log('el detalle',detalle);
@@ -401,7 +440,7 @@ const Pedido = () => {
             width={'250px'}
             error={errorMontos}
           />
-          <img style={{maxWidth:'350px'}} src="https://lotus-api.simikapp.vip/uploads/qr-pagos.jpg" alt="QR de Pago"/>
+          <img style={{maxWidth:'350px',marginTop:'1rem'}} src="https://lotus-api.simikapp.vip/uploads/qr-pagos.jpg" alt="QR de Pago"/>
         </Box>
       </Box>}
       {idPedido>0 && <Box pos={"relative"} mb={10}>
