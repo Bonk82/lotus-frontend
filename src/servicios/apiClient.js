@@ -35,7 +35,7 @@ apiClient.interceptors.response.use(
     if (Array.isArray(data)) {
       respuesta = data[0];
     } else if (typeof data === "object") {
-      respuesta = data.message || JSON.stringify(data)
+      respuesta = data.message || data.error || JSON.stringify(data)
     } else if (typeof data === 'string'){
       respuesta = data
     } else {

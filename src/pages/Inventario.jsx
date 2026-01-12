@@ -196,6 +196,7 @@ const Inventario = () => {
     } else {
       newIngreso = { ...data, operacion: "I", usuario_registro: user.usuario };
     }
+    data.fecha_ingreso = dayjs(data.fecha_ingreso).format('YYYY-MM-DD');
     if (eliminar) newIngreso.operacion = "D";
     await consumirAPI("/crudIngreso", newIngreso);
     closeIngreso();

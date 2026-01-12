@@ -76,7 +76,7 @@ export const DataProvider = ({ children }) => {
       if(error.message?.includes('Token') || error.includes('Token')){
         logout();
       }else{
-        toast('Error API:',error.message || error,'error')
+        toast('Error API:',error.message || error.error || error,'error');
       }
     }finally {
       setLoading(false);

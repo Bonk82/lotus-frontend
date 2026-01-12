@@ -95,11 +95,11 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login/>} />
                 <Route path="/" element={<Dashboard/>} />
-                <Route path="/proveedor" element={<ProtectedRoute allowedRoles={[1,4]}><Proveedor/></ProtectedRoute>} />
-                <Route path="/inventario" element={<ProtectedRoute allowedRoles={[1,4]}><Inventario/></ProtectedRoute>} />
-                <Route path="/personal" element={<ProtectedRoute allowedRoles={[1,4]}><Personal/></ProtectedRoute>} />
-                <Route path="/pedido" element={<ProtectedRoute allowedRoles={[1,2,3,4]}><Pedido/></ProtectedRoute>} />
-                <Route path="/caja" element={<ProtectedRoute allowedRoles={[1,3,4]}><Caja/></ProtectedRoute>} />
+                <Route path="/proveedor" element={<ProtectedRoute allowedRoles={[1,4,6]}><Proveedor/></ProtectedRoute>} />
+                <Route path="/inventario" element={<ProtectedRoute allowedRoles={[1,4,6]}><Inventario/></ProtectedRoute>} />
+                <Route path="/personal" element={<ProtectedRoute allowedRoles={[1,4,6]}><Personal/></ProtectedRoute>} />
+                <Route path="/pedido" element={<ProtectedRoute allowedRoles={[1,2,3,4,6]}><Pedido/></ProtectedRoute>} />
+                <Route path="/caja" element={<ProtectedRoute allowedRoles={[1,3,4,6]}><Caja/></ProtectedRoute>} />
                 <Route path="/control" element={<ProtectedRoute allowedRoles={[1]}><Control/></ProtectedRoute>} />
                 <Route path="/parametrica" element={<ProtectedRoute allowedRoles={[1]}><Parametrica/></ProtectedRoute>} />
                 <Route path="*" element={<div style={{height:'calc(100vh - 80px)',display:'grid',placeItems:'center'}}><h1>404 Página no encontrada</h1></div>} />
