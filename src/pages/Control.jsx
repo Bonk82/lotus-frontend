@@ -30,7 +30,7 @@ const Control = () => {
     
     if(['T','P'].includes(opcion)) await consumirAPI('/listarPromociones', { opcion: 'T' });
     if(['T','S'].includes(opcion)) await consumirAPI('/listarSucursalProductos', { opcion: 'T' });
-    if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T' });
+    await consumirAPI('/listarProductos', { opcion: 'T' });
     if(sucursales.length == 0) await consumirAPI('/listarSucursales', { opcion: 'T' });
     if(parametricas.length == 0) await consumirAPI('/listarClasificador', { opcion: 'T' });
   }

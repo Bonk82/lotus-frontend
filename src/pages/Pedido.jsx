@@ -23,6 +23,7 @@ const Pedido = () => {
   const [totalConciliar, setTotalConciliar] = useState(0)
   const [detalle, setDetalle] = useState([])
   const [errorMontos, setErrorMontos] = useState('');
+  const [confirmando, setConfirmando] = useState(false);
 
 
   useEffect(() => {
@@ -205,20 +206,17 @@ const Pedido = () => {
   }
 
   const eliminarDetalle = async(item)=>{
-    console.log('rev',item,detalle);
     let pivot = []
     //si es un mezclador, cambiar el producto del mezclador
     if(item.fid_mezclador && !item.fid_promocion){
       pivot = [...detalle];
       pivot.map(p=>{
         if(p.id == item.id && p.precio_venta == 0 && p.fid_producto){
-          p.fid_producto = p.fid_producto == 58 ? 59 : p.fid_producto == 59 ? 67 : 58;
+          p.fid_producto = p.fid_producto == 58 ? 59 : p.fid_producto == 59 ? 67 : p.fid_producto == 67 ? 79 : 58;
           p.nombre = productos.find(f=>f.id_producto==p.fid_producto).descripcion
         } 
         return p;
       })
-      console.log('dentro',pivot);
-      
       setDetalle(pivot)
       return true;
     }
@@ -247,6 +245,7 @@ const Pedido = () => {
   }
 
   const agregarDetalle = (data)=>{
+    setConfirmando(false);
     console.log('el producto',data,detalle);
     if(data.id_producto){
       const newDetalle = {
@@ -299,10 +298,14 @@ const Pedido = () => {
       setDetalle(combis);
     }
     setGrupo('')
+    // const lugar = document.querySelector('.grid-detalle');
+    // if(lugar)lugar.scrollIntoView({behavior: 'smooth',block: 'start'});
     console.log('el detalle',detalle);
+    window.scrollTo({top: 0,left: 0, behavior: 'smooth'});
   }
 
   const insertarDetalles = async () =>{
+    setConfirmando(true)
     console.log('el detalle',detalle);
     const totalPedido = detalle.reduce((ac,el)=>ac+Number(el.precio_venta),0)
     if((Number(form.getValues().monto_qr) + Number(form.getValues().monto_efectivo) + Number(form.getValues().monto_tarjeta) + Number(form.getValues().monto_vale)) != totalPedido){
@@ -362,7 +365,7 @@ const Pedido = () => {
         {user?.sucursal && `Pedidos Sucursal - ${sucursales.find(f=>f.id_sucursal == user.sucursal)?.nombre}`}
         {!user?.sucursal && `No cuenta con sucursal vinculada. Por favor coordinar con el administrador`} 
       </Text>
-      {idPedido && detalle?.length>0 &&
+      {idPedido && detalle?.length>0 && !confirmando &&
       <Box className="grid-detalle">
         {detalle.map(i=>(
           <Chip checked variant="light" size="md" radius={"lg"} key={(i.id || i.id_pedido_detalle)} onClick={()=>eliminarDetalle(i)}>{i.nombre} - Bs. {Number(i.precio_venta).toFixed(0)}</Chip>

@@ -12,6 +12,8 @@ import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { modals } from '@mantine/modals';
+import { pdf } from '@react-pdf/renderer';
+import { ComandaPedido } from '../reports/ComandaPedido';
 
 const Caja = () => {
   const { user } = UserAuth();
@@ -24,6 +26,7 @@ const Caja = () => {
   const [desface, setDesface] = useState(null)
   const [motivo, setMotivo] = useState('')
   const [faltantes, setFaltantes] = useState([])
+  const [rptComandas, setRptComandas] = useState([])
 
   useEffect(() => {
     if(user) cargarData()
@@ -49,11 +52,14 @@ const Caja = () => {
     if(productos.length == 0) await consumirAPI('/listarProductos', { opcion: 'T'});
     await consumirAPI('/listarUsuarios', { opcion: 'AA',id:user.sucursal});
     await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura || id[0]?.id_control_caja});
-    
+    const pivot_rpt = await consumirAPI('/reportesRender', { opcion: 'comandasPendientes',id:idApertura || id[0]?.id_control_caja });
+    setRptComandas(pivot_rpt);
   }
 
   const refrescarPedidos = async () =>{
     await consumirAPI('/listarPedidos', { opcion: 'CONFIRMADOS',id:idApertura });
+    const pivot_rpt = await consumirAPI('/reportesRender', { opcion: 'comandasPendientes',id:idApertura });
+    setRptComandas(pivot_rpt);
   }
 
   const form = useForm({
@@ -372,6 +378,36 @@ const Caja = () => {
     await consumirAPI('/listarPedidos', {  opcion: 'CONFIRMADOS',id:idApertura });
   }
 
+  const imprimirComandas = async() =>{
+    // const pendientes = pedidos.filter(f=>['CONFIRMADO'].includes(f.estado));
+    console.log(rptComandas);
+    for (const p of rptComandas) {
+      console.log('para comanda',p);
+      
+      const blob = await pdf(<ComandaPedido pedido={p} />).toBlob();
+
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `comanda_${p.nombre}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      await new Promise(r => setTimeout(r, 800)); // evita bloqueo
+    }
+    
+    await consumirAPI('/estadoMasivo', {  opcion: 'IMPRESO',id:rptComandas.map(f=>f.id_pedido).join(',') });
+    setRptComandas([]);
+    // const blob = await pdf(<ComandaPedido items={pendientes[0].consumo} />).toBlob();
+    // const link = document.createElement('a');
+    // link.href = URL.createObjectURL(blob);
+    // link.download = `comanda_${pendientes[0].id_pedido}.pdf`;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+
+  }
+
   return (
     <div>
       {pedidos.length>0 &&
@@ -379,6 +415,7 @@ const Caja = () => {
         <Text size='clamp(1.5rem, 2vw, 2rem)' pb={6} mb={'lg'} fw={900} variant="gradient" gradient={{ from: 'gainsboro', to: 'violet', deg: 90 }}>
           Control Pedidos 
         </Text>
+        {rptComandas.length > 0 && <Button onClick={imprimirComandas} style={{margin:'0 1rem 1rem 0'}} size='sm' visibleFrom="md" variant='light' color='green.5'>Imprimir Comandas</Button>}
         <Button onClick={()=>setIdEmpleado(null)} style={{marginBottom:'1rem'}} size='sm' visibleFrom="md" variant='light' color='violet'>Ver pedidos por usuario</Button>
         <Box className="cards-pedidos">
           {!idEmpleado && pedidos.reduce((agrupador, objetoActual) => {
@@ -389,7 +426,6 @@ const Caja = () => {
               } else {
                 agrupador.push({cuenta: clave,detalle: [objetoActual] });
               }
-              console.log('agrupador:', agrupador);
               return agrupador;
             }, []).map(c=>(
             <Box className={`card ${c.detalle?.every(f=>f.estado=='CONCILIADO') ? 'ok' : 'bad'}`} key={c.cuenta} onClick={()=>setIdEmpleado(pedidos.find(f=>f.cuenta == c.cuenta).fid_usuario)}>
